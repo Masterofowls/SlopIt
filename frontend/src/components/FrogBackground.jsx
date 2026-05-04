@@ -1,4 +1,3 @@
-import React, { useEffect, useRef } from "react";
 import "./FrogBackground.css";
 
 const FrogBackground = () => {
@@ -9,11 +8,11 @@ const FrogBackground = () => {
         muted
         loop
         playsInline
-        poster="../../public/frog/frog.png"
+        poster="../../dist/frog/frog.png"
         className="background-video"
       >
         <source
-          src="../../public/moving-car-at-starry-night.1920x1080.mp4"
+          src="../../dist/moving-car-at-starry-night.1920x1080.mp4"
           type="video/mp4"
         />
         Your browser does not support the video tag.
