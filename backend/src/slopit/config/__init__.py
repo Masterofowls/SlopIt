@@ -1,1 +1,0 @@
-"""SlopIt — Django config package."""
