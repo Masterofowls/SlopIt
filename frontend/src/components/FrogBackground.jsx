@@ -15,7 +15,6 @@ const FrogBackground = () => {
           src="../../dist/moving-car-at-starry-night.1920x1080.mp4"
           type="video/mp4"
         />
-        Your browser does not support the video tag.
       </video>
     </div>
   );
