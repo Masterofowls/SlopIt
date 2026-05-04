@@ -10,10 +10,6 @@ from .base import env
 
 DEBUG = False
 
-# Prevents a crash when the staticfiles manifest doesn't exist on first deploy
-# (before collectstatic has run). Safe to remove once staticfiles are stable.
-WHITENOISE_MANIFEST_STRICT = False
-
 # Hardened security
 # HTTPS is enforced at the Fly.io edge (force_https = true in fly.toml).
 # SECURE_SSL_REDIRECT must be False so internal health checks (HTTP on port

@@ -12,7 +12,7 @@ kill_timeout = "30s"
 
 [deploy]
   # Run DB migrations + collectstatic on every release.
-  release_command = "sh -c 'cd src/slopit && python manage.py migrate --noinput && python manage.py collectstatic --noinput'"
+  release_command = "sh -c 'cd src/slopit && python manage.py migrate --noinput'"
   strategy = "rolling"
 
 [env]

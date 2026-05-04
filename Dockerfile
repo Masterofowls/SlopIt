@@ -36,10 +36,15 @@ COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/pytho
 COPY --from=builder /usr/local/bin /usr/local/bin
 COPY --chown=app:app . .
 
-# WORKDIR /app is created by Docker as root:755; the app user needs to be able
-# to create /app/staticfiles/ at deploy time (collectstatic).  staticfiles/ is
-# gitignored so it is never in the build context — we create it here.
+# Create dirs and run collectstatic at build time so static files are baked
+# into the image. The release_command only runs migrate (needs a live DB).
+# A dummy SECRET_KEY is sufficient — collectstatic never touches the DB.
 RUN mkdir -p /app/staticfiles /app/media && chown -R app:app /app
+RUN DJANGO_SECRET_KEY=build-only-dummy-key \
+    DJANGO_SETTINGS_MODULE=config.settings.prod \
+    DJANGO_ALLOWED_HOSTS=localhost \
+    DATABASE_URL=postgres://x:x@localhost/x \
+    python src/slopit/manage.py collectstatic --noinput
 
 USER app
 
@@ -49,7 +54,7 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
     CMD curl --fail --silent http://localhost:8000/api/v1/system/status || exit 1
 
-# Collectstatic + migrate happen in release_command (see fly.toml)
+# Migrate happens in release_command (see fly.toml). Collectstatic runs above.
 CMD ["gunicorn", "config.wsgi:application", \
      "--chdir", "src/slopit", \
      "--bind", "0.0.0.0:8000", \
