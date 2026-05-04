@@ -55,6 +55,7 @@ dev = [
     "pytest-django>=4.9",
     "pytest-cov>=5.0",
     "pytest-xdist>=3.6",
+    "playwright>=1.54",
     "factory-boy>=3.3",
     "faker>=28.0",
     "django-debug-toolbar>=4.4",

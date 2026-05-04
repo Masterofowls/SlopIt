@@ -5,6 +5,7 @@ from __future__ import annotations
 from django.contrib import admin
 from django.http import JsonResponse
 from django.urls import include, path
+from django.views.generic import RedirectView
 from drf_spectacular.views import (
     SpectacularAPIView,
 )
@@ -24,9 +25,21 @@ def system_status(_request: object) -> JsonResponse:
     )
 
 
+class FrontendRedirectView(RedirectView):
+    """Redirect HTML login forms to frontend SPA. Backend is API-only."""
+
+    permanent = False
+
+    def get_redirect_url(self, *args: object, **kwargs: object) -> str:
+        from django.conf import settings
+
+        return settings.FRONTEND_URL
+
+
 urlpatterns = [
     path("", system_status, name="root-status"),
     path("admin/", admin.site.urls),
+    path("accounts/login/", FrontendRedirectView.as_view(), name="allauth-html-login"),
     path("accounts/", include("allauth.urls")),
     path("api/v1/_allauth/", include("allauth.headless.urls")),
     path("api/v1/system/status", system_status, name="system-status"),

@@ -79,3 +79,4 @@ desktop.ini
 /.pytest_cache
 /.ruff_cache
 /.venv
+/backend/.playwright/
