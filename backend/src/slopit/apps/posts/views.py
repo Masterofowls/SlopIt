@@ -78,7 +78,6 @@ class PostViewSet(ModelViewSet):
     def perform_create(self, serializer) -> None:  # type: ignore[override]
         serializer.save(author=self.request.user)
 
-
     @action(
         detail=True,
         methods=["post"],
@@ -106,7 +105,6 @@ class PostViewSet(ModelViewSet):
 
         return Response(PostDetailSerializer(post, context={"request": request}).data)
 
-
     @extend_schema(parameters=[OpenApiParameter("page", int, description="Page number")])
     @action(
         detail=True,
@@ -132,7 +130,6 @@ class PostViewSet(ModelViewSet):
                 CommentSerializer(page, many=True, context={"request": request}).data
             )
         return Response(CommentSerializer(qs, many=True, context={"request": request}).data)
-
 
     @action(
         detail=True,

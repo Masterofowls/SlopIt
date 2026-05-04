@@ -32,8 +32,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-
-
 def _stable_hash(value: int) -> int:
     """Deterministic 64-bit hash of an integer (immune to PYTHONHASHSEED)."""
     digest = hashlib.md5(struct.pack(">q", value), usedforsecurity=False).digest()
@@ -49,8 +47,6 @@ def _keyword_vector(title: str, body: str) -> SearchVector:
     return SearchVector(Value(title), weight="A", config="english") + SearchVector(
         Value(body), weight="B", config="english"
     )
-
-
 
 
 @transaction.atomic

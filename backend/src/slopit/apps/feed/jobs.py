@@ -23,8 +23,6 @@ _DEFAULT_QUEUE = "default"
 _LOW_QUEUE = "low"
 
 
-
-
 def enqueue_post_published(post_id: int) -> None:
     """Non-blocking: run L2 intake for *post_id* in the background."""
     django_rq.get_queue(_DEFAULT_QUEUE).enqueue(
@@ -65,8 +63,6 @@ def enqueue_invalidate_user_snapshots(user_id: int) -> None:
     )
 
 
-
-
 def _run_on_post_published(post_id: int) -> None:
     from apps.feed.services.level2_intake import on_post_published
     from apps.posts.models import Post
@@ -97,8 +93,6 @@ def _run_invalidate_user_snapshots(user_id: int) -> None:
     from apps.feed.services.level3_personal import invalidate_user_snapshots
 
     invalidate_user_snapshots(user_id)
-
-
 
 
 @django_rq.job(_LOW_QUEUE)

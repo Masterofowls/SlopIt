@@ -39,8 +39,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-
-
 def _current_pool_version() -> int:
     """Return the maximum PostFeedMeta version (tracks pool freshness)."""
     result = PostFeedMeta.objects.aggregate(v=Max("version"))["v"]
@@ -91,8 +89,6 @@ def _build_ordered_ids(
                 ordered.append(lst[i][0])
 
     return ordered
-
-
 
 
 def get_or_create_snapshot(user: AbstractBaseUser) -> FeedSnapshot:

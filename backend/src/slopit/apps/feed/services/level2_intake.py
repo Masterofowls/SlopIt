@@ -43,8 +43,6 @@ _BURST_WINDOW_SECONDS = 5 * 60
 _NEIGHBOR_RANGE = 1
 
 
-
-
 def _stable_hash(value: int) -> int:
     """Deterministic 64-bit hash of an integer (immune to PYTHONHASHSEED)."""
     digest = hashlib.md5(struct.pack(">q", value), usedforsecurity=False).digest()
@@ -84,8 +82,6 @@ def _violates_constraints(
             if delta < _BURST_WINDOW_SECONDS:
                 return True
     return False
-
-
 
 
 def assign_bucket(post: Post, content_hash: str) -> int:

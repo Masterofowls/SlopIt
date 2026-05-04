@@ -1,0 +1,29 @@
+{
+  "files.exclude": {
+    ".git": true,
+    "**/__pycache__": false,
+    "**/.DS_Store": false,
+    "**/.git": false,
+    "**/.hg": true,
+    "**/.svn": true,
+    "**/.venv": false,
+    "**/.vscode": true,
+    "**/node_modules": false,
+    "**/venv": false,
+    "mcp_debug.log": true,
+    ".coverage": true
+  },
+  "terminal.integrated.cwd": "${workspaceFolder}/backend",
+  "terminal.integrated.env.windows": {
+    "UV_PROJECT_ENVIRONMENT": "${workspaceFolder}\\backend\\.venv",
+    "RUFF_CACHE_DIR": "${workspaceFolder}\\backend\\.ruff_cache",
+    "PYTEST_ADDOPTS": "--cache-dir=${workspaceFolder}/backend/.pytest_cache"
+  },
+  "python.defaultInterpreterPath": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
+  "python.testing.pytestEnabled": true,
+  "python.testing.cwd": "${workspaceFolder}/backend",
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "ruff.configuration": "${workspaceFolder}/backend/pyproject.toml"
+}

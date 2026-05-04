@@ -134,10 +134,10 @@ class TestSocialAccountAdapter:
         user.pk = 42
 
         adapter = SocialAccountAdapter()
-        with patch("apps.accounts.adapter.Profile") as MockProfile:
+        with patch("apps.accounts.adapter.Profile") as mock_profile:
             adapter._sync_avatar(sociallogin, user=user)
-            MockProfile.objects.filter.assert_called_once_with(user_id=42)
-            MockProfile.objects.filter.return_value.update.assert_called_once_with(
+            mock_profile.objects.filter.assert_called_once_with(user_id=42)
+            mock_profile.objects.filter.return_value.update.assert_called_once_with(
                 social_avatar_url="https://lh3.googleusercontent.com/photo.jpg"
             )
 
@@ -155,9 +155,9 @@ class TestSocialAccountAdapter:
         user.pk = 7
 
         adapter = SocialAccountAdapter()
-        with patch("apps.accounts.adapter.Profile") as MockProfile:
+        with patch("apps.accounts.adapter.Profile") as mock_profile:
             adapter._sync_avatar(sociallogin, user=user)
-            MockProfile.objects.filter.return_value.update.assert_called_once_with(
+            mock_profile.objects.filter.return_value.update.assert_called_once_with(
                 social_avatar_url="https://avatars.githubusercontent.com/u/1"
             )
 
@@ -175,9 +175,9 @@ class TestSocialAccountAdapter:
         user.pk = 3
 
         adapter = SocialAccountAdapter()
-        with patch("apps.accounts.adapter.Profile") as MockProfile:
+        with patch("apps.accounts.adapter.Profile") as mock_profile:
             adapter._sync_avatar(sociallogin, user=user)
-            MockProfile.objects.filter.return_value.update.assert_called_once_with(
+            mock_profile.objects.filter.return_value.update.assert_called_once_with(
                 social_avatar_url="https://t.me/i/userpic/photo.jpg"
             )
 
@@ -195,9 +195,9 @@ class TestSocialAccountAdapter:
         user.pk = 1
 
         adapter = SocialAccountAdapter()
-        with patch("apps.accounts.adapter.Profile") as MockProfile:
+        with patch("apps.accounts.adapter.Profile") as mock_profile:
             adapter._sync_avatar(sociallogin, user=user)
-            MockProfile.objects.filter.assert_not_called()
+            mock_profile.objects.filter.assert_not_called()
 
 
 # ─── Auth settings ────────────────────────────────────────────────────────────
@@ -228,7 +228,7 @@ class TestOAuthAuthSettings:
     def test_headless_token_strategy_is_sessions(self) -> None:
         from django.conf import settings
 
-        assert settings.HEADLESS_TOKEN_STRATEGY == "allauth.headless.tokens.sessions"
+        assert settings.HEADLESS_TOKEN_STRATEGY == "allauth.headless.tokens.sessions"  # noqa: S105
 
     def test_cors_allows_credentials(self) -> None:
         from django.conf import settings

@@ -156,6 +156,7 @@ class Command(BaseCommand):
                 user.set_password(data["password"])
                 user.save()
             from apps.accounts.models import Profile
+
             Profile.objects.get_or_create(user=user)
             user_objs[data["username"]] = user
             status = "created" if created else "exists"
