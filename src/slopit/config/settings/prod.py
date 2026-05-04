@@ -15,8 +15,11 @@ DEBUG = False
 WHITENOISE_MANIFEST_STRICT = False
 
 # Hardened security
+# HTTPS is enforced at the Fly.io edge (force_https = true in fly.toml).
+# SECURE_SSL_REDIRECT must be False so internal health checks (HTTP on port
+# 8000) are not redirected — Consul does not follow 301s.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = True
+SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_HTTPONLY = True
