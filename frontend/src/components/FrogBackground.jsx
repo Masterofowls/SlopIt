@@ -14,6 +14,7 @@ const FrogBackground = () => {
         <source
           src="../../dist/moving-car-at-starry-night.1920x1080.mp4"
           type="video/mp4"
+          muted
         />
       </video>
     </div>
