@@ -171,6 +171,10 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": ["user:email"],
     },
     "telegram": {
+        "APP": {
+            "client_id": env("TELEGRAM_OAUTH_CLIENT_ID", default=""),
+            "secret": env("TELEGRAM_OAUTH_CLIENT_SECRET", default=""),
+        },
         "BOT_TOKEN": env("TELEGRAM_BOT_TOKEN", default=""),
         "BOT_USERNAME": env("TELEGRAM_BOT_USERNAME", default=""),
     },
