@@ -8,11 +8,11 @@ const FrogBackground = () => {
         muted
         loop
         playsInline
-        poster="../../dist/frog/frog.png"
+        poster="/frogs/frog.png"
         className="background-video"
       >
         <source
-          src="../../dist/moving-car-at-starry-night.1920x1080.mp4"
+          src="/moving-car-at-starry-night.1920x1080.mp4"
           type="video/mp4"
         />
       </video>

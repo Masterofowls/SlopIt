@@ -1,7 +1,28 @@
 import axios from "axios";
 
-const API_ORIGIN = import.meta.env.VITE_API_ORIGIN ?? "";
-const BASE = import.meta.env.VITE_API_BASE_URL ?? `${API_ORIGIN}/api/v1`;
+const isLocalFrontend = ["localhost", "127.0.0.1"].includes(
+  window.location.hostname,
+);
+
+const defaultApiOrigin = isLocalFrontend
+  ? "http://127.0.0.1:8000"
+  : "https://slopit-api.fly.dev";
+
+const envApiOrigin = import.meta.env.VITE_API_ORIGIN?.trim();
+const envApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
+const pointsToLocalBackend = (value) =>
+  /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(value ?? "") ||
+  /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/api\/v1$/i.test(value ?? "");
+
+const API_ORIGIN =
+  envApiOrigin && !(pointsToLocalBackend(envApiOrigin) && !isLocalFrontend)
+    ? envApiOrigin
+    : defaultApiOrigin;
+
+const BASE =
+  envApiBaseUrl && !(pointsToLocalBackend(envApiBaseUrl) && !isLocalFrontend)
+    ? envApiBaseUrl
+    : `${API_ORIGIN}/api/v1`;
 
 const client = axios.create({
   baseURL: BASE,
