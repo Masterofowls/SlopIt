@@ -1,0 +1,47 @@
+/* CollagePost Styles */
+.post-collage {
+  display: grid;
+  gap: 4px;
+  background-color: #f7fafc;
+  padding: 4px;
+  width: 100%;
+}
+
+.collage-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.collage-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.collage-grid-4 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.collage-grid-default {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.collage-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+
+.collage-image:hover {
+  transform: scale(1.02);
+}
+
+@media (max-width: 768px) {
+  .collage-grid-3,
+  .collage-grid-4 {
+    grid-template-columns: 1fr;
+  }
+
+  .collage-image {
+    height: 250px;
+  }
+}

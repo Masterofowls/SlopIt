@@ -1,0 +1,166 @@
+export const dummyPosts = [
+  {
+    id: 1,
+    type: 'text',
+    author: {
+      id: 1,
+      username: 'frog_lover',
+      avatar: '/frog.png'
+    },
+    content: 'Just discovered this amazing platform! The community here is so friendly and welcoming. 🐸',
+    timestamp: '2024-01-15T10:30:00Z',
+    likes: 42,
+    comments: 8
+  },
+  {
+    id: 2,
+    type: 'image',
+    author: {
+      id: 2,
+      username: 'nature_explorer',
+      avatar: '/frog.png'
+    },
+    content: 'Captured this beautiful moment in the wild today!',
+    imageUrl: 'https://images.unsplash.com/photo-1559253664-ca249d4608c6?w=800',
+    timestamp: '2024-01-15T09:15:00Z',
+    likes: 128,
+    comments: 23
+  },
+  {
+    id: 3,
+    type: 'video',
+    author: {
+      id: 3,
+      username: 'wildlife_videographer',
+      avatar: '/frog.png'
+    },
+    content: 'Amazing frog behavior captured on camera! Watch till the end for a surprise.',
+    videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1559253664-ca249d4608c6?w=800',
+    timestamp: '2024-01-15T08:45:00Z',
+    likes: 256,
+    comments: 45
+  },
+  {
+    id: 4,
+    type: 'image',
+    author: {
+      id: 4,
+      username: 'photo_enthusiast',
+      avatar: '/frog.png'
+    },
+    content: 'My collection of frog photos from this summer expedition 📸',
+    images: [
+      'https://images.unsplash.com/photo-1559253664-ca249d4608c6?w=400',
+      'https://images.unsplash.com/photo-1559253664-ca249d4608c6?w=400',
+      'https://images.unsplash.com/photo-1559253664-ca249d4608c6?w=400',
+      'https://images.unsplash.com/photo-1559253664-ca249d4608c6?w=400'
+    ],
+    timestamp: '2024-01-15T07:30:00Z',
+    likes: 89,
+    comments: 15
+  },
+  {
+    id: 5,
+    type: 'questionnaire',
+    author: {
+      id: 5,
+      username: 'poll_master',
+      avatar: '/frog.png'
+    },
+    content: "What's your favorite type of frog?",
+    question: "What's your favorite type of frog?",
+    options: [
+      { id: 1, text: 'Tree Frog', votes: 45 },
+      { id: 2, text: 'Bull Frog', votes: 32 },
+      { id: 3, text: 'Poison Dart Frog', votes: 28 },
+      { id: 4, text: 'Other', votes: 15 }
+    ],
+    totalVotes: 120,
+    timestamp: '2024-01-15T06:00:00Z',
+    likes: 67,
+    comments: 34
+  },
+  {
+    id: 6,
+    type: 'text',
+    author: {
+      id: 6,
+      username: 'frog_scientist',
+      avatar: '/frog.png'
+    },
+    content: "Interesting fact: Frogs can absorb water through their skin, so they don't need to drink water like other animals. This is why they're often found near water sources! 🌊",
+    timestamp: '2024-01-14T22:30:00Z',
+    likes: 156,
+    comments: 42
+  },
+  {
+    id: 7,
+    type: 'image',
+    author: {
+      id: 7,
+      username: 'macro_photographer',
+      avatar: '/frog.png'
+    },
+    content: 'Macro shot of a tree frog eye - the details are incredible!',
+    imageUrl: 'https://images.unsplash.com/photo-1559253664-ca249d4608c6?w=800',
+    timestamp: '2024-01-14T21:15:00Z',
+    likes: 234,
+    comments: 56
+  },
+  {
+    id: 8,
+    type: 'image',
+    author: {
+      id: 8,
+      username: 'wildlife_photographer',
+      avatar: '/frog.png'
+    },
+    content: 'Different frog species from around the world 🌍',
+    images: [
+      'https://images.unsplash.com/photo-1559253664-ca249d4608c6?w=400',
+      'https://images.unsplash.com/photo-1559253664-ca249d4608c6?w=400',
+      'https://images.unsplash.com/photo-1559253664-ca249d4608c6?w=400',
+      'https://images.unsplash.com/photo-1559253664-ca249d4608c6?w=400',
+      'https://images.unsplash.com/photo-1559253664-ca249d4608c6?w=400',
+      'https://images.unsplash.com/photo-1559253664-ca249d4608c6?w=400'
+    ],
+    timestamp: '2024-01-14T20:00:00Z',
+    likes: 178,
+    comments: 38
+  },
+  {
+    id: 9,
+    type: 'questionnaire',
+    author: {
+      id: 9,
+      username: 'community_poll',
+      avatar: '/frog.png'
+    },
+    content: 'How often do you visit frog habitats?',
+    question: 'How often do you visit frog habitats?',
+    options: [
+      { id: 1, text: 'Daily', votes: 12 },
+      { id: 2, text: 'Weekly', votes: 45 },
+      { id: 3, text: 'Monthly', votes: 67 },
+      { id: 4, text: 'Rarely', votes: 34 }
+    ],
+    totalVotes: 158,
+    timestamp: '2024-01-14T18:30:00Z',
+    likes: 89,
+    comments: 22
+  },
+  {
+    id: 10,
+    type: 'text',
+    author: {
+      id: 10,
+      username: 'frog_advocate',
+      avatar: '/frog.png'
+    },
+    content: 'Remember to always respect wildlife and their habitats when observing frogs. Never remove them from their natural environment! 🌿',
+    timestamp: '2024-01-14T17:00:00Z',
+    likes: 312,
+    comments: 67
+  }
+];

@@ -1,0 +1,94 @@
+/* QuestionnairePost Styles */
+.post-questionnaire {
+  padding: 16px;
+}
+
+.question-title {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a202c;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.option-button {
+  width: 100%;
+  padding: 12px 16px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.option-button:hover:not(:disabled) {
+  border-color: #cbd5e0;
+  background-color: #f7fafc;
+}
+
+.option-button:disabled {
+  cursor: not-allowed;
+}
+
+.option-button.selected {
+  border-color: #667eea;
+  background-color: #f7fafc;
+}
+
+.option-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.option-text {
+  font-size: 14px;
+  color: #2d3748;
+  font-weight: 500;
+}
+
+.vote-results {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.vote-percentage {
+  font-size: 14px;
+  font-weight: 600;
+  color: #4a5568;
+  min-width: 40px;
+  text-align: right;
+}
+
+.vote-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  background-color: rgba(102, 126, 234, 0.1);
+  transition: width 0.3s ease;
+  z-index: 0;
+}
+
+.option-button.selected .vote-bar {
+  background-color: rgba(102, 126, 234, 0.2);
+}
+
+.total-votes {
+  margin-top: 16px;
+  font-size: 12px;
+  color: #718096;
+  text-align: right;
+}

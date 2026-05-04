@@ -1,0 +1,159 @@
+/* PostCreator Styles */
+.post-creator {
+  margin-bottom: 24px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.post-type-selector {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.post-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 15px;
+  resize: vertical;
+  transition: border-color 0.2s ease;
+}
+
+.post-textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.file-input,
+.url-input,
+.text-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.file-input:focus,
+.url-input:focus,
+.text-input:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.image-preview,
+.collage-preview {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.image-preview img,
+.image-item img,
+.collage-item img {
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.image-item,
+.collage-item {
+  position: relative;
+}
+
+.remove-image {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: #e53e3e;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.remove-image:hover {
+  background-color: #c53030;
+}
+
+.options-label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #2d3748;
+  font-size: 14px;
+}
+
+.option-input-group {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.option-input-group .text-input {
+  flex: 1;
+}
+
+.remove-option {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background-color: #e53e3e;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease;
+}
+
+.remove-option:hover {
+  background-color: #c53030;
+}
+
+.add-option-btn {
+  margin-top: 8px;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+@media (max-width: 768px) {
+  .post-type-selector {
+    flex-direction: column;
+  }
+
+  .post-type-selector button {
+    width: 100%;
+  }
+
+  .image-preview img,
+  .collage-item img {
+    width: 150px;
+    height: 150px;
+  }
+}
