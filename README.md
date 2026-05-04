@@ -1,13 +1,22 @@
-# SlopIt
+# SlopIt Monorepo
 
-Reddit-inspired social network with a 3-level random feed algorithm.
+This repository now uses a split layout for independent Fly.io deployments.
 
-## Quick start
+## Structure
 
-```bash
+- backend: Django API/backend project
+- frontend: future frontend app (separate Fly.io project)
+
+## Backend
+
+```powershell
+cd backend
 uv pip install -e ".[dev]"
 python src/slopit/manage.py migrate
 python src/slopit/manage.py runserver
 ```
 
-See `docs/` for the full architecture documentation.
+## Deploy
+
+- Backend deploy config: backend/fly.toml
+- GitHub Actions deploy workflow uses backend/fly.toml

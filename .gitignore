@@ -73,3 +73,8 @@ memory-bank/
 Thumbs.db
 desktop.ini
 /PLAN.md
+/mcp_debug.log
+/.coverage
+/.pytest_cache
+/.ruff_cache
+/.venv

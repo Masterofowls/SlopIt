@@ -9,6 +9,9 @@ on:
 jobs:
   lint-typecheck-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
 
     services:
       postgres:
@@ -30,7 +33,7 @@ jobs:
       DJANGO_DEBUG: "True"
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/slopit_test
       # No REDIS_URL — RQ runs with IS_ASYNC=False when REDIS_URL is absent
-      PYTHONPATH: src/slopit
+      PYTHONPATH: backend/src/slopit
 
     steps:
       - uses: actions/checkout@v4
