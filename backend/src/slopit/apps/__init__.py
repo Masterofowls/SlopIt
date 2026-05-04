@@ -1,1 +1,0 @@
-"""SlopIt apps package."""
