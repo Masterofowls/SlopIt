@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import LoginForm from "../features/auth/components/LoginForm";
 import FrogBackground from "../components/ToxicBackground";
@@ -8,7 +8,8 @@ import "./LoginPage.css";
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { session, isPending, error } = useSession();
+  const { session, isPending, error, refreshSession } = useSession();
+  const retryRef = useRef(false);
   const params = new URLSearchParams(location.search);
   const oauthError = params.get("error") || params.get("auth_error");
   const bannerState = location.state;
@@ -72,6 +73,21 @@ const LoginPage = () => {
       });
     }
   }, [isPending, session, navigate]);
+
+  useEffect(() => {
+    if (retryRef.current || isPending || session || oauthError) {
+      return;
+    }
+
+    retryRef.current = true;
+
+    const timer = setTimeout(() => {
+      console.debug("[auth] LoginPage:forced-refresh-after-delay");
+      refreshSession(true);
+    }, 900);
+
+    return () => clearTimeout(timer);
+  }, [isPending, session, oauthError, refreshSession]);
 
   const bannerStyle =
     banner?.type === "success"

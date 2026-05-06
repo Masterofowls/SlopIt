@@ -6,7 +6,7 @@ const isLocalFrontend = ["localhost", "127.0.0.1"].includes(
 
 const defaultApiOrigin = isLocalFrontend
   ? "http://127.0.0.1:8000"
-  : "https://slopit-api.fly.dev";
+  : window.location.origin;
 
 const envApiOrigin = import.meta.env.VITE_API_ORIGIN?.trim();
 const envApiBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
@@ -73,10 +73,21 @@ export async function getProviders() {
 // and redirects back to FRONTEND_URL. The app then calls getSession()
 // to hydrate auth state.
 
-export function loginWithProvider(providerId) {
-  const oauthUrl = `${API_ORIGIN}/accounts/${providerId}/login/`;
+export function loginWithProvider(providerId, providerLoginUrl) {
+  let oauthUrl = `${API_ORIGIN}/accounts/${providerId}/login/`;
+
+  if (providerLoginUrl?.trim()) {
+    try {
+      const parsed = new URL(providerLoginUrl.trim());
+      oauthUrl = `${window.location.origin}${parsed.pathname}${parsed.search}`;
+    } catch {
+      oauthUrl = providerLoginUrl.trim();
+    }
+  }
+
   console.info("[auth] loginWithProvider:redirect", {
     providerId,
+    providerLoginUrl,
     oauthUrl,
     currentUrl: window.location.href,
   });
