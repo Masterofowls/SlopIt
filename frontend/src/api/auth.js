@@ -14,15 +14,46 @@ const pointsToLocalBackend = (value) =>
   /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/i.test(value ?? "") ||
   /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/api\/v1$/i.test(value ?? "");
 
+const isInsecureHttpUrl = (value) => {
+  if (!value) {
+    return false;
+  }
+
+  try {
+    const parsed = new URL(value, window.location.origin);
+    return (
+      parsed.protocol === "http:" &&
+      window.location.protocol === "https:" &&
+      !isLocalFrontend
+    );
+  } catch {
+    return false;
+  }
+};
+
+const shouldUseEnvApiOrigin =
+  Boolean(envApiOrigin) &&
+  !(pointsToLocalBackend(envApiOrigin) && !isLocalFrontend) &&
+  !isInsecureHttpUrl(envApiOrigin);
+
 const API_ORIGIN =
-  envApiOrigin && !(pointsToLocalBackend(envApiOrigin) && !isLocalFrontend)
-    ? envApiOrigin
-    : defaultApiOrigin;
+  shouldUseEnvApiOrigin ? envApiOrigin : defaultApiOrigin;
+
+const shouldUseEnvApiBaseUrl =
+  Boolean(envApiBaseUrl) &&
+  !(pointsToLocalBackend(envApiBaseUrl) && !isLocalFrontend) &&
+  !isInsecureHttpUrl(envApiBaseUrl);
 
 const BASE =
-  envApiBaseUrl && !(pointsToLocalBackend(envApiBaseUrl) && !isLocalFrontend)
-    ? envApiBaseUrl
-    : `${API_ORIGIN}/api/v1`;
+  shouldUseEnvApiBaseUrl ? envApiBaseUrl : `${API_ORIGIN}/api/v1`;
+
+if ((envApiOrigin && !shouldUseEnvApiOrigin) || (envApiBaseUrl && !shouldUseEnvApiBaseUrl)) {
+  console.warn("[auth] Ignoring insecure API env URL on HTTPS page", {
+    envApiOrigin,
+    envApiBaseUrl,
+    resolvedBaseUrl: BASE,
+  });
+}
 
 const client = axios.create({
   baseURL: BASE,
