@@ -1,0 +1,35 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - frontend
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/deploy-frontend.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-frontend-branch
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy frontend to Fly.io
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: frontend
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup flyctl
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Deploy frontend
+        run: flyctl deploy --remote-only --config fly.toml
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
