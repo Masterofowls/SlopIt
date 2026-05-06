@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import PostFactory from './PostFactory';
-import './PostFeed.css';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import PostFactory from "./PostFactory";
+import "./PostFeed.css";
 
 const PostFeed = ({ posts, onLoadMore, hasMore = true }) => {
   const [visiblePosts, setVisiblePosts] = useState([]);
@@ -14,14 +14,13 @@ const PostFeed = ({ posts, onLoadMore, hasMore = true }) => {
 
     setLoading(true);
 
-    // Simulate API delay
     setTimeout(() => {
-      const startIndex = page * 10;
-      const endIndex = startIndex + 10;
+      const startIndex = page * 5;
+      const endIndex = startIndex + 5;
       const newPosts = posts.slice(startIndex, endIndex);
 
-      setVisiblePosts(prev => [...prev, ...newPosts]);
-      setPage(prev => prev + 1);
+      setVisiblePosts((prev) => [...prev, ...newPosts]);
+      setPage((prev) => prev + 1);
       setLoading(false);
 
       if (onLoadMore) {
@@ -30,7 +29,6 @@ const PostFeed = ({ posts, onLoadMore, hasMore = true }) => {
     }, 500);
   }, [page, loading, hasMore, posts, onLoadMore]);
 
-  // Intersection Observer for infinite scroll
   useEffect(() => {
     observerRef.current = new IntersectionObserver(
       (entries) => {

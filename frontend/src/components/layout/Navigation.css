@@ -1,14 +1,14 @@
-/* Navigation Styles */
 .navigation {
   position: sticky;
-  top: 0;
-  background: white;
+  margin: 0;
+  background: rgb(3, 26, 0);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 1000;
+  border-bottom: 1px solid #006d2d;
 }
 
 .nav-container {
-  max-width: 1200px;
+  max-width: 90%;
   margin: 0 auto;
   padding: 12px 20px;
   display: flex;
@@ -27,7 +27,7 @@
   margin: 0;
   font-size: 24px;
   font-weight: 700;
-  color: #667eea;
+  color: #09ff00;
 }
 
 .nav-user {
@@ -66,8 +66,8 @@
 .logout-button,
 .login-button {
   padding: 8px 16px;
-  background: #667eea;
-  color: white;
+  background: #00ff15;
+  color: rgb(3, 17, 1);
   border: none;
   border-radius: 6px;
   font-size: 14px;
@@ -78,7 +78,7 @@
 
 .logout-button:hover,
 .login-button:hover {
-  background: #5568d3;
+  background: #11cc00;
 }
 
 @media (max-width: 768px) {

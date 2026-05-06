@@ -1,10 +1,16 @@
-/* PostCreator Styles */
 .post-creator {
-  margin-bottom: 24px;
-  background: white;
+  margin: 2% auto;
+  background: rgb(0, 255, 1);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  top: 0;
+  left: 0;
+  align-self: center;
+}
+
+.card {
+  background: #1a5c00;
 }
 
 .post-type-selector {
@@ -21,7 +27,7 @@
 .post-textarea {
   width: 100%;
   padding: 12px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #1eff00;
   border-radius: 8px;
   font-family: inherit;
   font-size: 15px;
@@ -31,7 +37,7 @@
 
 .post-textarea:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #1a5c00;
 }
 
 .file-input,
@@ -39,7 +45,7 @@
 .text-input {
   width: 100%;
   padding: 10px 12px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #15ff00;
   border-radius: 8px;
   font-size: 14px;
   transition: border-color 0.2s ease;
@@ -49,7 +55,7 @@
 .url-input:focus,
 .text-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #09ff00;
 }
 
 .image-preview,
@@ -82,7 +88,7 @@
   height: 24px;
   border-radius: 50%;
   background-color: #e53e3e;
-  color: white;
+  color: rgb(3, 0, 0);
   border: none;
   cursor: pointer;
   font-size: 18px;

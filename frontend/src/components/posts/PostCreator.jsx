@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
-import Button from '../ui/Button';
-import Card from '../ui/Card';
-import './PostCreator.css';
+import React, { useState } from "react";
+import Button from "../ui/Button";
+import Card from "../ui/Card";
+import "./PostCreator.css";
 
 const PostCreator = ({ onCreatePost }) => {
-  const [postType, setPostType] = useState('text');
-  const [content, setContent] = useState('');
+  const [postType, setPostType] = useState("text");
+  const [content, setContent] = useState("");
   const [images, setImages] = useState([]);
-  const [videoUrl, setVideoUrl] = useState('');
-  const [question, setQuestion] = useState('');
-  const [options, setOptions] = useState(['', '']);
+  const [videoUrl, setVideoUrl] = useState("");
+  const [question, setQuestion] = useState("");
+  const [options, setOptions] = useState(["", ""]);
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
-    const newImages = files.map(file => URL.createObjectURL(file));
+    const newImages = files.map((file) => URL.createObjectURL(file));
     setImages([...images, ...newImages]);
   };
 
@@ -22,7 +22,7 @@ const PostCreator = ({ onCreatePost }) => {
   };
 
   const handleAddOption = () => {
-    setOptions([...options, '']);
+    setOptions([...options, ""]);
   };
 
   const handleRemoveOption = (index) => {
@@ -46,19 +46,19 @@ const PostCreator = ({ onCreatePost }) => {
       timestamp: new Date().toISOString(),
     };
 
-    if (postType === 'image' && images.length > 0) {
+    if (postType === "image" && images.length > 0) {
       if (images.length === 1) {
         postData.imageUrl = images[0];
       } else {
         postData.images = images;
       }
-    } else if (postType === 'video') {
+    } else if (postType === "video") {
       postData.videoUrl = videoUrl;
       postData.thumbnailUrl = videoUrl; // In real app, this would be a separate thumbnail
-    } else if (postType === 'questionnaire') {
+    } else if (postType === "questionnaire") {
       postData.question = question;
       postData.options = options
-        .filter(opt => opt.trim())
+        .filter((opt) => opt.trim())
         .map((opt, index) => ({ id: index + 1, text: opt, votes: 0 }));
       postData.totalVotes = 0;
     }
@@ -66,53 +66,53 @@ const PostCreator = ({ onCreatePost }) => {
     onCreatePost(postData);
 
     // Reset form
-    setContent('');
+    setContent("");
     setImages([]);
-    setVideoUrl('');
-    setQuestion('');
-    setOptions(['', '']);
+    setVideoUrl("");
+    setQuestion("");
+    setOptions(["", ""]);
   };
 
   return (
-    <Card className="post-creator">
+    <div className="post-creator">
       <form onSubmit={handleSubmit}>
         <div className="post-type-selector">
           <Button
             type="button"
-            variant={postType === 'text' ? 'primary' : 'outline'}
+            variant={postType === "text" ? "primary" : "outline"}
             size="small"
-            onClick={() => setPostType('text')}
+            onClick={() => setPostType("text")}
           >
             Text
           </Button>
           <Button
             type="button"
-            variant={postType === 'image' ? 'primary' : 'outline'}
+            variant={postType === "image" ? "primary" : "outline"}
             size="small"
-            onClick={() => setPostType('image')}
+            onClick={() => setPostType("image")}
           >
             Image
           </Button>
           <Button
             type="button"
-            variant={postType === 'video' ? 'primary' : 'outline'}
+            variant={postType === "video" ? "primary" : "outline"}
             size="small"
-            onClick={() => setPostType('video')}
+            onClick={() => setPostType("video")}
           >
             Video
           </Button>
 
           <Button
             type="button"
-            variant={postType === 'questionnaire' ? 'primary' : 'outline'}
+            variant={postType === "questionnaire" ? "primary" : "outline"}
             size="small"
-            onClick={() => setPostType('questionnaire')}
+            onClick={() => setPostType("questionnaire")}
           >
             Poll
           </Button>
         </div>
 
-        {postType === 'text' && (
+        {postType === "text" && (
           <div className="form-group">
             <textarea
               value={content}
@@ -125,7 +125,7 @@ const PostCreator = ({ onCreatePost }) => {
           </div>
         )}
 
-        {postType === 'image' && (
+        {postType === "image" && (
           <>
             <div className="form-group">
               <textarea
@@ -165,7 +165,7 @@ const PostCreator = ({ onCreatePost }) => {
           </>
         )}
 
-        {postType === 'video' && (
+        {postType === "video" && (
           <>
             <div className="form-group">
               <textarea
@@ -189,9 +189,7 @@ const PostCreator = ({ onCreatePost }) => {
           </>
         )}
 
-
-
-        {postType === 'questionnaire' && (
+        {postType === "questionnaire" && (
           <>
             <div className="form-group">
               <textarea
@@ -254,7 +252,7 @@ const PostCreator = ({ onCreatePost }) => {
           </Button>
         </div>
       </form>
-    </Card>
+    </div>
   );
 };
 

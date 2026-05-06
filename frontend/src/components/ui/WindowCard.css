@@ -1,0 +1,86 @@
+.window-card {
+  background: rgba(0, 20, 0, 0.85);
+  border: 2px solid #00ff00;
+  border-radius: 8px;
+  box-shadow: 8px 8px 0px rgba(0, 255, 0, 0.2);
+  padding: 0;
+  overflow: hidden;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.window-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 12px 12px 0px rgba(0, 255, 0, 0.4);
+  border-color: #ccff00;
+}
+
+.window-header {
+  background: #003300;
+  padding: 8px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid #00ff00;
+}
+
+.window-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.window-btn {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.window-btn::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 8px;
+  color: rgba(0, 0, 0, 0.6);
+  font-weight: bold;
+}
+
+.window-btn.close {
+  background-color: #ff0055;
+  border-color: #ff0055;
+}
+
+.window-btn.min {
+  background-color: #ccff00;
+  border-color: #ccff00;
+}
+
+.window-btn.max {
+  background-color: #00f0ff;
+  border-color: #00f0ff;
+}
+
+.window-title {
+  color: #ccff00;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.window-body {
+  padding: 24px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
