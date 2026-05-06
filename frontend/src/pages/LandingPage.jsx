@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useSession } from "../hooks/useSession.js";
 import Button from "../components/ui/Button";
 import ToxicBackground from "../components/ToxicBackground.jsx";
-import WindowCard from "../components/ui/WindowCard.jsx"; // Import the new component
 import "./LandingPage.css";
 
 const LandingPage = () => {
@@ -13,7 +12,7 @@ const LandingPage = () => {
     "you're a pleb",
     "slopit or dropit",
     "the",
-    "6767676767676767",
+    "67676767676767676",
     "i guess we really are... slopit",
     "t-thank you... slop it...",
     "you dont deserve good things",
@@ -22,9 +21,6 @@ const LandingPage = () => {
     "#freeXXXtentacion",
     "first slopcoded website",
     "man oh man am I hungry",
-    "kuplinov games",
-    "click here to download sexy minecraft Luna skin",
-    "frogjuice",
     "Also try Minecraft!",
     "Or maybe Terraria?",
     "Hello sloprld",
@@ -42,6 +38,33 @@ const LandingPage = () => {
     "W slop",
     "epilepsy warning as you can see",
     "Just slop it!",
+    "Some posts may lead to nuclear war!",
+    "100% sugar free",
+    "Ai is guilty",
+    "Sleepy",
+    "Straight to the slop",
+    "Bon appétit!",
+    "IM RGB!",
+    "Slop 2 soon",
+    "CRIME SCENE * DO NOT ENTER",
+    "Caution wet web",
+    "Mind your posts",
+    "Boo!",
+    "Warning! Thanks for the warning!",
+    "This message is blocked in your country",
+    "Your ad could have been here",
+    "Memes",
+    "Give me money",
+    "Congrats! You found the easter egg!",
+    "To the Earth!",
+    "Z",
+    "Wow",
+    "since 2026",
+    "Post something",
+    "Afk",
+    "404 slop not found",
+    "Real",
+    "Your connection is unstable or am i trippin?"
   ];
 
   // Calculate random index ONCE when component function runs
@@ -69,29 +92,64 @@ const LandingPage = () => {
       <div className="landing-container">
         <div className="landing-content">
           <div className="landing-header">
-            <h1 className="landing-title">welcome to slop.it</h1>
+            <h1 className="landing-title">Welcome to SlopIt</h1>
             <p className="landing-subtitle">{randomSubtitle}</p>
           </div>
 
           <div className="landing-features">
-            <WindowCard
-              title="sys_action.exe"
-              icon=":3"
-              heading="eat endless supply of slop"
-              text="we don't care when it was posted, consume it like the pleb you are"
-            />
-            <WindowCard
-              title="connect_share.dat"
-              icon=">->"
-              heading="post your own stuff"
-              text="basically ur either like the piggy or the guy who feeds the piggies"
-            />
-            <WindowCard
-              title="time_travel.sys"
-              icon=":0"
-              heading="reuse old content"
-              text="making new stuff is hard and noone does it anyways"
-            />
+            <div className="window-card">
+              <div className="window-header">
+                <div className="window-controls">
+                  <div className="window-btn close"></div>
+                  <div className="window-btn min"></div>
+                  <div className="window-btn max"></div>
+                </div>
+                <div className="window-title">sys_action.exe</div>
+              </div>
+              <div className="window-body">
+                <div className="feature-icon">:3</div>
+                <h3>eat endless supply of slop</h3>
+                <p>
+                  we don't care when it was posted, consume it like the pleb you
+                  are
+                </p>
+              </div>
+            </div>
+
+            <div className="window-card">
+              <div className="window-header">
+                <div className="window-controls">
+                  <div className="window-btn close"></div>
+                  <div className="window-btn min"></div>
+                  <div className="window-btn max"></div>
+                </div>
+                <div className="window-title">connect_share.dat</div>
+              </div>
+              <div className="window-body">
+                <div className="feature-icon">{">->"}</div>
+                <h3>post your own stuff</h3>
+                <p>
+                  basically ur either like the piggy or the guy who feeds the
+                  piggies
+                </p>
+              </div>
+            </div>
+
+            <div className="window-card">
+              <div className="window-header">
+                <div className="window-controls">
+                  <div className="window-btn close"></div>
+                  <div className="window-btn min"></div>
+                  <div className="window-btn max"></div>
+                </div>
+                <div className="window-title">time_travel.sys</div>
+              </div>
+              <div className="window-body">
+                <div className="feature-icon">:0</div>
+                <h3>reuse old content</h3>
+                <p>making new stuff is hard and noone does it anyways</p>
+              </div>
+            </div>
           </div>
 
           <div className="landing-actions">
