@@ -56,8 +56,13 @@ export async function getSession() {
 export async function getProviders() {
   try {
     const { data } = await client.get("/auth/providers/");
+    console.debug("[auth] getProviders:success", {
+      count: data.providers?.length ?? 0,
+      providerIds: (data.providers ?? []).map((provider) => provider.id),
+    });
     return data.providers ?? [];
-  } catch {
+  } catch (error) {
+    console.error("[auth] getProviders:error", error);
     return [];
   }
 }
@@ -69,7 +74,13 @@ export async function getProviders() {
 // to hydrate auth state.
 
 export function loginWithProvider(providerId) {
-  window.location.href = `${API_ORIGIN}/accounts/${providerId}/login/`;
+  const oauthUrl = `${API_ORIGIN}/accounts/${providerId}/login/`;
+  console.info("[auth] loginWithProvider:redirect", {
+    providerId,
+    oauthUrl,
+    currentUrl: window.location.href,
+  });
+  window.location.href = oauthUrl;
 }
 
 // ─── Logout ───────────────────────────────────────────────────────────────────
