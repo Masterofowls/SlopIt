@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Button from "../ui/Button";
 import Card from "../ui/Card";
 import "./PostCreator.css";
+import WindowCard from "../ui/WindowCard";
 
 const PostCreator = ({ onCreatePost }) => {
   const [postType, setPostType] = useState("text");
@@ -75,6 +76,65 @@ const PostCreator = ({ onCreatePost }) => {
 
   return (
     <div className="post-creator">
+      <div className="radioactive-fog-container">
+        <svg
+          className="fog-svg fog-1"
+          viewBox="0 0 1920 600"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            className="fog-outline"
+            d="M0,300 Q200,250 400,300 T800,300 T1200,300 T1600,300 T1920,300"
+            fill="none"
+            stroke="#00ff00"
+            strokeWidth="4"
+          />
+          <path
+            className="fog-fill"
+            d="M0,300 Q200,250 400,300 T800,300 T1200,300 T1600,300 T1920,300 L1920,600 L0,600 Z"
+            fill="rgba(0,255,0,0.2)"
+          />
+        </svg>
+        <svg
+          className="fog-svg fog-2"
+          viewBox="0 0 1920 600"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            className="fog-outline"
+            d="M0,350 Q250,280 500,350 T1000,350 T1500,350 T1920,350"
+            fill="none"
+            stroke="#00ff00"
+            strokeWidth="4"
+          />
+          <path
+            className="fog-fill"
+            d="M0,350 Q250,280 500,350 T1000,350 T1500,350 T1920,350 L1920,600 L0,600 Z"
+            fill="rgba(0,255,100,0.15)"
+          />
+        </svg>
+        <svg
+          className="fog-svg fog-3"
+          viewBox="0 0 1920 600"
+          preserveAspectRatio="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            className="fog-outline"
+            d="M0,280 Q300,220 600,280 T1200,280 T1800,280 T1920,280"
+            fill="none"
+            stroke="#00ff00"
+            strokeWidth="4"
+          />
+          <path
+            className="fog-fill"
+            d="M0,280 Q300,220 600,280 T1200,280 T1800,280 T1920,280 L1920,600 L0,600 Z"
+            fill="rgba(100,255,0,0.1)"
+          />
+        </svg>
+      </div>
       <form onSubmit={handleSubmit}>
         <div className="post-type-selector">
           <Button
@@ -83,7 +143,7 @@ const PostCreator = ({ onCreatePost }) => {
             size="small"
             onClick={() => setPostType("text")}
           >
-            Text
+            <img src="../../../dist/icons/text.png" className="icon"></img>
           </Button>
           <Button
             type="button"
@@ -91,7 +151,7 @@ const PostCreator = ({ onCreatePost }) => {
             size="small"
             onClick={() => setPostType("image")}
           >
-            Image
+            <img src="../../../dist/icons/image.png" className="icon"></img>
           </Button>
           <Button
             type="button"
@@ -99,7 +159,7 @@ const PostCreator = ({ onCreatePost }) => {
             size="small"
             onClick={() => setPostType("video")}
           >
-            Video
+            <img src="../../../dist/icons/video.png" className="icon"></img>
           </Button>
 
           <Button
@@ -108,7 +168,7 @@ const PostCreator = ({ onCreatePost }) => {
             size="small"
             onClick={() => setPostType("questionnaire")}
           >
-            Poll
+            <img src="../../../dist/icons/poll.png" className="icon"></img>
           </Button>
         </div>
 

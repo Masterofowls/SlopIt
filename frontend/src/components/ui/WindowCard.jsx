@@ -1,7 +1,7 @@
-import React from "react";
+import React, { Children } from "react";
 import "./WindowCard.css";
 
-const WindowCard = ({ title, icon, heading, text }) => {
+const WindowCard = ({ title, className, children }) => {
   return (
     <div className="window-card">
       <div className="window-header">
@@ -12,11 +12,7 @@ const WindowCard = ({ title, icon, heading, text }) => {
         </div>
         <div className="window-title">{title}</div>
       </div>
-      <div className="window-body">
-        <div className="feature-icon">{icon}</div>
-        <h3>{heading}</h3>
-        <p>{text}</p>
-      </div>
+      <div className="window-body">{children}</div>
     </div>
   );
 };

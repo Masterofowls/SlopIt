@@ -4,19 +4,9 @@
   border-radius: 8px;
   box-shadow: 8px 8px 0px rgba(0, 255, 0, 0.2);
   padding: 0;
-  overflow: hidden;
-  transition:
-    transform 0.2s ease,
-    box-shadow 0.2s ease;
   display: flex;
   flex-direction: column;
   height: 100%;
-}
-
-.window-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 12px 12px 0px rgba(0, 255, 0, 0.4);
-  border-color: #ccff00;
 }
 
 .window-header {

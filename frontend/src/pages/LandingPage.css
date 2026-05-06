@@ -71,12 +71,6 @@
   height: 100%;
 }
 
-.window-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 12px 12px 0px rgba(0, 255, 0, 0.4);
-  border-color: #ccff00;
-}
-
 .window-header {
   background: #003300;
   padding: 8px 12px;
