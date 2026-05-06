@@ -8,7 +8,7 @@ import "./LandingPage.css";
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { data: session, isPending } = useSession();
+  const { session, isPending } = useSession();
   const randomSubtitles = [
     "you're a pleb",
     "slopit or dropit",
@@ -19,7 +19,7 @@ const LandingPage = () => {
     "you dont deserve good things",
     "come get your slop lmao",
     "look upon me, ye mighty",
-    "#freeXXXtentacionXXX",
+    "#freeXXXtentacion",
     "first slopcoded website",
     "man oh man am I hungry",
     "kuplinov games",
@@ -44,6 +44,7 @@ const LandingPage = () => {
     "Just slop it!",
   ];
 
+  // Calculate random index ONCE when component function runs
   const [randomSubtitle] = useState(() => {
     const randomIndex = Math.floor(Math.random() * randomSubtitles.length);
     return randomSubtitles[randomIndex];
@@ -51,11 +52,9 @@ const LandingPage = () => {
 
   useEffect(() => {
     if (!isPending && session) {
-      navigate("/home", { replace: true });
-    }
-  }, [session, isPending, navigate]);
-  useEffect(() => {
-    if (!isPending && session) {
+      console.info("[auth] LandingPage:session-present-redirect-home", {
+        username: session?.user?.username,
+      });
       navigate("/home", { replace: true });
     }
   }, [session, isPending, navigate]);
@@ -103,14 +102,6 @@ const LandingPage = () => {
               className="landing-button"
             >
               Get Started
-            </Button>
-            <Button
-              variant="outline"
-              size="large"
-              onClick={() => navigate("/signup")}
-              className="landing-button"
-            >
-              Create Account
             </Button>
           </div>
         </div>

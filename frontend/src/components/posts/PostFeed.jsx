@@ -9,8 +9,6 @@ const PostFeed = ({ posts, onLoadMore, hasMore = true }) => {
   const observerRef = useRef(null);
   const lastPostRef = useRef(null);
 
-  const loadMore = {};
-
   const loadMorePosts = useCallback(() => {
     if (loading || !hasMore) return;
 
@@ -46,7 +44,7 @@ const PostFeed = ({ posts, onLoadMore, hasMore = true }) => {
         observerRef.current.disconnect();
       }
     };
-  }, [loadMore, loading, hasMore]);
+  }, [loadMorePosts, loading, hasMore]);
 
   // Observe the last post element
   useEffect(() => {

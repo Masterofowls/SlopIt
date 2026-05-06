@@ -94,7 +94,14 @@ export default function AuthButtons() {
         return (
           <button
             key={p.id}
-            onClick={() => loginWithProvider(p.id)}
+            onClick={() => {
+              console.info("[auth] AuthButtons:provider-click", {
+                providerId: p.id,
+                providerName: p.name,
+                loginUrl: p.login_url,
+              });
+              loginWithProvider(p.id, p.login_url);
+            }}
             style={{
               ...BASE_BUTTON_STYLE,
               background: style.background,

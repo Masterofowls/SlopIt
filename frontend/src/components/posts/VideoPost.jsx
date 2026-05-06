@@ -1,9 +1,16 @@
-import React, { useState } from 'react';
-import Post from './Post';
-import './VideoPost.css';
+import React, { useState, useRef, useEffect } from "react";
+import Post from "./Post";
+import "./VideoPost.css";
 
 const VideoPost = ({ post }) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (isPlaying && videoRef.current && post.videoUrl) {
+      videoRef.current.src = post.videoUrl;
+    }
+  }, [isPlaying, post.videoUrl]);
 
   const handlePlay = () => {
     setIsPlaying(true);
@@ -13,16 +20,11 @@ const VideoPost = ({ post }) => {
     <Post post={post}>
       <div className="post-video-container">
         {isPlaying ? (
-          <video 
-            className="post-video"
-            controls
-            autoPlay
-            src={post.videoUrl}
-          />
+          <video ref={videoRef} className="post-video" controls autoPlay />
         ) : (
           <div className="video-thumbnail" onClick={handlePlay}>
-            <img 
-              src={post.thumbnailUrl} 
+            <img
+              src={post.thumbnailUrl}
               alt="Video thumbnail"
               className="thumbnail-image"
             />
