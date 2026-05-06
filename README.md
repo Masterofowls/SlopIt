@@ -20,3 +20,6 @@ python src/slopit/manage.py runserver
 
 - Backend deploy config: backend/fly.toml
 - GitHub Actions deploy workflow uses backend/fly.toml
+
+TODO:
+Add attribution: <a href='https://pngtree.com/freepng/radioactive-icon_8539687.html'>png image from pngtree.com/</a>

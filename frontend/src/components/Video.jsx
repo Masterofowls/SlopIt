@@ -14,7 +14,7 @@ export default function Video({ src, isMuted }) {
       refVideo.current.muted = true;
     }
 
-    refVideo.current.srcObject = src;
+    refVideo.current.src = src;
   }, [src]);
 
   return (

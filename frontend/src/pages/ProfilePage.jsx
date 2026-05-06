@@ -1,12 +1,12 @@
-import React from 'react';
-import useAuth from '../features/auth/hooks/useAuth';
-import Button from '../components/ui/Button';
-import Card from '../components/ui/Card';
-import './ProfilePage.css';
-import '../components/FrogBackground'
-import FrogBackground from '../components/FrogBackground';
-import authService from '../features/auth/services/authService';
-import { useEffect } from 'react';
+import React from "react";
+import useAuth from "../features/auth/hooks/useAuth";
+import Button from "../components/ui/Button";
+import Card from "../components/ui/Card";
+import "./ProfilePage.css";
+import "../components/ToxicBackground";
+import FrogBackground from "../components/ToxicBackground";
+import authService from "../features/auth/services/authService";
+import { useEffect } from "react";
 
 const ProfilePage = () => {
   const { user, logout } = useAuth();
@@ -21,19 +21,21 @@ const ProfilePage = () => {
 
   const handleLogout = () => {
     logout();
-    window.location.href = '/login';
+    window.location.href = "/login";
   };
 
   if (!user) {
     return (
       <div className="page profile-page">
         <Card className="profile-card">
-          <p style={
-            {
+          <p
+            style={{
               color: "black",
-            }
-          }>Please log in to view your profile.</p>
-          <Button onClick={() => window.location.href = '/login'}>
+            }}
+          >
+            Please log in to view your profile.
+          </p>
+          <Button onClick={() => (window.location.href = "/login")}>
             Go to Login
           </Button>
         </Card>
@@ -55,11 +57,13 @@ const ProfilePage = () => {
             <div className="profile-info">
               <h2 className="profile-name">{user.name}</h2>
               <p className="profile-email">{user.email}</p>
-                        <p style={
-            {
-              color: "black",
-            }
-          }>Это мок! В useeffect измени фигню чтобы показывался юзер</p>
+              <p
+                style={{
+                  color: "black",
+                }}
+              >
+                Это мок! В useeffect измени фигню чтобы показывался юзер
+              </p>
               <div className="profile-details">
                 <div className="detail-item">
                   <span className="detail-label">User ID:</span>

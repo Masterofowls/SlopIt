@@ -1,14 +1,39 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSession } from "../hooks/useSession.js";
 import Button from "../components/ui/Button";
-import FrogBackground from "../components/FrogBackground";
+import ToxicBackground from "../components/ToxicBackground.jsx";
 import "./LandingPage.css";
 
 const LandingPage = () => {
   const navigate = useNavigate();
   const { data: session, isPending } = useSession();
+  const randomSubtitles = [
+    "you're a pleb",
+    "slopit or dropit",
+    "the",
+    "67676767676767676",
+    "i guess we really are... slopit",
+    "t-thank you... slop it...",
+    "you dont deserve good things",
+    "come get your slop lmao",
+    "look upon me, ye mighty",
+    "#freeXXXtentacionXXX",
+    "first slopcoded website",
+    "man oh man am I hungry",
+  ];
 
+  // Calculate random index ONCE when component function runs
+  const [randomSubtitle] = useState(() => {
+    const randomIndex = Math.floor(Math.random() * randomSubtitles.length);
+    return randomSubtitles[randomIndex];
+  });
+
+  useEffect(() => {
+    if (!isPending && session) {
+      navigate("/home", { replace: true });
+    }
+  }, [session, isPending, navigate]);
   useEffect(() => {
     if (!isPending && session) {
       navigate("/home", { replace: true });
@@ -21,34 +46,67 @@ const LandingPage = () => {
 
   return (
     <div className="landing-page">
-      <FrogBackground />
+      <ToxicBackground />
       <div className="landing-container">
         <div className="landing-content">
           <div className="landing-header">
             <h1 className="landing-title">Welcome to SlopIt</h1>
-            <p className="landing-subtitle">
-              It doesn't matter when it was posted, it's now right here, for
-              you.
-            </p>
+            <p className="landing-subtitle">{randomSubtitle}</p>
           </div>
 
           <div className="landing-features">
-            <div className="feature-card">
-              <div className="feature-icon">🐸</div>
-              <h3>Jump Into Action</h3>
-              <p>
-                Explore a world of possibilities with our intuitive platform
-              </p>
+            <div className="window-card">
+              <div className="window-header">
+                <div className="window-controls">
+                  <div className="window-btn close"></div>
+                  <div className="window-btn min"></div>
+                  <div className="window-btn max"></div>
+                </div>
+                <div className="window-title">sys_action.exe</div>
+              </div>
+              <div className="window-body">
+                <div className="feature-icon">:3</div>
+                <h3>eat endless supply of slop</h3>
+                <p>
+                  we don't care when it was posted, consume it like the pleb you
+                  are
+                </p>
+              </div>
             </div>
-            <div className="feature-card">
-              <div className="feature-icon">💬</div>
-              <h3>Connect & Share</h3>
-              <p>Share your thoughts and connect with like-minded people</p>
+
+            <div className="window-card">
+              <div className="window-header">
+                <div className="window-controls">
+                  <div className="window-btn close"></div>
+                  <div className="window-btn min"></div>
+                  <div className="window-btn max"></div>
+                </div>
+                <div className="window-title">connect_share.dat</div>
+              </div>
+              <div className="window-body">
+                <div className="feature-icon">{">->"}</div>
+                <h3>post your own stuff</h3>
+                <p>
+                  basically ur either like the piggy or the guy who feeds the
+                  piggies
+                </p>
+              </div>
             </div>
-            <div className="feature-card">
-              <div className="feature-icon">⏱️</div>
-              <h3>Travel through time...</h3>
-              <p>Who knows where you might end up!</p>
+
+            <div className="window-card">
+              <div className="window-header">
+                <div className="window-controls">
+                  <div className="window-btn close"></div>
+                  <div className="window-btn min"></div>
+                  <div className="window-btn max"></div>
+                </div>
+                <div className="window-title">time_travel.sys</div>
+              </div>
+              <div className="window-body">
+                <div className="feature-icon">:0</div>
+                <h3>reuse old content</h3>
+                <p>making new stuff is hard and noone does it anyways</p>
+              </div>
             </div>
           </div>
 

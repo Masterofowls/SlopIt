@@ -4,7 +4,7 @@ import { signUp } from "../../../lib/auth-client";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import Card from "../../../components/ui/Card";
-import FrogBackground from "../../../components/FrogBackground";
+import FrogBackground from "../../../components/ToxicBackground";
 import AuthButtons from "../../../components/auth/auth_buttons";
 import "../../../pages/SignupPage.css";
 

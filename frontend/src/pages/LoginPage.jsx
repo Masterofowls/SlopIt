@@ -1,7 +1,7 @@
-import React from 'react';
-import LoginForm from '../features/auth/components/LoginForm';
-import FrogBackground from '../components/FrogBackground';
-import './LoginPage.css';
+import React from "react";
+import LoginForm from "../features/auth/components/LoginForm";
+import FrogBackground from "../components/ToxicBackground";
+import "./LoginPage.css";
 
 const LoginPage = () => {
   return (
