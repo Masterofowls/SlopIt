@@ -60,17 +60,12 @@ const client = axios.create({
   withCredentials: true,
 });
 
-// ─── CSRF ─────────────────────────────────────────────────────────────────────
-
 export async function fetchCsrf() {
   const { data } = await client.get("/auth/csrf/");
   const token = data.csrfToken;
   client.defaults.headers.common["X-CSRFToken"] = token;
   return token;
 }
-
-// ─── Session ──────────────────────────────────────────────────────────────────
-// Returns: { authenticated: bool, user: null | { id, username, profile: {...} } }
 
 export async function getSession() {
   try {
@@ -81,8 +76,6 @@ export async function getSession() {
   }
 }
 
-// ─── Providers ────────────────────────────────────────────────────────────────
-// Returns: [ { id: 'google'|'github'|'telegram', name: string, login_url: string } ]
 
 export async function getProviders() {
   try {
@@ -98,11 +91,6 @@ export async function getProviders() {
   }
 }
 
-// ─── OAuth login ──────────────────────────────────────────────────────────────
-// Redirect the full page to the backend OAuth entry point.
-// After the OAuth callback AllAuth sets an HttpOnly session cookie
-// and redirects back to FRONTEND_URL. The app then calls getSession()
-// to hydrate auth state.
 
 export function loginWithProvider(providerId, providerLoginUrl) {
   let oauthUrl = `${API_ORIGIN}/accounts/${providerId}/login/`;
@@ -125,7 +113,6 @@ export function loginWithProvider(providerId, providerLoginUrl) {
   window.location.href = oauthUrl;
 }
 
-// ─── Logout ───────────────────────────────────────────────────────────────────
 
 export async function logout() {
   await fetchCsrf();

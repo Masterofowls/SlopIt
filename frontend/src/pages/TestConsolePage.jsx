@@ -132,6 +132,74 @@ const TESTS = [
     },
   },
 
+  // ── OAuth flow ───────────────────────────────────────────────────────────────
+
+  {
+    id: "oauth-callback-domain",
+    group: "OAuth",
+    label: "Provider login_url routes through the frontend (no cross-domain session split)",
+    async run() {
+      const { data } = await client.get("/auth/providers/");
+      const providers = data.providers ?? [];
+      if (providers.length === 0) return "SKIP — no providers configured";
+
+      const frontendOrigin = window.location.origin;
+      const issues = [];
+
+      for (const p of providers) {
+        const url = p.login_url ?? "";
+        // Absolute URLs must share the frontend origin so the session cookie
+        // is on the same domain as the OAuth callback.
+        if (url.startsWith("http")) {
+          const parsed = new URL(url);
+          if (parsed.origin !== frontendOrigin) {
+            issues.push(
+              `${p.id}: login_url origin ${parsed.origin} ≠ frontend origin ${frontendOrigin}`,
+            );
+          }
+        }
+        // Relative URLs are fine — they'll be fetched from the frontend origin.
+      }
+
+      if (issues.length > 0) {
+        throw new Error(
+          `OAuth session domain mismatch detected — the session cookie will be set on ` +
+          `${frontendOrigin} but the OAuth callback may use a different domain, causing ` +
+          `"Third-Party Login Failure". Fix: register callback URLs with ${frontendOrigin}/accounts/<provider>/login/callback/. ` +
+          `Details: ${issues.join("; ")}`,
+        );
+      }
+
+      return `${providers.length} provider(s) login_url OK — all relative or same-origin`;
+    },
+  },
+
+  {
+    id: "oauth-callback-reachable",
+    group: "OAuth",
+    label: "Frontend proxies /accounts/ (OAuth callback route is reachable)",
+    async run() {
+      const t = Date.now();
+      // Hitting /accounts/ directly will 404 or redirect, but it must NOT
+      // return an nginx "no upstream" error (502/503) — that would mean the
+      // proxy block for /accounts/ is missing.
+      try {
+        await axios.get(window.location.origin + "/accounts/", {
+          maxRedirects: 0,
+          validateStatus: (s) => s < 500,
+        });
+      } catch (err) {
+        // axios throws on redirect when maxRedirects=0; that's fine
+        if (!err.response) throw err;
+        assert(
+          err.response.status < 500,
+          `/accounts/ returned ${err.response.status} — nginx may not be proxying this path`,
+        );
+      }
+      return `proxy block reachable (${ms(t)})`;
+    },
+  },
+
   // ── Frontend routing ─────────────────────────────────────────────────────────
 
   {
