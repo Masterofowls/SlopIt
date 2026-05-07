@@ -82,3 +82,4 @@ desktop.ini
 /.ruff_cache
 /.venv
 /backend/.playwright/
+/frontend/node_modules
