@@ -1,24 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useSession } from "../../hooks/useSession.js";
+import { UserButton, SignInButton, useAuth } from "@clerk/clerk-react";
 import "./Navigation.css";
 
 const Navigation = () => {
   const navigate = useNavigate();
-  const { session, logout } = useSession();
-
-  const handleProfileClick = () => {
-    navigate("/profile");
-  };
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate("/");
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
+  const { isSignedIn, isLoaded } = useAuth();
 
   return (
     <nav className="navigation">
@@ -30,21 +17,14 @@ const Navigation = () => {
         <div>placeholder for search tab</div>
 
         <div className="nav-user">
-          {session?.user ? (
-            <>
-              <div className="user-info" onClick={handleProfileClick}>
-                <img src="/frog.png" alt="Profile" className="user-avatar" />
-                <span className="username">{session.user.username}</span>
-              </div>
-              <button onClick={handleLogout} className="logout-button">
-                Logout
-              </button>
-            </>
-          ) : (
-            <button onClick={() => navigate("/login")} className="login-button">
-              Login
-            </button>
-          )}
+          {isLoaded &&
+            (isSignedIn ? (
+              <UserButton afterSignOutUrl="/" />
+            ) : (
+              <SignInButton mode="modal">
+                <button className="login-button">Login</button>
+              </SignInButton>
+            ))}
         </div>
       </div>
     </nav>

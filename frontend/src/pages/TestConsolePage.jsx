@@ -1,202 +1,99 @@
 import React, { useState, useCallback } from "react";
 import axios from "axios";
+import { useAuth } from "@clerk/clerk-react";
 import "./TestConsolePage.css";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-const API_BASE = `${window.location.origin}/api/v1`;
+const API_BASE = import.meta.env.VITE_API_URL || "https://slopit-api.fly.dev";
 
-const client = axios.create({ baseURL: API_BASE, withCredentials: true });
+// Unauthenticated client — used for public endpoint checks
+const publicClient = axios.create({ baseURL: `${API_BASE}/api/v1` });
 
 function ms(start) {
   return `${Date.now() - start}ms`;
 }
 
 // ── Test definitions ────────────────────────────────────────────────────────────
-// Each test: { id, group, label, run: async () => { assert(cond, msg); return summary } }
+// Each test: { id, group, label, run: async ({ getToken }) => summary string }
 
 function assert(cond, message) {
   if (!cond) throw new Error(`Assertion failed: ${message}`);
 }
 
 const TESTS = [
-  // ── API reachability ────────────────────────────────────────────────────────
+  // ── Auth mode ────────────────────────────────────────────────────────────────
 
   {
-    id: "csrf-endpoint",
-    group: "API",
-    label: "GET /auth/csrf/ returns a CSRF token",
+    id: "auth-mode-clerk",
+    group: "Auth mode",
+    label: "GET /auth/providers/ reports auth_mode = clerk",
     async run() {
       const t = Date.now();
-      const { data, status } = await client.get("/auth/csrf/");
+      const { data, status } = await publicClient.get("/auth/providers/");
       assert(status === 200, `status should be 200, got ${status}`);
       assert(
-        typeof data.csrfToken === "string" && data.csrfToken.length > 0,
-        "csrfToken should be a non-empty string",
+        data.auth_mode === "clerk",
+        `expected auth_mode="clerk", got "${data.auth_mode}" — backend may not have migrated`,
       );
-      return `token length ${data.csrfToken.length} (${ms(t)})`;
+      return `auth_mode=${data.auth_mode} (${ms(t)})`;
     },
   },
 
+  // ── System health ────────────────────────────────────────────────────────────
+
   {
-    id: "session-endpoint",
-    group: "API",
-    label: "GET /auth/session/ returns valid shape",
+    id: "system-status",
+    group: "System",
+    label: "GET /system/status returns 200",
     async run() {
       const t = Date.now();
-      const { data, status } = await client.get("/auth/session/");
-      assert(status === 200, `status should be 200, got ${status}`);
-      assert(
-        typeof data.authenticated === "boolean",
-        "response.authenticated should be boolean",
-      );
-      return `authenticated=${data.authenticated} (${ms(t)})`;
+      const { status } = await publicClient.get("/system/status");
+      assert(status === 200, `expected 200, got ${status}`);
+      return `${ms(t)}`;
     },
   },
 
-  {
-    id: "providers-endpoint",
-    group: "API",
-    label: "GET /auth/providers/ returns an array",
-    async run() {
-      const t = Date.now();
-      const { data, status } = await client.get("/auth/providers/");
-      assert(status === 200, `status should be 200, got ${status}`);
-      assert(Array.isArray(data.providers), "providers should be an array");
-      const ids = (data.providers ?? []).map((p) => p.id).join(", ");
-      return `${data.providers.length} provider(s): ${ids || "none"} (${ms(t)})`;
-    },
-  },
+  // ── Bearer token ─────────────────────────────────────────────────────────────
 
   {
-    id: "providers-have-login-url",
-    group: "API",
-    label: "Each provider has id, name and login_url",
-    async run() {
-      const { data } = await client.get("/auth/providers/");
-      for (const p of data.providers ?? []) {
-        assert(typeof p.id === "string" && p.id, `provider.id missing`);
-        assert(
-          typeof p.name === "string" && p.name,
-          `provider.name missing (${p.id})`,
-        );
-        assert(
-          typeof p.login_url === "string" && p.login_url.startsWith("/"),
-          `provider.login_url should be a relative path (${p.id})`,
-        );
-      }
-      return `${data.providers?.length ?? 0} provider(s) all valid`;
-    },
-  },
-
-  // ── Auth / session ──────────────────────────────────────────────────────────
-
-  {
-    id: "session-user-shape",
-    group: "Auth",
-    label: "Authenticated session has user.id and user.username",
-    async run() {
-      const { data } = await client.get("/auth/session/");
-      if (!data.authenticated) {
-        return "SKIP — not authenticated";
-      }
-      assert(data.user?.id, "user.id should be set");
-      assert(
-        typeof data.user?.username === "string",
-        "user.username should be a string",
-      );
-      return `user.id=${data.user.id} username=${data.user.username}`;
-    },
-  },
-
-  {
-    id: "logout-requires-csrf",
-    group: "Auth",
-    label: "POST /auth/logout/ without CSRF returns 403",
+    id: "bearer-unauthenticated",
+    group: "Bearer auth",
+    label: "GET /me/ without token returns 401 or 403",
     async run() {
       try {
-        // Deliberately omit CSRF header
-        const bare = axios.create({ baseURL: API_BASE, withCredentials: true });
-        const { status } = await bare.post("/auth/logout/");
-        // If the server returns 200 without CSRF that's a bug, but we won't
-        // hard-fail because some backends skip CSRF for logged-out users.
-        return `server returned ${status} (CSRF may not be enforced when unauthenticated)`;
+        const { status } = await publicClient.get("/me/");
+        assert(
+          status === 401 || status === 403,
+          `expected 401/403, got ${status} — /me/ may not require auth`,
+        );
+        return `correctly returned ${status}`;
       } catch (err) {
         const status = err.response?.status;
         assert(
-          status === 403 || status === 401,
-          `expected 403/401 without CSRF, got ${status}`,
+          status === 401 || status === 403,
+          `expected 401/403, got ${status}`,
         );
         return `correctly rejected with ${status}`;
       }
     },
   },
 
-  // ── OAuth flow ───────────────────────────────────────────────────────────────
-
   {
-    id: "oauth-callback-domain",
-    group: "OAuth",
-    label: "Provider login_url routes through the frontend (no cross-domain session split)",
-    async run() {
-      const { data } = await client.get("/auth/providers/");
-      const providers = data.providers ?? [];
-      if (providers.length === 0) return "SKIP — no providers configured";
-
-      const frontendOrigin = window.location.origin;
-      const issues = [];
-
-      for (const p of providers) {
-        const url = p.login_url ?? "";
-        // Absolute URLs must share the frontend origin so the session cookie
-        // is on the same domain as the OAuth callback.
-        if (url.startsWith("http")) {
-          const parsed = new URL(url);
-          if (parsed.origin !== frontendOrigin) {
-            issues.push(
-              `${p.id}: login_url origin ${parsed.origin} ≠ frontend origin ${frontendOrigin}`,
-            );
-          }
-        }
-        // Relative URLs are fine — they'll be fetched from the frontend origin.
-      }
-
-      if (issues.length > 0) {
-        throw new Error(
-          `OAuth session domain mismatch detected — the session cookie will be set on ` +
-          `${frontendOrigin} but the OAuth callback may use a different domain, causing ` +
-          `"Third-Party Login Failure". Fix: register callback URLs with ${frontendOrigin}/accounts/<provider>/login/callback/. ` +
-          `Details: ${issues.join("; ")}`,
-        );
-      }
-
-      return `${providers.length} provider(s) login_url OK — all relative or same-origin`;
-    },
-  },
-
-  {
-    id: "oauth-callback-reachable",
-    group: "OAuth",
-    label: "Frontend proxies /accounts/ (OAuth callback route is reachable)",
-    async run() {
+    id: "bearer-authenticated",
+    group: "Bearer auth",
+    label: "GET /me/ with Clerk Bearer token returns 200",
+    async run({ getToken } = {}) {
+      if (!getToken) return "SKIP — Clerk not available in test runner";
+      const token = await getToken();
+      if (!token) return "SKIP — not signed in to Clerk";
       const t = Date.now();
-      // Hitting /accounts/ directly will 404 or redirect, but it must NOT
-      // return an nginx "no upstream" error (502/503) — that would mean the
-      // proxy block for /accounts/ is missing.
-      try {
-        await axios.get(window.location.origin + "/accounts/", {
-          maxRedirects: 0,
-          validateStatus: (s) => s < 500,
-        });
-      } catch (err) {
-        // axios throws on redirect when maxRedirects=0; that's fine
-        if (!err.response) throw err;
-        assert(
-          err.response.status < 500,
-          `/accounts/ returned ${err.response.status} — nginx may not be proxying this path`,
-        );
-      }
-      return `proxy block reachable (${ms(t)})`;
+      const { data, status } = await axios.get(`${API_BASE}/api/v1/me/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      assert(status === 200, `expected 200, got ${status}`);
+      assert(data.id || data.clerk_id, "response should include user id");
+      return `user id=${data.id || data.clerk_id} (${ms(t)})`;
     },
   },
 
@@ -219,12 +116,12 @@ const TESTS = [
   },
 
   {
-    id: "route-login",
+    id: "route-sign-in",
     group: "Routing",
-    label: "/login returns the SPA shell (200)",
+    label: "/sign-in returns the SPA shell (200)",
     async run() {
       const t = Date.now();
-      const { status } = await axios.get(window.location.origin + "/login");
+      const { status } = await axios.get(window.location.origin + "/sign-in");
       assert(status === 200, `expected 200, got ${status}`);
       return `${ms(t)}`;
     },
@@ -247,36 +144,20 @@ const TESTS = [
     },
   },
 
-  // ── Security headers ────────────────────────────────────────────────────────
+  // ── Security ──────────────────────────────────────────────────────────────────
 
   {
     id: "no-mixed-content",
     group: "Security",
-    label: "API origin matches frontend origin (no mixed content)",
+    label: "Frontend and API are both HTTPS (no mixed content)",
     async run() {
       const frontendProto = window.location.protocol;
-      // Fetch our own session to see what origin the API is on
-      const { request } = await client.get("/auth/session/");
-      const apiProto = new URL(request.responseURL).protocol;
+      const apiProto = new URL(API_BASE).protocol;
       assert(
         frontendProto === apiProto,
         `frontend is ${frontendProto} but API is ${apiProto} — mixed content`,
       );
       return `frontend=${frontendProto} api=${apiProto} ✓`;
-    },
-  },
-
-  {
-    id: "cors-credentials",
-    group: "Security",
-    label: "Session cookie is sent with credentialed requests",
-    async run() {
-      // If withCredentials works, the session endpoint should succeed without
-      // CORS preflight rejection. A 200 proves credentials are accepted.
-      const t = Date.now();
-      const { status } = await client.get("/auth/session/");
-      assert(status === 200, `expected 200, got ${status}`);
-      return `credentials accepted (${ms(t)})`;
     },
   },
 ];
@@ -307,6 +188,7 @@ function buildInitialState() {
 export default function TestConsolePage() {
   const [results, setResults] = useState(buildInitialState);
   const [running, setRunning] = useState(false);
+  const { getToken } = useAuth();
 
   const setResult = useCallback((id, patch) => {
     setResults((prev) =>
@@ -321,7 +203,7 @@ export default function TestConsolePage() {
     for (const test of TESTS) {
       setResult(test.id, { status: STATUS.RUNNING });
       try {
-        const summary = await test.run();
+        const summary = await test.run({ getToken });
         if (typeof summary === "string" && summary.startsWith("SKIP")) {
           setResult(test.id, { status: STATUS.SKIP, summary });
         } else {
@@ -336,7 +218,7 @@ export default function TestConsolePage() {
     }
 
     setRunning(false);
-  }, [setResult]);
+  }, [setResult, getToken]);
 
   const runOne = useCallback(
     async (id) => {
@@ -344,7 +226,7 @@ export default function TestConsolePage() {
       if (!test || running) return;
       setResult(id, { status: STATUS.RUNNING, summary: null, error: null });
       try {
-        const summary = await test.run();
+        const summary = await test.run({ getToken });
         if (typeof summary === "string" && summary.startsWith("SKIP")) {
           setResult(id, { status: STATUS.SKIP, summary });
         } else {
@@ -357,7 +239,7 @@ export default function TestConsolePage() {
         });
       }
     },
-    [running, setResult],
+    [running, setResult, getToken],
   );
 
   const groups = [...new Set(TESTS.map((t) => t.group))];

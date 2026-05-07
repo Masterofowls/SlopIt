@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSession } from "../hooks/useSession.js";
+import { useAuth, SignInButton } from "@clerk/clerk-react";
 import Button from "../components/ui/Button";
 import ToxicBackground from "../components/ToxicBackground.jsx";
 import "./LandingPage.css";
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { session, isPending } = useSession();
+  const { isSignedIn, isLoaded } = useAuth();
   const randomSubtitles = [
     "you're a pleb",
     "slopit or dropit",
@@ -64,7 +64,7 @@ const LandingPage = () => {
     "Afk",
     "404 slop not found",
     "Real",
-    "Your connection is unstable or am i trippin?"
+    "Your connection is unstable or am i trippin?",
   ];
 
   // Calculate random index ONCE when component function runs
@@ -74,15 +74,12 @@ const LandingPage = () => {
   });
 
   useEffect(() => {
-    if (!isPending && session) {
-      console.info("[auth] LandingPage:session-present-redirect-home", {
-        username: session?.user?.username,
-      });
+    if (isLoaded && isSignedIn) {
       navigate("/home", { replace: true });
     }
-  }, [session, isPending, navigate]);
+  }, [isSignedIn, isLoaded, navigate]);
 
-  if (isPending) {
+  if (!isLoaded) {
     return <div className="loading">Loading...</div>;
   }
 
@@ -153,14 +150,11 @@ const LandingPage = () => {
           </div>
 
           <div className="landing-actions">
-            <Button
-              variant="primary"
-              size="large"
-              onClick={() => navigate("/login")}
-              className="landing-button"
-            >
-              Get Started
-            </Button>
+            <SignInButton mode="redirect" redirectUrl="/home">
+              <Button variant="primary" size="large" className="landing-button">
+                Get Started
+              </Button>
+            </SignInButton>
           </div>
         </div>
       </div>
