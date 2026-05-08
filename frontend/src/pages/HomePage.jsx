@@ -1,45 +1,47 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useAuthContext } from "../context/AuthContext";
-import { PostCreator, PostFeed } from "../components/posts/index.js";
-import { dummyPosts } from "../config/dummyPosts.js";
+import { PostFeed } from "../components/posts/index.js";
+import PostCreateModal from "../components/posts/PostCreateModal";
+import { useProtectedApi } from "../hooks/useProtectedApi";
 import Navigation from "../components/layout/Navigation";
 import "./HomePage.css";
 
 const HomePage = () => {
   const { user: clerkUser } = useUser();
   const { telegramUser, provider } = useAuthContext();
-  const [posts, setPosts] = useState(dummyPosts);
+  const { get } = useProtectedApi();
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [feedError, setFeedError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
-  // Resolve current user from whichever auth provider is active
-  const currentUser =
-    provider === "telegram"
-      ? {
-          id: String(telegramUser?.id ?? "unknown"),
-          username:
-            telegramUser?.username || telegramUser?.firstName || "current_user",
-          avatar: telegramUser?.avatarUrl || "/frog.png",
+  // Fetch real feed on mount
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    get("/feed/?cursor=0&limit=25")
+      .then((data) => {
+        if (!cancelled) {
+          setPosts(Array.isArray(data) ? data : (data.results ?? []));
         }
-      : {
-          id: clerkUser?.id || "unknown",
-          username:
-            clerkUser?.username || clerkUser?.firstName || "current_user",
-          avatar: clerkUser?.imageUrl || "/frog.png",
-        };
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setFeedError(err?.response?.data?.detail || "Failed to load feed.");
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [get]);
 
-  const handleCreatePost = useCallback(
-    (newPost) => {
-      const postWithAuthor = {
-        ...newPost,
-        id: Date.now(),
-        author: currentUser,
-        likes: 0,
-        comments: 0,
-      };
-      setPosts((prev) => [postWithAuthor, ...prev]);
-    },
-    [currentUser],
-  );
+  const handlePostCreated = useCallback((newPost) => {
+    setPosts((prev) => [newPost, ...prev]);
+  }, []);
 
   return (
     <div className="page home-page">
@@ -104,9 +106,21 @@ const HomePage = () => {
       </div> */}
       <Navigation />
       <div className="home-container">
-        {/* <PostCreator onCreatePost={handleCreatePost} /> */}
-        <PostFeed posts={posts} />
+        <div className="home-toolbar">
+          <button className="new-post-btn" onClick={() => setShowModal(true)}>
+            + Post
+          </button>
+        </div>
+        {loading && <p className="feed-status">loading feed…</p>}
+        {feedError && <p className="feed-status feed-error">{feedError}</p>}
+        {!loading && <PostFeed posts={posts} />}
       </div>
+      {showModal && (
+        <PostCreateModal
+          onClose={() => setShowModal(false)}
+          onPostCreated={handlePostCreated}
+        />
+      )}
     </div>
   );
 };

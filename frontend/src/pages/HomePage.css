@@ -98,3 +98,43 @@ body {
 .header button {
   padding: 10px 20px;
 }
+
+/* ── Homepage toolbar ─────────────────────────────────────────────────────── */
+.home-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.new-post-btn {
+  padding: 7px 18px;
+  background: transparent;
+  border: 2px solid #00ff00;
+  border-radius: 5px;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.15s;
+}
+
+.new-post-btn:hover {
+  background: #003300;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.4);
+}
+
+/* ── Feed loading / error ─────────────────────────────────────────────────── */
+.feed-status {
+  text-align: center;
+  color: #005500;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  margin: 20px 0;
+}
+
+.feed-error {
+  color: #ff4466;
+}

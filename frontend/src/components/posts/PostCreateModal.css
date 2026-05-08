@@ -1,0 +1,248 @@
+/* ── Overlay ─────────────────────────────────────────────────────────────── */
+.pcm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+/* ── Modal window ────────────────────────────────────────────────────────── */
+.pcm-modal {
+  background: rgba(0, 20, 0, 0.97);
+  border: 2px solid #00ff00;
+  border-radius: 8px;
+  box-shadow: 8px 8px 0 rgba(0, 255, 0, 0.15),
+    0 0 40px rgba(0, 255, 0, 0.2);
+  width: 100%;
+  max-width: 640px;
+  max-height: 88vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Window chrome header ───────────────────────────────────────────────── */
+.pcm-header {
+  background: #003300;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 2px solid #00ff00;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.pcm-window-controls {
+  display: flex;
+  gap: 7px;
+}
+
+.pcm-btn {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.pcm-btn-close {
+  background: #ff0055;
+  cursor: pointer;
+}
+.pcm-btn-min  { background: #ccff00; }
+.pcm-btn-max  { background: #00f0ff; }
+
+.pcm-title {
+  color: #ccff00;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* ── Body ────────────────────────────────────────────────────────────────── */
+.pcm-body {
+  padding: 24px;
+}
+
+/* ── Form fields ─────────────────────────────────────────────────────────── */
+.pcm-field {
+  margin-bottom: 18px;
+}
+
+.pcm-label {
+  display: block;
+  color: #00cc00;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.pcm-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: #002200;
+  border: 1px solid #00aa00;
+  border-radius: 6px;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.pcm-input:focus {
+  outline: none;
+  border-color: #00ff00;
+  box-shadow: 0 0 6px rgba(0, 255, 0, 0.3);
+}
+
+.pcm-input::placeholder {
+  color: #005500;
+}
+
+/* ── Kind selector ───────────────────────────────────────────────────────── */
+.pcm-kind-row {
+  display: flex;
+  gap: 8px;
+}
+
+.pcm-kind-btn {
+  padding: 6px 18px;
+  background: transparent;
+  border: 1px solid #007700;
+  border-radius: 4px;
+  color: #00aa00;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pcm-kind-btn:hover {
+  border-color: #00ff00;
+  color: #00ff00;
+}
+
+.pcm-kind-btn.active {
+  background: #003300;
+  border-color: #00ff00;
+  color: #00ff00;
+  box-shadow: 0 0 6px rgba(0, 255, 0, 0.25);
+}
+
+/* ── Editor.js holder ────────────────────────────────────────────────────── */
+.pcm-editor-holder {
+  min-height: 160px;
+  background: #001a00;
+  border: 1px solid #00aa00;
+  border-radius: 6px;
+  padding: 10px 14px;
+  color: #ddffdd;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  transition: border-color 0.15s;
+}
+
+.pcm-editor-holder:focus-within {
+  border-color: #00ff00;
+  box-shadow: 0 0 6px rgba(0, 255, 0, 0.25);
+}
+
+/* Override EditorJS default white/light styles */
+.pcm-editor-holder .ce-block__content,
+.pcm-editor-holder .ce-toolbar__content {
+  max-width: 100% !important;
+}
+
+.pcm-editor-holder .codex-editor__redactor {
+  padding-bottom: 24px !important;
+}
+
+/* EditorJS text colour */
+.pcm-editor-holder .ce-paragraph,
+.pcm-editor-holder h2,
+.pcm-editor-holder h3,
+.pcm-editor-holder h4 {
+  color: #ccffcc;
+}
+
+.pcm-editor-holder .ce-toolbar__plus svg,
+.pcm-editor-holder .ce-toolbar__settings-btn svg {
+  color: #00ff00;
+  fill: #00ff00;
+}
+
+.pcm-editor-holder .ce-toolbox__button,
+.pcm-editor-holder .ce-settings__button {
+  color: #00ff00;
+}
+
+/* ── Error message ───────────────────────────────────────────────────────── */
+.pcm-error {
+  color: #ff4466;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  margin: 0 0 14px;
+  padding: 8px 12px;
+  background: rgba(255, 0, 50, 0.1);
+  border: 1px solid rgba(255, 0, 50, 0.4);
+  border-radius: 4px;
+}
+
+/* ── Action buttons ──────────────────────────────────────────────────────── */
+.pcm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.pcm-cancel-btn {
+  padding: 8px 20px;
+  background: transparent;
+  border: 1px solid #005500;
+  border-radius: 5px;
+  color: #007700;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pcm-cancel-btn:hover:not(:disabled) {
+  border-color: #00aa00;
+  color: #00aa00;
+}
+
+.pcm-submit-btn {
+  padding: 8px 26px;
+  background: #004400;
+  border: 1px solid #00ff00;
+  border-radius: 5px;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.pcm-submit-btn:hover:not(:disabled) {
+  background: #006600;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.pcm-submit-btn:disabled,
+.pcm-cancel-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
