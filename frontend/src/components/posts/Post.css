@@ -20,7 +20,6 @@
 
 .post-header {
   padding: 16px;
-  border-bottom: 1px solid #f0f0f0;
 }
 
 .post-author {
@@ -62,13 +61,18 @@
   color: #eeeeee;
   line-height: 1.6;
   font-size: 15px;
+  text-align: left;
+  text-indent: 2rem;
 }
 
 .post-footer {
   padding: 12px 16px;
+  width: 80%;
   display: flex;
+  justify-content: space-evenly;
+  align-items: center;
   gap: 24px;
-  border-top: 1px solid #f0f0f0;
+  justify-self: center;
 }
 
 .post-action {
@@ -104,10 +108,10 @@
     transform: scale(1);
   }
   30% {
-    transform: scale(0.8, 1.4);
+    transform: scale(0.9, 1.2);
   }
   50% {
-    transform: scale(1.4, 0.8);
+    transform: scale(1.2, 0.9);
   }
   70% {
     transform: scale(0.95, 1.05);
@@ -133,11 +137,8 @@
 }
 
 .post-action:hover {
-  animation: squish 0.9s ease-in-out;
-  scale: 1.2;
-}
-
-.post-action:active {
+  animation: squish 0.5s ease-in-out;
+  scale: 1.1;
 }
 
 .slopped-text {

@@ -70,8 +70,6 @@ const Navigation = () => {
                 },
               }}
             />
-<<<<<<< HEAD
-=======
             {/* 
             <div className="nav-auth-divider">
               <span>or</span>
@@ -99,7 +97,6 @@ const Navigation = () => {
             >
               ✕
             </button>
->>>>>>> 2a32378a726d46a79bb9e1586578f51440b2e1fc
           </div>
         </div>
       )}

@@ -43,7 +43,7 @@ const HomePage = () => {
 
   return (
     <div className="page home-page">
-      <div className="radioactive-fog-container">
+      {/* <div className="radioactive-fog-container">
         <svg
           className="fog-svg fog-1"
           viewBox="0 0 1920 600"
@@ -101,7 +101,7 @@ const HomePage = () => {
             fill="rgba(100,255,0,0.1)"
           />
         </svg>
-      </div>
+      </div> */}
       <Navigation />
       <div className="home-container">
         {/* <PostCreator onCreatePost={handleCreatePost} /> */}
