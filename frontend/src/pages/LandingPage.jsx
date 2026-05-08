@@ -57,7 +57,6 @@ const LandingPage = () => {
     "Give me money",
     "Congrats! You found the easter egg!",
     "To the Earth!",
-    "Z",
     "Wow",
     "since 2026",
     "Post something",
