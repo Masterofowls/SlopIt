@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth, SignInButton } from "@clerk/clerk-react";
+import { useAuth } from "@clerk/clerk-react";
 import Button from "../components/ui/Button";
 import ToxicBackground from "../components/ToxicBackground.jsx";
 import "./LandingPage.css";
@@ -150,11 +150,14 @@ const LandingPage = () => {
           </div>
 
           <div className="landing-actions">
-            <SignInButton mode="redirect" redirectUrl="/home">
-              <Button variant="primary" size="large" className="landing-button">
-                Get Started
-              </Button>
-            </SignInButton>
+            <Button
+              variant="primary"
+              size="large"
+              className="landing-button"
+              onClick={() => navigate("/login")}
+            >
+              Get Started
+            </Button>
           </div>
         </div>
       </div>
