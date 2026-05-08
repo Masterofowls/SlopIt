@@ -63,6 +63,17 @@
   font-size: 14px;
 }
 
+.nav-telegram-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-telegram-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #09ff00;
+}
 .logout-button,
 .login-button {
   padding: 8px 16px;

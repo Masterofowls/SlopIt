@@ -6,10 +6,14 @@ import AuthPage from "./pages/AuthPage";
 import TestConsolePage from "./pages/TestConsolePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import DebugToolbar from "./components/debug/DebugToolbar";
+import { AuthProvider } from "./context/AuthContext";
+import { useClerkInterceptor } from "./lib/api";
 
-function App() {
+function InnerApp() {
+  useClerkInterceptor();
+
   return (
-    <BrowserRouter>
+    <>
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<AuthPage />} />
@@ -33,6 +37,16 @@ function App() {
         <Route path="/tests" element={<TestConsolePage />} />
       </Routes>
       <DebugToolbar />
+    </>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <InnerApp />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

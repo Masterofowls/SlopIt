@@ -86,3 +86,58 @@
 .auth-page-card .cl-rootBox {
   width: 100% !important;
 }
+
+/* ── Telegram button ─────────────────────────────────────────────────────── */
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 16px 8px;
+  color: #00aa00;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(0, 255, 0, 0.25);
+}
+
+.auth-telegram-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: calc(100% - 32px);
+  margin: 0 16px 16px;
+  padding: 10px 16px;
+  background: rgba(0, 119, 181, 0.15);
+  border: 1px solid #0088cc;
+  border-radius: 4px;
+  color: #5bb8f5;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  letter-spacing: 0.3px;
+}
+
+.auth-telegram-btn:hover {
+  background: rgba(0, 136, 204, 0.25);
+  border-color: #5bb8f5;
+}
+
+.auth-telegram-btn:active {
+  background: rgba(0, 136, 204, 0.35);
+}
+
+.auth-telegram-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}

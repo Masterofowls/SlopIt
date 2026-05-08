@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuthContext } from "../context/AuthContext";
 import Button from "../components/ui/Button";
 import ToxicBackground from "../components/ToxicBackground.jsx";
 import "./LandingPage.css";
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { isSignedIn, isLoaded } = useAuth();
+  const { isAuthenticated, isLoading } = useAuthContext();
   const randomSubtitles = [
     "you're a pleb",
     "slopit or dropit",
@@ -73,12 +73,12 @@ const LandingPage = () => {
   });
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) {
+    if (!isLoading && isAuthenticated) {
       navigate("/home", { replace: true });
     }
-  }, [isSignedIn, isLoaded, navigate]);
+  }, [isAuthenticated, isLoading, navigate]);
 
-  if (!isLoaded) {
+  if (isLoading) {
     return <div className="loading">Loading...</div>;
   }
 
