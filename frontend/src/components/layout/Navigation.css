@@ -63,17 +63,6 @@
   font-size: 14px;
 }
 
-.nav-telegram-user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.nav-telegram-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #09ff00;
-}
 .logout-button,
 .login-button {
   padding: 8px 16px;
@@ -164,46 +153,7 @@
   width: 100% !important;
 }
 
-.nav-auth-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 4px 16px 8px;
-  color: #00aa00;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 12px;
-}
 
-.nav-auth-divider::before,
-.nav-auth-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #004400;
-}
-
-.nav-telegram-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  width: calc(100% - 32px);
-  margin: 0 16px;
-  padding: 10px 16px;
-  background: #003d82;
-  color: #fff;
-  border: 1px solid #2196f3;
-  border-radius: 4px;
-  font-family: 'Courier New', Courier, monospace;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.nav-telegram-btn:hover {
-  background: #0056b3;
-}
 
 /* ── Auth Debug Panel ────────────────────────────────────────────────────── */
 

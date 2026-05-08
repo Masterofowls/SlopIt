@@ -2,33 +2,19 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserButton, SignIn } from "@clerk/clerk-react";
 import { useAuthContext } from "../../context/AuthContext";
-import { navigateToUrl } from "../../lib/navigate";
 import "./Navigation.css";
-
-const API_URL = import.meta.env.VITE_API_URL || "https://slopit-api.fly.dev";
 
 const Navigation = () => {
   const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
-  const {
-    isAuthenticated,
-    isLoading,
-    provider,
-    telegramUser,
-    authLogs,
-    logout,
-  } = useAuthContext();
+  const { isAuthenticated, isLoading, authLogs, logout } = useAuthContext();
 
   // Close the modal as soon as auth succeeds (handles the case where we're
   // already on /home so afterSignInUrl navigation is a no-op).
   React.useEffect(() => {
     if (isAuthenticated) setShowAuthModal(false);
   }, [isAuthenticated]);
-
-  function handleTelegramLogin() {
-    navigateToUrl(`${API_URL}/accounts/telegram/login/`);
-  }
 
   function renderUserArea() {
     if (isLoading) return null;
@@ -39,20 +25,7 @@ const Navigation = () => {
         </button>
       );
     }
-    if (provider === "clerk") {
-      return <UserButton afterSignOutUrl="/" />;
-    }
-    // Telegram session
-    return (
-      <div className="nav-telegram-user">
-        <span className="nav-telegram-name">
-          {telegramUser?.firstName || telegramUser?.username || "User"}
-        </span>
-        <button className="logout-button" onClick={logout}>
-          Logout
-        </button>
-      </div>
-    );
+    return <UserButton afterSignOutUrl="/" />;
   }
 
   return (
@@ -105,26 +78,6 @@ const Navigation = () => {
                 },
               }}
             />
-
-            <div className="nav-auth-divider">
-              <span>or</span>
-            </div>
-
-            <button
-              className="nav-telegram-btn"
-              onClick={handleTelegramLogin}
-              type="button"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-                style={{ width: 20, height: 20, flexShrink: 0 }}
-              >
-                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
-              </svg>
-              Continue with Telegram
-            </button>
           </div>
         </div>
       )}
@@ -141,12 +94,6 @@ const Navigation = () => {
           <div className="auth-debug-state">
             <strong>isLoading:</strong> {String(isLoading)} &nbsp;
             <strong>isAuthenticated:</strong> {String(isAuthenticated)} &nbsp;
-            <strong>provider:</strong> {provider ?? "null"} &nbsp;
-            {telegramUser && (
-              <span>
-                <strong>tg:</strong> {telegramUser.username || telegramUser.id}
-              </span>
-            )}
           </div>
           <div className="auth-debug-logs">
             {(authLogs ?? []).length === 0 && (
