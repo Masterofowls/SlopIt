@@ -88,7 +88,7 @@ const LandingPage = () => {
       <div className="landing-container">
         <div className="landing-content">
           <div className="landing-header">
-            <h1 className="landing-title">Welcome to SlopIt</h1>
+            <h1 className="landing-title">welcome to slopit</h1>
             <p className="landing-subtitle">{randomSubtitle}</p>
           </div>
 
@@ -100,7 +100,7 @@ const LandingPage = () => {
                   <div className="window-btn min"></div>
                   <div className="window-btn max"></div>
                 </div>
-                <div className="window-title">sys_action.exe</div>
+                <div className="window-title">sloppenheimer.net</div>
               </div>
               <div className="window-body">
                 <div className="feature-icon">:3</div>
@@ -119,7 +119,7 @@ const LandingPage = () => {
                   <div className="window-btn min"></div>
                   <div className="window-btn max"></div>
                 </div>
-                <div className="window-title">connect_share.dat</div>
+                <div className="window-title">mmmh_sloppalicious.com</div>
               </div>
               <div className="window-body">
                 <div className="feature-icon">{">->"}</div>
@@ -138,7 +138,7 @@ const LandingPage = () => {
                   <div className="window-btn min"></div>
                   <div className="window-btn max"></div>
                 </div>
-                <div className="window-title">time_travel.sys</div>
+                <div className="window-title">sloppinator.fun</div>
               </div>
               <div className="window-body">
                 <div className="feature-icon">:0</div>
