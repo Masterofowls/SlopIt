@@ -16,71 +16,6 @@
   width: 20px;
 }
 
-.radioactive-fog-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  pointer-events: none;
-  z-index: -1;
-  overflow: hidden;
-}
-
-.fog-svg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 200%;
-  height: 100%;
-  filter: drop-shadow(0 0 10px rgba(0, 255, 0, 0.5));
-}
-
-.fog-outline {
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  animation: pulse-outline 2s ease-in-out infinite;
-}
-
-.fog-fill {
-  filter: blur(8px);
-}
-
-.fog-1 {
-  animation: scroll-fog 30s linear infinite;
-}
-
-.fog-2 {
-  animation: scroll-fog 40s linear infinite reverse;
-  opacity: 0.8;
-}
-
-.fog-3 {
-  animation: scroll-fog 50s linear infinite;
-  opacity: 0.6;
-}
-
-@keyframes scroll-fog {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-@keyframes pulse-outline {
-  0%,
-  100% {
-    stroke-opacity: 1;
-    stroke-width: 4px;
-  }
-  50% {
-    stroke-opacity: 0.7;
-    stroke-width: 3px;
-  }
-}
-
 .window-card {
   background: rgba(0, 20, 0, 0.85);
   border: 2px solid #00ff00;
@@ -94,10 +29,6 @@
 
 Button {
   background-color: #1a5c00;
-}
-
-.card {
-  background: #1a5c00;
 }
 
 .post-type-selector {
