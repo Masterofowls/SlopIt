@@ -2,33 +2,19 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserButton, SignIn } from "@clerk/clerk-react";
 import { useAuthContext } from "../../context/AuthContext";
-import { navigateToUrl } from "../../lib/navigate";
 import "./Navigation.css";
-
-const API_URL = import.meta.env.VITE_API_URL || "https://slopit-api.fly.dev";
 
 const Navigation = () => {
   const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
-  const {
-    isAuthenticated,
-    isLoading,
-    provider,
-    telegramUser,
-    authLogs,
-    logout,
-  } = useAuthContext();
+  const { isAuthenticated, isLoading, authLogs, logout } = useAuthContext();
 
   // Close the modal as soon as auth succeeds (handles the case where we're
   // already on /home so afterSignInUrl navigation is a no-op).
   React.useEffect(() => {
     if (isAuthenticated) setShowAuthModal(false);
   }, [isAuthenticated]);
-
-  function handleTelegramLogin() {
-    navigateToUrl(`${API_URL}/accounts/telegram/login/`);
-  }
 
   function renderUserArea() {
     if (isLoading) return null;
@@ -39,20 +25,7 @@ const Navigation = () => {
         </button>
       );
     }
-    if (provider === "clerk") {
-      return <UserButton afterSignOutUrl="/" />;
-    }
-    // Telegram session
-    return (
-      <div className="nav-telegram-user">
-        <span className="nav-telegram-name">
-          {telegramUser?.firstName || telegramUser?.username || "User"}
-        </span>
-        <button className="logout-button" onClick={logout}>
-          Logout
-        </button>
-      </div>
-    );
+    return <UserButton afterSignOutUrl="/" />;
   }
 
   return (
@@ -97,6 +70,8 @@ const Navigation = () => {
                 },
               }}
             />
+<<<<<<< HEAD
+=======
             {/* 
             <div className="nav-auth-divider">
               <span>or</span>
@@ -124,6 +99,7 @@ const Navigation = () => {
             >
               ✕
             </button>
+>>>>>>> 2a32378a726d46a79bb9e1586578f51440b2e1fc
           </div>
         </div>
       )}
@@ -140,12 +116,6 @@ const Navigation = () => {
           <div className="auth-debug-state">
             <strong>isLoading:</strong> {String(isLoading)} &nbsp;
             <strong>isAuthenticated:</strong> {String(isAuthenticated)} &nbsp;
-            <strong>provider:</strong> {provider ?? "null"} &nbsp;
-            {telegramUser && (
-              <span>
-                <strong>tg:</strong> {telegramUser.username || telegramUser.id}
-              </span>
-            )}
           </div>
           <div className="auth-debug-logs">
             {(authLogs ?? []).length === 0 && (
