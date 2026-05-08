@@ -1,4 +1,13 @@
-/* Landing Page Styles */
+@font-face {
+  font-family: "glitch-font";
+  src: url("../assets/fonts/glitch-font/GlitchDemoRegular-2Oave.ttf")
+    format("truetype");
+}
+
+body {
+  font-family: "glitch-font";
+}
+
 .landing-page {
   position: relative;
   min-height: 100vh;
