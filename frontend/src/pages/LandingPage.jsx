@@ -21,49 +21,49 @@ const LandingPage = () => {
     "#freeXXXtentacion",
     "first slopcoded website",
     "man oh man am I hungry",
-    "Also try Minecraft!",
-    "Or maybe Terraria?",
-    "Hello sloprld",
-    "ThIs MeSsAgE aPpEaRs WiTh A 4.35% cHaNcE!",
-    "Gloomy gloppy glopster",
-    "S10p1t",
-    "СлопИт",
+    "also try Minecraft",
+    "or maybe Terraria",
+    "hello sloprld",
+    "'thIs MeSsAgE aPpEaRs WiTh A 4.35% cHaNcE'",
+    "gloomy gloppy glopster",
+    "s10p1t",
+    "слопИт",
     "...",
-    "Who cares about the slop?",
-    "Fluffy slop",
-    "Black humor!",
+    "who cares about the slop",
+    "fluffy slop",
+    "black humor",
     "PARENTAL ADVISORY: explicit content",
-    "Slop it, slop it, slop it, slop it",
+    "slop it, slop it, slop it, slop it",
     "wwwwwwwwwwwwww",
-    "W slop",
+    "w slop",
     "epilepsy warning as you can see",
-    "Just slop it!",
-    "Some posts may lead to nuclear war!",
+    "just slop it!",
+    "some posts may lead to nuclear war!",
     "100% sugar free",
-    "Ai is guilty",
-    "Sleepy",
-    "Straight to the slop",
-    "Bon appétit!",
-    "IM RGB!",
-    "Slop 2 soon",
+    "ai is guilty",
+    "sleepy",
+    "straight to the slop",
+    "bon appétit",
+    "IM RGB",
+    "slop 2 soon",
     "CRIME SCENE * DO NOT ENTER",
-    "Caution wet web",
-    "Mind your posts",
-    "Boo!",
-    "Warning! Thanks for the warning!",
-    "This message is blocked in your country",
-    "Your ad could have been here",
-    "Memes",
-    "Give me money",
-    "Congrats! You found the easter egg!",
-    "To the Earth!",
-    "Wow",
+    "caution wet web",
+    "mind your posts",
+    "boo",
+    "warning... thanks for the warning",
+    "this message is blocked in your country",
+    "your ad could be here",
+    "memes",
+    "give me money",
+    "congrats! you found an easter egg",
+    "to the Earth",
+    "wow",
     "since 2026",
-    "Post something",
-    "Afk",
+    "post something",
+    "afk",
     "404 slop not found",
-    "Real",
-    "Your connection is unstable or am i trippin?",
+    "real",
+    "your connection is unstable or am i trippin",
   ];
 
   // Calculate random index ONCE when component function runs
@@ -88,7 +88,7 @@ const LandingPage = () => {
       <div className="landing-container">
         <div className="landing-content">
           <div className="landing-header">
-            <h1 className="landing-title">Welcome to SlopIt</h1>
+            <h1 className="landing-title">welcome to slopit</h1>
             <p className="landing-subtitle">{randomSubtitle}</p>
           </div>
 
@@ -100,7 +100,7 @@ const LandingPage = () => {
                   <div className="window-btn min"></div>
                   <div className="window-btn max"></div>
                 </div>
-                <div className="window-title">sys_action.exe</div>
+                <div className="window-title">sloppenheimer.net</div>
               </div>
               <div className="window-body">
                 <div className="feature-icon">:3</div>
@@ -119,7 +119,7 @@ const LandingPage = () => {
                   <div className="window-btn min"></div>
                   <div className="window-btn max"></div>
                 </div>
-                <div className="window-title">connect_share.dat</div>
+                <div className="window-title">mmmh_sloppalicious.com</div>
               </div>
               <div className="window-body">
                 <div className="feature-icon">{">->"}</div>
@@ -138,7 +138,7 @@ const LandingPage = () => {
                   <div className="window-btn min"></div>
                   <div className="window-btn max"></div>
                 </div>
-                <div className="window-title">time_travel.sys</div>
+                <div className="window-title">sloppinator.fun</div>
               </div>
               <div className="window-body">
                 <div className="feature-icon">:0</div>

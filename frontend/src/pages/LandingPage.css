@@ -1,4 +1,23 @@
-/* Landing Page Styles */
+@font-face {
+  font-family: "glitch-font";
+  src: url("../assets/fonts/glitch-font/GlitchDemoRegular-2Oave.ttf")
+    format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "glitch-font";
+  src: url("../assets/fonts/glitch-bold-font/GlitchDemoRegular-2Oave.ttf")
+    format("truetype");
+  font-weight: bold;
+  font-style: normal;
+}
+
+body {
+  font-family: "glitch-font";
+}
+
 .landing-page {
   position: relative;
   min-height: 100vh;
@@ -32,6 +51,8 @@
 
 .landing-title {
   font-size: 64px;
+  font-family: "glitch-font";
+  font-weight: bold;
   font-weight: 700;
   margin: 0 0 24px 0;
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -253,8 +274,6 @@
   }
 }
 
-/* ── Auth overlay modal ────────────────────────────────────────────────────── */
-
 .auth-overlay {
   position: fixed;
   inset: 0;
@@ -271,7 +290,9 @@
   background: #001400;
   border: 2px solid #00ff00;
   border-radius: 8px;
-  box-shadow: 0 0 40px rgba(0, 255, 0, 0.25), 8px 8px 0px rgba(0, 255, 0, 0.15);
+  box-shadow:
+    0 0 40px rgba(0, 255, 0, 0.25),
+    8px 8px 0px rgba(0, 255, 0, 0.15);
   padding: 8px;
   max-height: 90vh;
   overflow-y: auto;
@@ -290,7 +311,7 @@
   border-radius: 3px;
   cursor: pointer;
   z-index: 10;
-  font-family: 'Courier New', Courier, monospace;
+  font-family: "Courier New", Courier, monospace;
   transition: background 0.15s;
 }
 
