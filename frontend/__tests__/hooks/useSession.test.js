@@ -1,199 +1,126 @@
 /**
- * Tests for src/hooks/useSession.js
+ * Tests for useClerkInterceptor in src/lib/api.js
  *
- * The hook has module-level shared state (sharedSession, sharedFetchedAt).
- * Strategy: keep static imports (so React instance is consistent), and expire
- * the shared cache between tests by advancing a fake Date.now() clock by 10 s
- * (> 4 s TTL) in beforeEach. Tests use waitFor() for final state assertions
- * so they are not sensitive to the initial sharedSession value.
+ * Covers:
+ *  - Registers a request interceptor on the api axios instance on mount
+ *  - Ejects the interceptor on unmount (cleanup)
+ *  - Attaches Authorization: Bearer <token> header when getToken returns a token
+ *  - Does NOT add Authorization header when getToken returns null
+ *  - Re-registers when getToken reference changes (useEffect dependency)
  */
 
-import { renderHook, act, waitFor } from "@testing-library/react";
+import { renderHook } from "@testing-library/react";
 
-jest.mock("../../src/api/auth.js", () => ({
-  getSession: jest.fn(),
-  logout: jest.fn(),
+jest.mock("@clerk/clerk-react", () => ({
+  useAuth: jest.fn(),
 }));
 
-import { getSession, logout } from "../../src/api/auth.js";
-import { useSession } from "../../src/hooks/useSession.js";
-
-// Incrementing fake clock -- each test advances by 10 s to expire the 4 s cache
-let fakeNow = 1_700_000_000_000;
+import { useAuth } from "@clerk/clerk-react";
+import { api, useClerkInterceptor } from "../../src/lib/api.js";
 
 beforeEach(() => {
   jest.clearAllMocks();
-  fakeNow += 10_000; // advance past SESSION_CACHE_MS (4000 ms)
-  jest.spyOn(Date, "now").mockReturnValue(fakeNow);
-  sessionStorage.clear();
 });
 
-afterEach(() => {
-  jest.restoreAllMocks();
-  sessionStorage.clear();
-});
+// ── Interceptor lifecycle ──────────────────────────────────────────────────────
 
-// Fixtures
-const AUTHED = {
-  authenticated: true,
-  user: { id: 1, username: "alice", profile: { displayName: "Alice" } },
-};
-const UNAUTHED = { authenticated: false, user: null };
+describe("useClerkInterceptor — lifecycle", () => {
+  it("registers exactly one interceptor on mount", () => {
+    const getToken = jest.fn().mockResolvedValue(null);
+    useAuth.mockReturnValue({ getToken });
 
-// ── Authenticated flow ─────────────────────────────────────────────────────────
+    const useSpy = jest.spyOn(api.interceptors.request, "use");
+    renderHook(() => useClerkInterceptor());
 
-describe("useSession() -- authenticated flow", () => {
-  it("fetches on mount and resolves with user session", async () => {
-    getSession.mockResolvedValue(AUTHED);
-
-    const { result } = renderHook(() => useSession());
-
-    // Wait for the fetch to complete (sessionStorage is cleared in beforeEach)
-    await waitFor(() =>
-      expect(sessionStorage.getItem("auth:last_status")).toBe("success"),
-    );
-
-    expect(result.current.session).not.toBeNull();
-    expect(result.current.session.user.username).toBe("alice");
-    expect(result.current.error).toBeNull();
+    expect(useSpy).toHaveBeenCalledTimes(1);
+    useSpy.mockRestore();
   });
 
-  it("sets session to null when API returns authenticated:false", async () => {
-    getSession.mockResolvedValue(UNAUTHED);
+  it("ejects the interceptor on unmount", () => {
+    const getToken = jest.fn().mockResolvedValue(null);
+    useAuth.mockReturnValue({ getToken });
 
-    const { result } = renderHook(() => useSession());
+    let capturedId;
+    const useSpy = jest
+      .spyOn(api.interceptors.request, "use")
+      .mockImplementation((fn) => {
+        capturedId = 77;
+        return 77;
+      });
+    const ejectSpy = jest.spyOn(api.interceptors.request, "eject");
 
-    await waitFor(() =>
-      expect(sessionStorage.getItem("auth:last_status")).toBe(
-        "unauthenticated",
-      ),
-    );
+    const { unmount } = renderHook(() => useClerkInterceptor());
+    unmount();
 
-    expect(result.current.session).toBeNull();
-    expect(result.current.error).toBeNull();
-  });
-
-  it("exposes the user object with expected nested fields", async () => {
-    getSession.mockResolvedValue(AUTHED);
-
-    const { result } = renderHook(() => useSession());
-    await waitFor(() =>
-      expect(sessionStorage.getItem("auth:last_status")).toBe("success"),
-    );
-
-    expect(result.current.session.user).toMatchObject({
-      id: 1,
-      username: "alice",
-    });
-    expect(result.current.session.user.profile.displayName).toBe("Alice");
+    expect(ejectSpy).toHaveBeenCalledWith(77);
+    useSpy.mockRestore();
+    ejectSpy.mockRestore();
   });
 });
 
-// ── Error handling ─────────────────────────────────────────────────────────────
+// ── Token injection ────────────────────────────────────────────────────────────
 
-describe("useSession() -- error handling", () => {
-  it("sets error and null session when getSession throws", async () => {
-    const networkError = new Error("Network Error");
-    getSession.mockRejectedValue(networkError);
+describe("useClerkInterceptor — token injection", () => {
+  it("adds Authorization: Bearer header when getToken returns a token", async () => {
+    const getToken = jest.fn().mockResolvedValue("jwt-test-token");
+    useAuth.mockReturnValue({ getToken });
 
-    const spy = jest.spyOn(console, "error").mockImplementation(() => {});
-    const { result } = renderHook(() => useSession());
+    let capturedFn;
+    const useSpy = jest
+      .spyOn(api.interceptors.request, "use")
+      .mockImplementation((fn) => {
+        capturedFn = fn;
+        return 42;
+      });
 
-    await waitFor(() =>
-      expect(sessionStorage.getItem("auth:last_status")).toBe("error"),
-    );
+    renderHook(() => useClerkInterceptor());
 
-    expect(result.current.session).toBeNull();
-    expect(result.current.error).toBe(networkError);
-    spy.mockRestore();
-  });
-});
+    const config = { headers: {} };
+    const result = await capturedFn(config);
+    expect(result.headers["Authorization"]).toBe("Bearer jwt-test-token");
 
-// ── Cache ──────────────────────────────────────────────────────────────────────
-
-describe("useSession() -- cache", () => {
-  it("does not call getSession twice within the cache TTL", async () => {
-    // Date.now() is fixed to fakeNow for the duration of this test (by beforeEach).
-    // After the first fetch: sharedFetchedAt = fakeNow.
-    // Second render cache check: fakeNow - fakeNow = 0 < 4000 -> hit.
-    getSession.mockResolvedValue(AUTHED);
-
-    const { result: r1 } = renderHook(() => useSession());
-    await waitFor(() => expect(r1.current.isPending).toBe(false));
-
-    const callsAfterFirst = getSession.mock.calls.length; // should be 1
-
-    const { result: r2 } = renderHook(() => useSession());
-    await waitFor(() => expect(r2.current.isPending).toBe(false));
-
-    // No new getSession calls -- second render hit the cache
-    expect(getSession.mock.calls.length).toBe(callsAfterFirst);
-    expect(r2.current.session.user.username).toBe("alice");
+    useSpy.mockRestore();
   });
 
-  it("force-refresh bypasses the cache and calls getSession again", async () => {
-    getSession.mockResolvedValue(AUTHED);
+  it("does NOT add Authorization header when getToken returns null", async () => {
+    const getToken = jest.fn().mockResolvedValue(null);
+    useAuth.mockReturnValue({ getToken });
 
-    const { result } = renderHook(() => useSession());
-    await waitFor(() => expect(result.current.isPending).toBe(false));
+    let capturedFn;
+    const useSpy = jest
+      .spyOn(api.interceptors.request, "use")
+      .mockImplementation((fn) => {
+        capturedFn = fn;
+        return 42;
+      });
 
-    const callsBefore = getSession.mock.calls.length;
+    renderHook(() => useClerkInterceptor());
 
-    await act(async () => {
-      await result.current.refreshSession(true);
-    });
+    const config = { headers: {} };
+    const result = await capturedFn(config);
+    expect(result.headers["Authorization"]).toBeUndefined();
 
-    expect(getSession.mock.calls.length).toBeGreaterThan(callsBefore);
-  });
-});
-
-// ── Logout ─────────────────────────────────────────────────────────────────────
-
-describe("useSession() -- logout", () => {
-  it("clears session and calls authLogout", async () => {
-    getSession.mockResolvedValue(AUTHED);
-    logout.mockResolvedValue(undefined);
-
-    const { result } = renderHook(() => useSession());
-    await waitFor(() => expect(result.current.session).not.toBeNull());
-
-    await act(async () => {
-      await result.current.logout();
-    });
-
-    expect(result.current.session).toBeNull();
-    expect(logout).toHaveBeenCalledTimes(1);
-    expect(sessionStorage.getItem("auth:last_status")).toBe("logged_out");
-  });
-});
-
-// ── Session normalisation ──────────────────────────────────────────────────────
-
-describe("useSession() -- session normalisation", () => {
-  it("handles nested session.user structure", async () => {
-    getSession.mockResolvedValue({
-      session: { authenticated: true, user: { id: 2, username: "bob" } },
-    });
-
-    const { result } = renderHook(() => useSession());
-    await waitFor(() =>
-      expect(sessionStorage.getItem("auth:last_status")).toBe("success"),
-    );
-
-    expect(result.current.session?.user?.username).toBe("bob");
+    useSpy.mockRestore();
   });
 
-  it("handles account.user structure", async () => {
-    getSession.mockResolvedValue({
-      authenticated: true,
-      account: { user: { id: 3, username: "carol" } },
-    });
+  it("returns the config object from the interceptor", async () => {
+    const getToken = jest.fn().mockResolvedValue("tok");
+    useAuth.mockReturnValue({ getToken });
 
-    const { result } = renderHook(() => useSession());
-    await waitFor(() =>
-      expect(sessionStorage.getItem("auth:last_status")).toBe("success"),
-    );
+    let capturedFn;
+    const useSpy = jest
+      .spyOn(api.interceptors.request, "use")
+      .mockImplementation((fn) => {
+        capturedFn = fn;
+        return 42;
+      });
 
-    expect(result.current.session?.user?.username).toBe("carol");
+    renderHook(() => useClerkInterceptor());
+
+    const config = { headers: {} };
+    const result = await capturedFn(config);
+    expect(result).toBe(config);
+
+    useSpy.mockRestore();
   });
 });

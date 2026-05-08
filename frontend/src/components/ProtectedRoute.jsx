@@ -1,16 +1,11 @@
-import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "@clerk/clerk-react";
+import { useAuthContext } from "../context/AuthContext";
+import AuthPage from "../pages/AuthPage";
 
 export const ProtectedRoute = ({ children }) => {
-  const { isSignedIn, isLoaded } = useAuth();
-  const location = useLocation();
+  const { isAuthenticated, isLoading } = useAuthContext();
 
-  if (!isLoaded) return <div>Loading...</div>;
-  if (!isSignedIn) {
-    return (
-      <Navigate to="/sign-in" replace state={{ from: location.pathname }} />
-    );
-  }
+  if (isLoading) return <div>Loading...</div>;
+  if (!isAuthenticated) return <AuthPage />;
 
   return <>{children}</>;
 };
