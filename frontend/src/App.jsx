@@ -2,7 +2,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import ProfilePage from "./pages/ProfilePage";
 import LandingPage from "./pages/LandingPage";
-import AuthPage from "./pages/AuthPage";
 import TestConsolePage from "./pages/TestConsolePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import DebugToolbar from "./components/debug/DebugToolbar";
@@ -16,16 +15,7 @@ function InnerApp() {
     <>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<AuthPage />} />
-        <Route path="/login/*" element={<AuthPage />} />
-        <Route
-          path="/home"
-          element={
-            <ProtectedRoute>
-              <HomePage />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/home" element={<HomePage />} />
         <Route
           path="/profile"
           element={

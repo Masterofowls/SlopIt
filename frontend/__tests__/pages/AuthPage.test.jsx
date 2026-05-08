@@ -1,14 +1,13 @@
 /**
  * Tests for src/pages/AuthPage.jsx
  *
+ * AuthPage is a pure UI component — auth guards live in ProtectedRoute.
+ *
  * Covers:
- *  - Shows loading state (ToxicBackground + "Loading...") while isLoading=true
- *  - Does NOT render Clerk SignIn while loading
- *  - Redirects to /home when already authenticated
- *  - Renders the Clerk <SignIn> component when unauthenticated
+ *  - Renders the Clerk <SignIn> component
  *  - Renders the "or" divider
  *  - Renders the Telegram login button
- *  - Clicking Telegram button sets window.location.href to the OAuth URL
+ *  - Clicking Telegram button calls navigateToUrl with the OAuth URL
  *  - Back button renders and navigates to /
  */
 
@@ -29,24 +28,16 @@ jest.mock('../../src/lib/navigate', () => ({
   navigateToUrl: jest.fn(),
 }));
 
-jest.mock('../../src/context/AuthContext', () => ({
-  useAuthContext: jest.fn(),
-}));
-
-import { useAuthContext } from '../../src/context/AuthContext';
 import { navigateToUrl } from '../../src/lib/navigate';
 import AuthPage from '../../src/pages/AuthPage.jsx';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-function renderAuthPage({ isAuthenticated = false, isLoading = false } = {}) {
-  useAuthContext.mockReturnValue({ isAuthenticated, isLoading });
+function renderAuthPage() {
   return render(
-    <MemoryRouter initialEntries={['/login']}>
+    <MemoryRouter initialEntries={['/home']}>
       <Routes>
-        <Route path="/login" element={<AuthPage />} />
-        <Route path="/login/*" element={<AuthPage />} />
-        <Route path="/home" element={<div data-testid="home-page" />} />
+        <Route path="/home" element={<AuthPage />} />
         <Route path="/" element={<div data-testid="landing-page" />} />
       </Routes>
     </MemoryRouter>,
@@ -57,49 +48,9 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-// ── Loading state ──────────────────────────────────────────────────────────────
+// ── Render ─────────────────────────────────────────────────────────────────────
 
-describe('AuthPage — loading state', () => {
-  it('shows "Loading..." text while isLoading is true', () => {
-    renderAuthPage({ isLoading: true });
-    expect(screen.getByText(/loading/i)).toBeInTheDocument();
-  });
-
-  it('renders ToxicBackground while loading', () => {
-    renderAuthPage({ isLoading: true });
-    expect(screen.getByTestId('toxic-bg')).toBeInTheDocument();
-  });
-
-  it('does NOT render the Clerk SignIn component while loading', () => {
-    renderAuthPage({ isLoading: true });
-    expect(screen.queryByTestId('clerk-sign-in')).not.toBeInTheDocument();
-  });
-
-  it('does NOT render the Telegram button while loading', () => {
-    renderAuthPage({ isLoading: true });
-    expect(
-      screen.queryByRole('button', { name: /telegram/i }),
-    ).not.toBeInTheDocument();
-  });
-});
-
-// ── Already authenticated ──────────────────────────────────────────────────────
-
-describe('AuthPage — already authenticated', () => {
-  it('redirects to /home when isAuthenticated is true', () => {
-    renderAuthPage({ isAuthenticated: true, isLoading: false });
-    expect(screen.getByTestId('home-page')).toBeInTheDocument();
-  });
-
-  it('does not render the auth card when authenticated', () => {
-    renderAuthPage({ isAuthenticated: true, isLoading: false });
-    expect(screen.queryByTestId('clerk-sign-in')).not.toBeInTheDocument();
-  });
-});
-
-// ── Unauthenticated render ─────────────────────────────────────────────────────
-
-describe('AuthPage — unauthenticated', () => {
+describe('AuthPage — render', () => {
   it('renders the Clerk SignIn component', () => {
     renderAuthPage();
     expect(screen.getByTestId('clerk-sign-in')).toBeInTheDocument();

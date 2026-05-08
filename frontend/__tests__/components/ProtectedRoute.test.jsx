@@ -3,10 +3,9 @@
  *
  * Covers:
  *  - Shows "Loading..." while isLoading is true
- *  - Redirects to /login when isAuthenticated is false
- *  - Redirect state carries the original `from` path
+ *  - Renders AuthPage inline (at same URL) when not authenticated
  *  - Renders children when isAuthenticated is true
- *  - Does NOT navigate to login when already authenticated
+ *  - Does NOT show children when unauthenticated
  */
 
 import React from "react";
@@ -17,15 +16,17 @@ jest.mock("../../src/context/AuthContext", () => ({
   useAuthContext: jest.fn(),
 }));
 
+// Mock AuthPage so ProtectedRoute tests stay isolated from AuthPage's deps
+jest.mock("../../src/pages/AuthPage.jsx", () => ({
+  __esModule: true,
+  default: () => <div data-testid="auth-page">Auth Page</div>,
+}));
+
 import { useAuthContext } from "../../src/context/AuthContext";
 import { ProtectedRoute } from "../../src/components/ProtectedRoute.jsx";
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-/**
- * Renders ProtectedRoute inside a MemoryRouter so react-router hooks work.
- * Navigating to `/login` renders a sentinel div we can assert on.
- */
 function renderProtected({
   isAuthenticated = false,
   isLoading = false,
@@ -43,10 +44,6 @@ function renderProtected({
               <div data-testid="protected-content">Secret Content</div>
             </ProtectedRoute>
           }
-        />
-        <Route
-          path="/login"
-          element={<div data-testid="login-page">Login Page</div>}
         />
       </Routes>
     </MemoryRouter>,
@@ -72,9 +69,9 @@ describe("ProtectedRoute — loading state", () => {
 });
 
 describe("ProtectedRoute — unauthenticated", () => {
-  it("redirects to /login when not authenticated and not loading", () => {
+  it("renders AuthPage inline when not authenticated", () => {
     renderProtected({ isLoading: false, isAuthenticated: false });
-    expect(screen.getByTestId("login-page")).toBeInTheDocument();
+    expect(screen.getByTestId("auth-page")).toBeInTheDocument();
     expect(screen.queryByTestId("protected-content")).not.toBeInTheDocument();
   });
 });

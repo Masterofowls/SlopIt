@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
 import { SignIn } from "@clerk/clerk-react";
 import ToxicBackground from "../components/ToxicBackground.jsx";
-import { useAuthContext } from "../context/AuthContext";
 import { navigateToUrl } from "../lib/navigate";
 import "./AuthPage.css";
 
@@ -10,26 +9,9 @@ const API_URL = import.meta.env.VITE_API_URL || "https://slopit-api.fly.dev";
 
 const AuthPage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading } = useAuthContext();
-
-  // Already signed in (Clerk or Telegram) — skip straight to feed
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      navigate("/home", { replace: true });
-    }
-  }, [isAuthenticated, isLoading, navigate]);
 
   function handleTelegramLogin() {
     navigateToUrl(`${API_URL}/accounts/telegram/login/`);
-  }
-
-  if (isLoading) {
-    return (
-      <div className="auth-page">
-        <ToxicBackground />
-        <div className="auth-page-loading">Loading...</div>
-      </div>
-    );
   }
 
   return (
