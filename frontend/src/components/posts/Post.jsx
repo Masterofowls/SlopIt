@@ -1,11 +1,43 @@
 import React, { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import { useUser } from "@clerk/clerk-react";
 import Card from "../ui/Card";
 import CommentSection from "./CommentSection";
 import { useProtectedApi } from "../../hooks/useProtectedApi";
+import { useAuthContext } from "../../context/AuthContext";
 import "./Post.css";
+
+/**
+ * Return the best available display name for a post author.
+ * Clerk users may have their internal ID (user_xxxx) stored as `username`
+ * when no real username has been set — skip those and fall back to name fields.
+ */
+function resolveAuthorName(author) {
+  if (!author) return "anon";
+  const isClerkId = (s) =>
+    typeof s === "string" && /^user_[a-z0-9]{10,}$/i.test(s);
+
+  if (author.display_name && !isClerkId(author.display_name))
+    return author.display_name;
+  if (author.full_name && !isClerkId(author.full_name)) return author.full_name;
+
+  const nameParts = [author.first_name, author.last_name]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+  if (nameParts) return nameParts;
+
+  if (author.username && !isClerkId(author.username)) return author.username;
+  if (author.name && !isClerkId(author.name)) return author.name;
+  if (author.email) return author.email.split("@")[0];
+
+  return "anon";
+}
 
 const Post = ({ post }) => {
   const { post: apiPost } = useProtectedApi();
+  const { user: clerkUser } = useUser();
+  const { telegramUser } = useAuthContext();
   const [isAnimating, setIsAnimating] = useState(false);
   const [particles, setParticles] = useState([]);
   const [textPosition, setTextPosition] = useState({ x: 0, y: 0 });
@@ -19,9 +51,29 @@ const Post = ({ post }) => {
   const postContent = post.title
     ? { title: post.title, body: bodyText, bodyHtml, kind: post.kind }
     : { title: null, body: bodyText, bodyHtml: null, kind: "text" };
-  const authorName = post.author?.username || post.author?.name || "anon";
+
+  // Debug: log post body so images/markdown issues are visible in browser console
+  if (bodyText && bodyText.includes("![")) {
+    console.log(
+      "[Post] body_markdown with image →",
+      post.id,
+      JSON.stringify(bodyText),
+    );
+  }
+
+  const authorName = resolveAuthorName(post.author);
+
+  // Use the logged-in user's auth profile image for their own posts,
+  // since the backend may not store/return avatar_url for Clerk users.
+  const isCurrentUsersPost =
+    (clerkUser && post.author?.username === clerkUser.id) ||
+    (telegramUser && String(post.author?.id) === String(telegramUser.id));
+  const authAvatar = clerkUser?.imageUrl || telegramUser?.avatarUrl || null;
   const authorAvatar =
-    post.author?.avatar_url || post.author?.avatar || "/frog.png";
+    post.author?.avatar_url ||
+    post.author?.avatar ||
+    (isCurrentUsersPost ? authAvatar : null) ||
+    "/frog.png";
   const createdAt =
     post.created_at || post.timestamp || new Date().toISOString();
 
@@ -101,7 +153,45 @@ const Post = ({ post }) => {
             dangerouslySetInnerHTML={{ __html: postContent.bodyHtml }}
           />
         ) : postContent.body ? (
-          <p className="post-text">{postContent.body}</p>
+          <div className="post-text post-markdown">
+            <ReactMarkdown
+              components={{
+                // Open links in new tab; block navigation away
+                a: ({ href, children }) => (
+                  <a href={href} target="_blank" rel="noopener noreferrer">
+                    {children}
+                  </a>
+                ),
+                // Constrain images to the card width
+                img: ({ src, alt }) => {
+                  if (!src) return null;
+                  return (
+                    <img
+                      src={src}
+                      alt={alt || ""}
+                      className="post-md-image"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                        console.warn("[Post] Image failed to load:", src);
+                      }}
+                    />
+                  );
+                },
+                // Unwrap paragraphs that contain only an image so the img
+                // is not nested inside <p> (avoids invalid HTML + layout quirks)
+                p: ({ children }) => {
+                  const arr = React.Children.toArray(children);
+                  if (arr.length === 1 && arr[0]?.type === "img") {
+                    return <>{children}</>;
+                  }
+                  return <p>{children}</p>;
+                },
+              }}
+            >
+              {postContent.body}
+            </ReactMarkdown>
+          </div>
         ) : null}
         {postContent.kind === "link" && post.link_url && (
           <a

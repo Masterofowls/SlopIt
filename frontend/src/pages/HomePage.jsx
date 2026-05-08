@@ -4,44 +4,96 @@ import { useAuthContext } from "../context/AuthContext";
 import { PostFeed } from "../components/posts/index.js";
 import PostCreateModal from "../components/posts/PostCreateModal";
 import { useProtectedApi } from "../hooks/useProtectedApi";
+import { dummyPosts } from "../config/dummyPosts";
 import Navigation from "../components/layout/Navigation";
 import "./HomePage.css";
 
 const HomePage = () => {
   const { user: clerkUser } = useUser();
-  const { telegramUser, provider } = useAuthContext();
+  const { telegramUser, provider, isLoading: authLoading } = useAuthContext();
   const { get } = useProtectedApi();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [feedError, setFeedError] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
-  // Fetch real feed on mount
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    get("/feed/?cursor=0&limit=25")
-      .then((data) => {
-        if (!cancelled) {
-          setPosts(Array.isArray(data) ? data : (data.results ?? []));
-        }
+  /**
+   * Merge two post arrays, deduplicate by id, sort newest-first.
+   * Handles both numeric ids and string ids safely.
+   */
+  const mergePosts = useCallback((a, b) => {
+    const seen = new Set();
+    return [...a, ...b]
+      .filter((p) => {
+        const key = String(p.id);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
       })
-      .catch((err) => {
-        if (!cancelled) {
-          setFeedError(err?.response?.data?.detail || "Failed to load feed.");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
+      .sort((x, y) => {
+        const tx = new Date(x.created_at || x.timestamp || 0).getTime();
+        const ty = new Date(y.created_at || y.timestamp || 0).getTime();
+        return ty - tx;
       });
-    return () => {
-      cancelled = true;
-    };
-  }, [get]);
-
-  const handlePostCreated = useCallback((newPost) => {
-    setPosts((prev) => [newPost, ...prev]);
   }, []);
+
+  /**
+   * Fetch the social feed AND the current user's own posts, then merge them.
+   * Own posts come from GET /posts/ (the same base resource used to create).
+   * The /feed/ endpoint is typically a "following" feed that excludes self.
+   */
+  const fetchFeed = useCallback(
+    (signal) => {
+      setLoading(true);
+      setFeedError(null);
+
+      const feedReq = get("/feed/?cursor=0&limit=25").catch(() => []);
+      const ownReq = get("/posts/?ordering=-created_at&limit=25").catch(
+        () => [],
+      );
+
+      return Promise.all([feedReq, ownReq])
+        .then(([feedData, ownData]) => {
+          if (signal?.aborted) return;
+
+          const feedPosts = Array.isArray(feedData)
+            ? feedData
+            : (feedData?.results ?? []);
+          const ownPosts = Array.isArray(ownData)
+            ? ownData
+            : (ownData?.results ?? []);
+
+          const merged = mergePosts(feedPosts, ownPosts);
+          setPosts(merged.length > 0 ? merged : dummyPosts);
+        })
+        .catch((err) => {
+          if (signal?.aborted) return;
+          setFeedError(err?.response?.data?.detail || "Failed to load feed.");
+        })
+        .finally(() => {
+          if (!signal?.aborted) setLoading(false);
+        });
+    },
+    [get, mergePosts],
+  );
+
+  // Initial load — wait for auth to settle first
+  useEffect(() => {
+    if (authLoading) return;
+    const controller = new AbortController();
+    fetchFeed(controller.signal);
+    return () => controller.abort();
+  }, [fetchFeed, authLoading]);
+
+  const handlePostCreated = useCallback(
+    (newPost) => {
+      // Optimistic insert so the post appears immediately
+      setPosts((prev) => mergePosts([newPost], prev));
+      // Re-fetch in the background so the backend state is confirmed
+      fetchFeed();
+    },
+    [fetchFeed, mergePosts],
+  );
 
   return (
     <div className="page home-page">
