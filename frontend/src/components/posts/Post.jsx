@@ -15,7 +15,7 @@ import "./Post.css";
 function resolveAuthorName(author) {
   if (!author) return "anon";
   const isClerkId = (s) =>
-    typeof s === "string" && /^user_[a-z0-9]{10,}$/i.test(s);
+    typeof s === "string" && /^(clerk_)?user_[a-z0-9]{6,}/i.test(s);
 
   if (author.display_name && !isClerkId(author.display_name))
     return author.display_name;
