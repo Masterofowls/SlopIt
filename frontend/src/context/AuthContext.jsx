@@ -32,7 +32,11 @@ const AuthContext = createContext({
 });
 
 export function AuthProvider({ children }) {
-  const { isSignedIn: clerkSignedIn, isLoaded: clerkLoaded } = useUser();
+  const {
+    isSignedIn: clerkSignedIn,
+    isLoaded: clerkLoaded,
+    user: clerkUser,
+  } = useUser();
   const { signOut: clerkSignOut } = useClerk();
   const { getToken } = useAuth();
 
@@ -74,11 +78,20 @@ export function AuthProvider({ children }) {
         if (!res || cancelled) return;
         const d = res.data;
         addLog("GET /me/ success", d);
+        // Prefer Clerk's OAuth data for display — it has the real name/email
+        // from Google/GitHub. Backend profile supplements with app-specific data.
+        const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress ?? null;
+        const clerkName =
+          clerkUser?.fullName ||
+          clerkUser?.firstName ||
+          clerkUser?.username ||
+          (clerkEmail ? clerkEmail.split("@")[0] : null);
         setClerkProfile({
           username: d.username ?? null,
-          email: d.email ?? null,
-          displayName: d.display_name ?? d.username ?? null,
-          avatarUrl: d.avatar_url ?? d.social_avatar_url ?? null,
+          email: clerkEmail ?? d.email ?? null,
+          displayName: clerkName || d.display_name || null,
+          avatarUrl:
+            clerkUser?.imageUrl ?? d.avatar_url ?? d.social_avatar_url ?? null,
           bio: d.bio ?? null,
         });
       })
@@ -94,7 +107,7 @@ export function AuthProvider({ children }) {
     return () => {
       cancelled = true;
     };
-  }, [clerkLoaded, clerkSignedIn, getToken]);
+  }, [clerkLoaded, clerkSignedIn, clerkUser, getToken]);
 
   useEffect(() => {
     if (!clerkLoaded) return;

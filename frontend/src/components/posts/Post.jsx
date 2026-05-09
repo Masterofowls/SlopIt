@@ -34,7 +34,13 @@ function resolveAuthorName(author) {
 
   if (author.username && !isClerkId(author.username)) return author.username;
   if (author.name && !isClerkId(author.name)) return author.name;
-  if (author.email) return author.email.split("@")[0];
+  // Skip sentinel emails — clerk_user_XXX@no-email.local prefix is also a Clerk ID
+  if (
+    author.email &&
+    !author.email.endsWith("@no-email.local") &&
+    !isClerkId(author.email.split("@")[0])
+  )
+    return author.email.split("@")[0];
 
   return "anon";
 }

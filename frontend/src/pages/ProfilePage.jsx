@@ -6,8 +6,11 @@ import FrogBackground from "../components/ToxicBackground";
 import "./ProfilePage.css";
 
 /* ── Strip Clerk raw IDs from display names ─────────────────────────────── */
-const cleanName = (name) =>
-  name ? name.replace(/^(clerk_|k_)?user_[a-z0-9]{6,}$/i, "") || null : null;
+const isClerkId = (s) =>
+  typeof s === "string" && /^(clerk_|k_)?user_[a-z0-9]{6,}/i.test(s);
+const isSentinelEmail = (e) =>
+  !e || e.endsWith("@no-email.local") || isClerkId(e.split("@")[0]);
+const cleanName = (name) => (name && !isClerkId(name) ? name : null);
 
 const ProfilePage = () => {
   const { user, isLoaded } = useUser();
