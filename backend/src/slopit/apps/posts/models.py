@@ -21,6 +21,7 @@ _MARKDOWN_ALLOWED_TAGS = [
     "code",
     "pre",
     "a",
+    "img",
     "h1",
     "h2",
     "h3",
@@ -35,7 +36,10 @@ _MARKDOWN_ALLOWED_TAGS = [
     "th",
     "td",
 ]
-_MARKDOWN_ALLOWED_ATTRS = {"a": ["href", "rel", "title"]}
+_MARKDOWN_ALLOWED_ATTRS = {
+    "a": ["href", "rel", "title"],
+    "img": ["src", "alt", "loading"],
+}
 
 
 def _render_markdown(source: str) -> str:

@@ -37,6 +37,7 @@ class PostListSerializer(serializers.ModelSerializer):
             "kind",
             "status",
             "slug",
+            "body_markdown",
             "link_url",
             "author",
             "tags",
