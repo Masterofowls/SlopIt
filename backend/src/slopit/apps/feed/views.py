@@ -13,9 +13,11 @@ from rest_framework.viewsets import GenericViewSet
 if TYPE_CHECKING:
     from rest_framework.request import Request
 
+from django.db.models import F
+
 from apps.api.pagination import SnapshotIndexPagination
 from apps.feed.services.level3_personal import force_new_snapshot, get_or_create_snapshot
-from apps.posts.models import Post
+from apps.posts.models import Post, PostView
 from apps.posts.serializers import PostListSerializer
 
 
@@ -79,6 +81,28 @@ class FeedViewSet(GenericViewSet):
         ordered_posts = [post_map[pid] for pid in page_ids if pid in post_map]
 
         serializer = PostListSerializer(ordered_posts, many=True, context={"request": request})
+
+        # Record views for all posts on this page (deduped per user).
+        if ordered_posts:
+            if request.user.is_authenticated:
+                already_seen = set(
+                    PostView.objects.filter(
+                        user=request.user,
+                        post_id__in=[p.pk for p in ordered_posts],
+                    ).values_list("post_id", flat=True)
+                )
+                new_ids = [p.pk for p in ordered_posts if p.pk not in already_seen]
+                if new_ids:
+                    PostView.objects.bulk_create(
+                        [PostView(user=request.user, post_id=pid) for pid in new_ids],
+                        ignore_conflicts=True,
+                    )
+                    Post.objects.filter(pk__in=new_ids).update(view_count=F("view_count") + 1)
+            else:
+                Post.objects.filter(
+                    pk__in=[p.pk for p in ordered_posts],
+                ).update(view_count=F("view_count") + 1)
+
         return paginator.get_paginated_response(serializer.data)
 
     @action(
