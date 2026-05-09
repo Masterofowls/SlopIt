@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { useProtectedApi } from '../../hooks/useProtectedApi';
-import './PollPost.css';
+import React, { useState } from "react";
+import { useProtectedApi } from "../../hooks/useProtectedApi";
+import "./PollPost.css";
 
 /**
  * PollPost — renders a poll with voting.
@@ -21,7 +21,7 @@ const PollPost = ({ post }) => {
 
   const handleVote = async (idx) => {
     if (loading) return;
-    if (!post.id || String(post.id).startsWith('dummy')) return;
+    if (!post.id || String(post.id).startsWith("dummy")) return;
 
     setLoading(true);
     try {
@@ -38,25 +38,26 @@ const PollPost = ({ post }) => {
   };
 
   return (
-    <div className="poll-root">
+    <Post post={post}>
       {post.title && <p className="poll-question">{post.title}</p>}
       <ul className="poll-options">
         {options.map((opt, idx) => {
           const votes = opt.votes ?? 0;
-          const pct = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
+          const pct =
+            totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0;
           const isVoted = userVote === idx;
 
           return (
             <li key={idx} className="poll-option">
               <button
-                className={`poll-btn${isVoted ? ' poll-btn--voted' : ''}`}
+                className={`poll-btn${isVoted ? " poll-btn--voted" : ""}`}
                 onClick={() => handleVote(idx)}
                 disabled={loading}
               >
                 <span className="poll-label">{opt.text}</span>
                 <div
                   className="poll-bar"
-                  style={{ '--pct': `${pct}%` }}
+                  style={{ "--pct": `${pct}%` }}
                   aria-hidden="true"
                 />
                 <span className="poll-pct">{pct}%</span>
@@ -65,8 +66,10 @@ const PollPost = ({ post }) => {
           );
         })}
       </ul>
-      <p className="poll-total">{totalVotes} vote{totalVotes !== 1 ? 's' : ''}</p>
-    </div>
+      <p className="poll-total">
+        {totalVotes} vote{totalVotes !== 1 ? "s" : ""}
+      </p>
+    </Post>
   );
 };
 

@@ -9,6 +9,7 @@ import PostPage from "./pages/PostPage";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import { useClerkInterceptor } from "./lib/api";
+import Profile from "./pages/Profile";
 
 function InnerApp() {
   useClerkInterceptor();
@@ -28,6 +29,7 @@ function InnerApp() {
         />
         <Route path="/tests" element={<TestConsolePage />} />
         <Route path="/post/:slug" element={<PostPage />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
       <DebugToolbar />
     </>
