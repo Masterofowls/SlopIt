@@ -171,16 +171,22 @@ def get_or_create_from_clerk(claims: dict[str, Any]) -> Any:
         else (email.split("@")[0] if email else clerk_id)
     )
     username = _derive_unique_username(base)
-    user = User.objects.create(
-        username=username,
-        email=email,
+    # When Clerk provides no email use a unique sentinel so the DB unique
+    # constraint on email (which disallows blank duplicates) is satisfied.
+    email_to_store = email if email else f"clerk_{clerk_id}@no-email.local"
+    user, created = User.objects.get_or_create(
         clerk_id=clerk_id,
-        is_active=True,
-        first_name=claims.get("first_name") or "",
-        last_name=claims.get("last_name") or "",
+        defaults=dict(
+            username=username,
+            email=email_to_store,
+            is_active=True,
+            first_name=claims.get("first_name") or "",
+            last_name=claims.get("last_name") or "",
+        ),
     )
+    if created:
+        logger.info("Created Django user pk=%s for Clerk ID %s", user.pk, clerk_id)
     _sync_clerk_profile(user, claims)
-    logger.info("Created Django user pk=%s for Clerk ID %s", user.pk, clerk_id)
     return user
 
 
