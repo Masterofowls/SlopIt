@@ -62,6 +62,12 @@ class Profile(models.Model):
         related_name="profile",
         primary_key=True,
     )
+    display_name = models.CharField(
+        max_length=100,
+        blank=True,
+        default="",
+        help_text="User-set custom display name; takes priority over Clerk data.",
+    )
     bio = models.TextField(blank=True, max_length=500)
     avatar = models.ImageField(
         upload_to="avatars/",

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useUser, UserButton } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { useProtectedApi } from "../hooks/useProtectedApi";
@@ -16,7 +16,7 @@ const cleanName = (name) =>
 
 const ProfilePage = () => {
   const { user, isLoaded } = useUser();
-  const { get } = useProtectedApi();
+  const { get, patch } = useProtectedApi();
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState(null);
@@ -26,6 +26,16 @@ const ProfilePage = () => {
   const [loadingPosts, setLoadingPosts] = useState(false);
   const [loadingBookmarks, setLoadingBookmarks] = useState(false);
   const [activeTab, setActiveTab] = useState("posts");
+
+  /* ── Edit state ──────────────────────────────────────────────────────── */
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editBio, setEditBio] = useState("");
+  const [editAvatar, setEditAvatar] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(null);
+  const previewUrlRef = useRef(null);
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -83,10 +93,73 @@ const ProfilePage = () => {
 
   const cleanUsername = cleanName(profile?.username);
   const displayName =
+    profile?.display_name ||
     cleanName(user?.fullName) ||
     cleanName(user?.username) ||
     cleanUsername ||
     "ANON";
+
+  /* ── Edit helpers ────────────────────────────────────────────────────── */
+  const revokePreview = () => {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
+  };
+
+  const openEdit = () => {
+    setEditName(profile?.display_name || "");
+    setEditBio(profile?.bio || "");
+    setEditAvatar(null);
+    revokePreview();
+    setAvatarPreview(null);
+    setSaveError(null);
+    setEditing(true);
+  };
+
+  const cancelEdit = () => {
+    setEditing(false);
+    setEditAvatar(null);
+    revokePreview();
+    setAvatarPreview(null);
+  };
+
+  const onAvatarChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    revokePreview();
+    setEditAvatar(file);
+    const url = URL.createObjectURL(file);
+    previewUrlRef.current = url;
+    setAvatarPreview(url);
+  };
+
+  const saveProfile = async () => {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      let data;
+      if (editAvatar) {
+        data = new FormData();
+        data.append("display_name", editName.trim());
+        data.append("bio", editBio.trim());
+        data.append("avatar", editAvatar);
+      } else {
+        data = { display_name: editName.trim(), bio: editBio.trim() };
+      }
+      const updated = await patch("/me/", data);
+      setProfile(updated);
+      setEditing(false);
+      setEditAvatar(null);
+      revokePreview();
+      setAvatarPreview(null);
+    } catch {
+      setSaveError("Failed to save. Try again.");
+    } finally {
+      setSaving(false);
+    }
+  };
+  /* ─────────────────────────────────────────────────────────────────────── */
 
   const avatarUrl = profile?.avatar_url || user?.imageUrl || null;
   const joinYear = profile?.created_at
@@ -159,7 +232,86 @@ const ProfilePage = () => {
           <div className="pp-clerk-btn">
             <UserButton afterSignOutUrl="/" />
           </div>
+          <button
+            className="pp-edit-toggle"
+            onClick={editing ? cancelEdit : openEdit}
+          >
+            {editing ? "✕ CLOSE" : "✎ EDIT"}
+          </button>
         </div>
+
+        {/* ── Edit panel ──────────────────────────────────────────────── */}
+        {editing && (
+          <div className="pp-card pp-edit-panel">
+            <h2 className="pp-edit-title">// EDIT PROFILE</h2>
+
+            <div className="pp-edit-avatar-row">
+              <div className="pp-edit-avatar-preview">
+                {avatarPreview ? (
+                  <img src={avatarPreview} alt="preview" />
+                ) : avatarUrl ? (
+                  <img src={avatarUrl} alt="avatar" />
+                ) : (
+                  <div className="pp-edit-avatar-placeholder">
+                    {displayName.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <label className="pp-edit-upload-btn">
+                <span>CHOOSE AVATAR</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={onAvatarChange}
+                  style={{ display: "none" }}
+                />
+              </label>
+            </div>
+
+            <div className="pp-edit-field">
+              <label className="pp-edit-label">DISPLAY NAME</label>
+              <input
+                className="pp-edit-input"
+                type="text"
+                maxLength={100}
+                placeholder="Enter your display name…"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+              />
+            </div>
+
+            <div className="pp-edit-field">
+              <label className="pp-edit-label">BIO</label>
+              <textarea
+                className="pp-edit-input pp-edit-textarea"
+                maxLength={500}
+                placeholder="Tell the world about yourself…"
+                value={editBio}
+                onChange={(e) => setEditBio(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            {saveError && <p className="pp-save-error">{saveError}</p>}
+
+            <div className="pp-edit-actions">
+              <button
+                className="pp-edit-btn pp-edit-btn--primary"
+                onClick={saveProfile}
+                disabled={saving}
+              >
+                {saving ? "SAVING…" : "SAVE"}
+              </button>
+              <button
+                className="pp-edit-btn pp-edit-btn--cancel"
+                onClick={cancelEdit}
+                disabled={saving}
+              >
+                CANCEL
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ── Tab selector ────────────────────────────────────────────── */}
         <div className="pp-tabs">

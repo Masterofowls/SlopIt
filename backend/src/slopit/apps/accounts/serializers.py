@@ -19,19 +19,26 @@ class UserBriefSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_avatar_url(self, obj: User) -> str | None:
-        """Return the best available avatar URL for this user."""
+        """Return the best available avatar URL for this user.
+
+        Priority: user-uploaded avatar > social/Clerk avatar URL.
+        """
         profile = getattr(obj, "profile", None)
         if profile:
-            if profile.social_avatar_url:
-                return profile.social_avatar_url
             if profile.avatar:
                 request = self.context.get("request")
                 if request:
                     return request.build_absolute_uri(profile.avatar.url)
+            if profile.social_avatar_url:
+                return profile.social_avatar_url
         return None
 
     def get_display_name(self, obj: User) -> str | None:
-        """Return a human-readable name, never a raw Clerk user_xxx ID."""
+        """Return a human-readable name, never a raw Clerk user_xxx ID.
+
+        Priority: user-set profile.display_name > Clerk full name >
+        username > email prefix > fallback.
+        """
         import re
 
         is_clerk_id = lambda s: bool(
@@ -43,6 +50,10 @@ class UserBriefSerializer(serializers.ModelSerializer):
         is_sentinel_email = lambda e: bool(
             e and (e.endswith("@no-email.local") or is_clerk_id(e.split("@")[0]))
         )
+        # 1. User-set custom display name takes top priority
+        profile = getattr(obj, "profile", None)
+        if profile and profile.display_name:
+            return profile.display_name
         full = " ".join(filter(None, [obj.first_name, obj.last_name])).strip()
         if full:
             return full
@@ -59,7 +70,6 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     username = serializers.CharField(source="user.username", read_only=True)
     email = serializers.EmailField(source="user.email", read_only=True)
-    display_name = serializers.SerializerMethodField()
     avatar_url = serializers.SerializerMethodField()
 
     class Meta:
@@ -79,7 +89,6 @@ class ProfileSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "username",
-            "display_name",
             "email",
             "avatar_url",
             "social_avatar_url",
@@ -88,11 +97,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         ]
         extra_kwargs = {
             "avatar": {"write_only": True},
+            "display_name": {"required": False, "allow_blank": True},
         }
-
-    def get_display_name(self, obj: Profile) -> str:
-        """Delegate to UserBriefSerializer's display_name logic for consistency."""
-        return UserBriefSerializer().get_display_name(obj.user)
 
     def get_avatar_url(self, obj: Profile) -> str | None:
         request = self.context.get("request")
@@ -161,8 +167,11 @@ class PublicProfileSerializer(serializers.ModelSerializer):
         return post_likes * 2 + comment_likes
 
     def get_display_name(self, obj: Profile) -> str:
+        """Priority: user-set display_name > Clerk name > username > email prefix."""
         import re
 
+        if obj.display_name:
+            return obj.display_name
         user = obj.user
         is_clerk_id = lambda s: bool(
             s and re.match(r"^(clerk_|k_)?user_[a-z0-9]{6,}", s, re.IGNORECASE)
@@ -177,10 +186,11 @@ class PublicProfileSerializer(serializers.ModelSerializer):
         return "anon"
 
     def get_avatar_url(self, obj: Profile) -> str | None:
-        if obj.social_avatar_url:
-            return obj.social_avatar_url
+        """Priority: user-uploaded avatar > social/Clerk avatar URL."""
         if obj.avatar:
             request = self.context.get("request")
             if request:
                 return request.build_absolute_uri(obj.avatar.url)
+        if obj.social_avatar_url:
+            return obj.social_avatar_url
         return None
