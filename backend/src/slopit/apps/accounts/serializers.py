@@ -10,10 +10,38 @@ from apps.accounts.models import Profile, User
 class UserBriefSerializer(serializers.ModelSerializer):
     """Minimal user representation embedded in posts and comments."""
 
+    avatar_url = serializers.SerializerMethodField()
+    display_name = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["id", "username", "first_name", "last_name", "email"]
+        fields = ["id", "username", "display_name", "first_name", "last_name", "email", "avatar_url"]
         read_only_fields = fields
+
+    def get_avatar_url(self, obj: User) -> str | None:
+        """Return the best available avatar URL for this user."""
+        profile = getattr(obj, "profile", None)
+        if profile:
+            if profile.social_avatar_url:
+                return profile.social_avatar_url
+            if profile.avatar:
+                request = self.context.get("request")
+                if request:
+                    return request.build_absolute_uri(profile.avatar.url)
+        return None
+
+    def get_display_name(self, obj: User) -> str:
+        """Return a human-readable name, never a raw Clerk user_xxx ID."""
+        import re
+        is_clerk_id = lambda s: bool(s and re.match(r"^user_[a-z0-9]{10,}$", s, re.IGNORECASE))
+        full = " ".join(filter(None, [obj.first_name, obj.last_name])).strip()
+        if full:
+            return full
+        if obj.username and not is_clerk_id(obj.username):
+            return obj.username
+        if obj.email:
+            return obj.email.split("@")[0]
+        return "anon"
 
 
 class ProfileSerializer(serializers.ModelSerializer):

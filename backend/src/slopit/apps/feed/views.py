@@ -73,7 +73,7 @@ class FeedViewSet(GenericViewSet):
                 pk__in=page_ids,
                 status=Post.Status.PUBLISHED,
             )
-            .select_related("author")
+            .select_related("author", "author__profile")
             .prefetch_related("tags")
         }
         ordered_posts = [post_map[pid] for pid in page_ids if pid in post_map]

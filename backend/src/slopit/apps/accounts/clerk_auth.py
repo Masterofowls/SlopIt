@@ -20,6 +20,7 @@ is skipped and Django falls back to session auth.
 from __future__ import annotations
 
 import logging
+import re
 from typing import TYPE_CHECKING, Any
 
 import jwt
@@ -77,6 +78,49 @@ def _derive_unique_username(base: str) -> str:
     return username
 
 
+def _sync_clerk_profile(user: Any, claims: dict[str, Any]) -> None:
+    """Sync name, username, and avatar URL from Clerk JWT claims to Django.
+
+    Called on every authenticated request so the display data stays current
+    without requiring a separate webhook — cheap because we only write when
+    the stored value actually differs from what Clerk sent.
+    """
+    from apps.accounts.models import Profile
+
+    user_fields: list[str] = []
+
+    first_name: str = claims.get("first_name") or ""
+    last_name: str = claims.get("last_name") or ""
+    if first_name and user.first_name != first_name:
+        user.first_name = first_name
+        user_fields.append("first_name")
+    if last_name and user.last_name != last_name:
+        user.last_name = last_name
+        user_fields.append("last_name")
+
+    # Prefer the Clerk username (human-readable slug) over the internal
+    # user_xxx ID.  Only adopt it when it looks like a real username.
+    clerk_username: str = claims.get("username") or ""
+    is_real_username = (
+        clerk_username
+        and not re.match(r"^user_[a-z0-9]{10,}$", clerk_username, re.IGNORECASE)
+    )
+    if is_real_username and user.username != clerk_username:
+        if not User.objects.filter(username=clerk_username).exclude(pk=user.pk).exists():
+            user.username = clerk_username
+            user_fields.append("username")
+
+    if user_fields:
+        user.save(update_fields=user_fields)
+
+    # Avatar URL — update Profile row only when the value changes.
+    image_url: str = claims.get("image_url") or ""
+    if image_url:
+        Profile.objects.filter(user=user).exclude(
+            social_avatar_url=image_url
+        ).update(social_avatar_url=image_url)
+
+
 def get_or_create_from_clerk(claims: dict[str, Any]) -> Any:
     """Map a verified Clerk JWT payload to a Django ``User``.
 
@@ -84,6 +128,9 @@ def get_or_create_from_clerk(claims: dict[str, Any]) -> Any:
     1. Look up by ``clerk_id`` — fastest path after first login.
     2. Look up by email — links legacy allauth-created users on first Clerk login.
     3. Create a new ``User`` record.
+
+    Profile data (name, avatar) is synced from Clerk on every call so the
+    frontend always sees up-to-date display info without a separate webhook.
     """
     clerk_id: str = claims.get("sub", "")
     if not clerk_id:
@@ -91,7 +138,9 @@ def get_or_create_from_clerk(claims: dict[str, Any]) -> Any:
 
     # 1. Fast path — already linked.
     try:
-        return User.objects.get(clerk_id=clerk_id)
+        user = User.objects.get(clerk_id=clerk_id)
+        _sync_clerk_profile(user, claims)
+        return user
     except User.DoesNotExist:
         pass
 
@@ -103,6 +152,7 @@ def get_or_create_from_clerk(claims: dict[str, Any]) -> Any:
             user = User.objects.get(email=email)
             user.clerk_id = clerk_id
             user.save(update_fields=["clerk_id"])
+            _sync_clerk_profile(user, claims)
             logger.info(
                 "Linked Clerk ID %s to existing user pk=%s via email", clerk_id, user.pk
             )
@@ -111,22 +161,25 @@ def get_or_create_from_clerk(claims: dict[str, Any]) -> Any:
             pass
 
     # 3. Create a brand-new Django user.
-    base = claims.get("username") or (email.split("@")[0] if email else clerk_id)
+    clerk_username: str = claims.get("username") or ""
+    is_real_username = (
+        clerk_username
+        and not re.match(r"^user_[a-z0-9]{10,}$", clerk_username, re.IGNORECASE)
+    )
+    base = (
+        clerk_username if is_real_username
+        else (email.split("@")[0] if email else clerk_id)
+    )
     username = _derive_unique_username(base)
     user = User.objects.create(
         username=username,
         email=email,
         clerk_id=clerk_id,
         is_active=True,
+        first_name=claims.get("first_name") or "",
+        last_name=claims.get("last_name") or "",
     )
-
-    # Sync avatar from Clerk's image_url claim (if present).
-    image_url: str = claims.get("image_url", "")
-    if image_url:
-        from apps.accounts.models import Profile
-
-        Profile.objects.filter(user=user).update(social_avatar_url=image_url)
-
+    _sync_clerk_profile(user, claims)
     logger.info("Created Django user pk=%s for Clerk ID %s", user.pk, clerk_id)
     return user
 

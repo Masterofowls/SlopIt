@@ -124,7 +124,7 @@ class PostViewSet(ModelViewSet):
 
     def get_queryset(self):
         qs = (
-            Post.objects.select_related("author")
+            Post.objects.select_related("author", "author__profile")
             .prefetch_related("tags", "media")
             .order_by("-published_at", "-created_at")
         )
@@ -185,7 +185,7 @@ class PostViewSet(ModelViewSet):
         qs = (
             Comment.objects.filter(post=post, parent__isnull=True)
             .annotate_reply_count()
-            .select_related("author")
+            .select_related("author", "author__profile")
             .order_by("created_at")
         )
         page = self.paginate_queryset(qs)

@@ -63,10 +63,12 @@ const Post = ({ post }) => {
 
   const authorName = resolveAuthorName(post.author);
 
-  // Use the logged-in user's auth profile image for their own posts,
-  // since the backend may not store/return avatar_url for Clerk users.
+  // Detect if this post belongs to the currently logged-in user.
+  // Match on clerk_id stored as clerk_id field, or fall back to username comparison.
   const isCurrentUsersPost =
-    (clerkUser && post.author?.username === clerkUser.id) ||
+    (clerkUser &&
+      (post.author?.clerk_id === clerkUser.id ||
+        post.author?.username === clerkUser.username)) ||
     (telegramUser && String(post.author?.id) === String(telegramUser.id));
   const authAvatar = clerkUser?.imageUrl || telegramUser?.avatarUrl || null;
   const authorAvatar =
