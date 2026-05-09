@@ -70,8 +70,8 @@
   height: 60px;
   background: repeating-linear-gradient(
     -45deg,
-    rgba(136, 255, 0, 0.5) 0px,
-    rgba(136, 255, 0, 0.5) 15px,
+    #006d2d 0px,
+    #006d2d 15px,
     rgba(0, 0, 0, 0.7) 15px,
     rgba(0, 0, 0, 0.7) 30px
   );
@@ -88,8 +88,8 @@
   height: 60px;
   background: repeating-linear-gradient(
     -45deg,
-    rgba(136, 255, 0, 0.5) 0px,
-    rgba(136, 255, 0, 0.5) 15px,
+    #006d2d 0px,
+    #006d2d 15px,
     rgba(0, 0, 0, 0.7) 15px,
     rgba(0, 0, 0, 0.7) 30px
   );
