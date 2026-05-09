@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import io
 from pathlib import Path
 from uuid import uuid4
 
+from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.utils import timezone
 from drf_spectacular.utils import OpenApiParameter, extend_schema
+from PIL import Image
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -28,6 +31,9 @@ from apps.posts.serializers import (
 )
 
 MAX_MEDIA_UPLOAD_BYTES = 500 * 1024 * 1024
+# Maximum dimension (width or height) for uploaded images in pixels.
+IMAGE_MAX_DIMENSION = 1280
+IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff"}
 
 
 class MediaUploadView(APIView):
@@ -51,6 +57,23 @@ class MediaUploadView(APIView):
             )
 
         suffix = Path(upload.name or "").suffix.lower()
+
+        # Resize images to a uniform maximum dimension so post cards display
+        # consistently. Non-image files (videos etc.) are stored as-is.
+        if suffix in IMAGE_EXTENSIONS:
+            try:
+                img = Image.open(upload)
+                img = img.convert("RGB")
+                img.thumbnail((IMAGE_MAX_DIMENSION, IMAGE_MAX_DIMENSION), Image.LANCZOS)
+                buf = io.BytesIO()
+                img.save(buf, format="JPEG", quality=85, optimize=True)
+                buf.seek(0)
+                suffix = ".jpg"
+                upload = ContentFile(buf.read(), name=f"image{suffix}")
+            except Exception:
+                # Fall through and store the original file if Pillow fails.
+                upload.seek(0)
+
         filename = f"posts/media/uploads/{uuid4().hex}{suffix}"
         stored_path = default_storage.save(filename, upload)
         file_url = default_storage.url(stored_path)
