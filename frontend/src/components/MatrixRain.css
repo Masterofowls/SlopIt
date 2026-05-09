@@ -1,5 +1,3 @@
-/* Matrix Rain full-screen overlay */
-
 .matrix-rain-overlay {
   position: fixed;
   inset: 0;
@@ -9,8 +7,12 @@
 }
 
 @keyframes matrix-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .matrix-rain-canvas {
@@ -28,7 +30,7 @@
 }
 
 .matrix-rain-hint-text {
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 0.75rem;
   color: #005500;
   letter-spacing: 0.2em;
@@ -36,6 +38,11 @@
 }
 
 @keyframes matrix-blink {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
 }
