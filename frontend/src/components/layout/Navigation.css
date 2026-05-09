@@ -1,5 +1,6 @@
 .navigation {
-  position: sticky;
+  position: fixed;
+  width: 100%;
   margin: 0;
   background: rgb(3, 26, 0);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -97,7 +98,9 @@
   font-weight: 600;
   cursor: pointer;
   text-decoration: none;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
   font-family: "Courier New", Courier, monospace;
   letter-spacing: 0.03em;
 }
@@ -138,7 +141,9 @@
   background: #001400;
   border: 2px solid #00ff00;
   border-radius: 8px;
-  box-shadow: 0 0 40px rgba(0, 255, 0, 0.25), 6px 6px 0 rgba(0, 255, 0, 0.15);
+  box-shadow:
+    0 0 40px rgba(0, 255, 0, 0.25),
+    6px 6px 0 rgba(0, 255, 0, 0.15);
   padding: 16px 12px 20px;
   width: 100%;
   max-width: 460px;
@@ -178,8 +183,6 @@
   width: 100% !important;
 }
 
-
-
 /* ── Auth Debug Panel ────────────────────────────────────────────────────── */
 
 .auth-debug-toggle {
@@ -191,7 +194,7 @@
   border: 1px solid #00ff00;
   border-radius: 4px;
   padding: 4px 8px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 11px;
   cursor: pointer;
   z-index: 99999;
@@ -210,7 +213,7 @@
   padding: 10px;
   z-index: 99998;
   overflow-y: auto;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   font-size: 11px;
   color: #00ee00;
 }
