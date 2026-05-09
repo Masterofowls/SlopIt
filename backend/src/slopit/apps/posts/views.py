@@ -414,16 +414,6 @@ class PostViewSet(ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
-    def retrieve(self, request: Request, pk: str | None = None) -> Response:
-        """GET /api/v1/posts/{id}/ — increment view_count on each fetch."""
-        from django.db.models import F
-
-        instance = self.get_object()
-        Post.objects.filter(pk=instance.pk).update(view_count=F("view_count") + 1)
-        instance.refresh_from_db(fields=["view_count"])
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
     @action(
         detail=True,
         methods=["post", "delete"],
