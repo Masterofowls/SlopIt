@@ -219,25 +219,35 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
         setError("Failed to save editor content.");
         return;
       }
+      if (!bodyMarkdown.trim()) {
+        setError("Post content cannot be empty.");
+        return;
+      }
     }
 
     setSubmitting(true);
     try {
+      // 1. Create the post (always starts as draft — status field not writable)
       const payload = {
         title: title.trim(),
         kind,
-        status: "published",
         ...(kind === "text" ? { body_markdown: bodyMarkdown } : {}),
         ...(kind === "link" ? { link_url: linkUrl.trim() } : {}),
       };
 
       const created = await apiPost("/posts/", payload);
-      if (onPostCreated) onPostCreated(created);
+
+      // 2. Publish the draft — separate endpoint sets status → published
+      const published = await apiPost(`/posts/${created.id}/publish/`, {});
+
+      if (onPostCreated) onPostCreated(published);
       onClose();
     } catch (err) {
       const detail =
         err?.response?.data?.detail ||
         err?.response?.data?.title?.[0] ||
+        err?.response?.data?.body_markdown?.[0] ||
+        err?.response?.data?.link_url?.[0] ||
         "Failed to create post. Please try again.";
       setError(detail);
     } finally {

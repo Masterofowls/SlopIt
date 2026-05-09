@@ -1,11 +1,11 @@
-import { api } from './api';
+import { api } from "./api";
 
 /** Maximum allowed upload size: 500 MB */
 export const MAX_FILE_BYTES = 500 * 1024 * 1024;
 export const MAX_FILE_MB = 500;
 
 /** Supported media MIME type prefixes */
-const SUPPORTED_PREFIXES = ['image/', 'video/'];
+const SUPPORTED_PREFIXES = ["image/", "video/"];
 
 /**
  * Validate a file before uploading.
@@ -45,10 +45,13 @@ export async function uploadMediaFile(file, onProgress) {
   validateMediaFile(file);
 
   const formData = new FormData();
-  formData.append('file', file);
+  formData.append("file", file);
 
-  const { data } = await api.post('/media/', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' },
+  const { data } = await api.post("/media/", formData, {
+    // Setting Content-Type: undefined removes the instance default
+    // ('application/json') and lets the browser set the correct
+    // 'multipart/form-data; boundary=...' header automatically.
+    headers: { "Content-Type": undefined },
     onUploadProgress: onProgress
       ? (evt) => {
           if (evt.total) onProgress(Math.round((evt.loaded * 100) / evt.total));
@@ -58,7 +61,7 @@ export async function uploadMediaFile(file, onProgress) {
 
   const url = data?.url || data?.file?.url;
   if (!url) {
-    throw new Error('Upload failed: server did not return a file URL.');
+    throw new Error("Upload failed: server did not return a file URL.");
   }
 
   return { success: 1, file: { url, name: file.name, size: file.size } };
