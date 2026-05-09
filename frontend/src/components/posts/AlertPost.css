@@ -1,0 +1,54 @@
+/* ── AlertPost — green slop severity styles ───────────────────────────────── */
+
+.alert-root {
+  padding: 10px 14px;
+  border-radius: 4px;
+  border-left: 4px solid;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.alert--info {
+  background: rgba(0, 30, 0, 0.6);
+  border-color: #00cc00;
+}
+
+.alert--warn {
+  background: rgba(30, 20, 0, 0.6);
+  border-color: #ffaa00;
+}
+
+.alert--danger {
+  background: rgba(30, 0, 0, 0.6);
+  border-color: #ff4466;
+}
+
+.alert-badge {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.alert--info .alert-badge { color: #00ff00; }
+.alert--warn .alert-badge { color: #ffaa00; }
+.alert--danger .alert-badge { color: #ff4466; }
+
+.alert-title {
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  color: #eeeeee;
+  margin: 2px 0 0;
+}
+
+.alert-body {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #ccffcc;
+  margin: 2px 0 0;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}

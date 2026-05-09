@@ -1,0 +1,28 @@
+/* BookmarkButton — terminal save button */
+
+.bookmark-btn {
+  background: transparent;
+  border: none;
+  color: #005500;
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s, text-shadow 0.15s;
+  white-space: nowrap;
+}
+
+.bookmark-btn:hover:not(:disabled) {
+  color: #00cc00;
+  text-shadow: 0 0 6px rgba(0, 204, 0, 0.5);
+}
+
+.bookmark-btn--saved {
+  color: #00ff00;
+  text-shadow: 0 0 6px rgba(0, 255, 0, 0.4);
+}
+
+.bookmark-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

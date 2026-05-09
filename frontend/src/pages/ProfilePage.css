@@ -1,121 +1,358 @@
-/* Profile Page Styles */
-.profile-page {
-  height: 100vh;
-  width: 100vw;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  overflow: hidden;
-}
+/* ── ProfilePage — green slop design system ───────────────────────────────── */
 
-.profile-container {
-  width: 100%;
-  height: 100%;
-  margin: 0 auto;
-}
-
-.profile-card {
-  height: 100%;
-  width: 100%;
-  background: white;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-}
-
-.profile-content {
-  display: flex;
-  gap: 30px;
-  padding: 30px;
-  align-items: center;
-}
-
-.profile-avatar {
-  flex-shrink: 0;
-}
-
-.avatar-placeholder {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
-  font-weight: 600;
-  color: white;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-
-.profile-info {
-  flex: 1;
-}
-
-.profile-name {
-  font-size: 28px;
-  font-weight: 600;
-  color: #1a202c;
-  margin: 0 0 8px 0;
-}
-
-.profile-email {
-  font-size: 16px;
-  color: #718096;
-  margin: 0 0 24px 0;
-}
-
-.profile-details {
+.pp-page {
+  position: relative;
+  min-height: 100vh;
+  background: #000800;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  padding: 24px 16px 48px;
 }
 
-.detail-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 8px 0;
-  border-bottom: 1px solid #e2e8f0;
+.pp-status {
+  color: #005500;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  text-align: center;
+  margin-top: 40px;
 }
 
-.detail-label {
-  font-weight: 500;
-  color: #4a5568;
-}
-
-.detail-value {
-  color: #2d3748;
-  font-weight: 600;
-}
-
-.profile-actions {
-  display: flex;
-  gap: 12px;
-  padding: 20px 30px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.profile-actions .btn {
-  flex: 1;
-}
-
-/* Responsive Design */
-@media (max-width: 640px) {
-  .profile-content {
+/* ── Container ────────────────────────────────────────────────────────────── */
+.pp-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 760px;
+    display: flex;
     flex-direction: column;
-    text-align: center;
+    gap: 20px;
+}
+
+/* ── Base card ────────────────────────────────────────────────────────────── */
+.pp-card {
+  background: rgba(0, 20, 0, 0.85);
+  border: 2px solid #00ff00;
+  border-radius: 6px;
+  box-shadow: 8px 8px 0 rgba(0, 255, 0, 0.15), 0 0 20px rgba(0, 255, 0, 0.1);
+  padding: 20px 24px;
+}
+
+/* ── Header card ──────────────────────────────────────────────────────────── */
+.pp-header-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 12px 20px;
+  align-items: start;
+}
+
+/* Avatar */
+.pp-avatar-wrap {
+  position: relative;
+  grid-row: 1 / 3;
+  align-self: center;
+}
+
+.pp-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+    border: 2px solid #00ff00;
+    display: block;
+  }
+  
+  .pp-avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #002200;
+    border: 2px solid #00ff00;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Courier New', monospace;
+    font-size: 32px;
+    color: #00ff00;
+    font-weight: bold;
+}
+
+.pp-avatar-glow {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 255, 0, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+/* Identity */
+.pp-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.pp-displayname {
+  font-family: 'Courier New', monospace;
+  font-size: 22px;
+  font-weight: bold;
+  color: #00ff00;
+  margin: 0;
+  text-shadow: 0 0 8px rgba(0, 255, 0, 0.4);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.pp-username {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #006600;
+  margin: 0;
+}
+
+.pp-bio {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #ccffcc;
+  margin: 4px 0 0;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.pp-website {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #00aa00;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  margin-top: 4px;
+  display: inline-block;
+  transition: color 0.15s;
+}
+
+.pp-website:hover {
+  color: #00ff00;
+}
+
+/* Stats */
+.pp-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+    gap: 8px;
+}
+
+.pp-stat {
+  display: flex;
+  flex-direction: column;
+    align-items: flex-end;
+  }
+  
+  .pp-stat-val {
+    font-family: 'Courier New', monospace;
+    font-size: 20px;
+    font-weight: bold;
+    color: #00ff00;
+    line-height: 1;
+  }
+  
+  .pp-stat-label {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: #006600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  
+  /* Clerk button */
+  .pp-clerk-btn {
+    grid-column: 3;
+    grid-row: 2;
+    align-self: end;
+    justify-self: end;
+  }
+  
+  /* ── Section ──────────────────────────────────────────────────────────────── */
+  .pp-section {
+    background: rgba(0, 20, 0, 0.85);
+    border: 2px solid #00ff00;
+    border-radius: 6px;
+    box-shadow: 8px 8px 0 rgba(0, 255, 0, 0.15);
+    padding: 16px 20px;
+  }
+  
+  .pp-section-title {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    font-weight: bold;
+    color: #00cc00;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin: 0 0 14px;
+    border-bottom: 1px solid #003300;
+    padding-bottom: 8px;
+}
+
+/* ── Karma stat ───────────────────────────────────────────────────────────── */
+.pp-stat--karma .pp-stat-val {
+  color: #00ff00;
+  text-shadow: 0 0 6px rgba(0, 255, 0, 0.5);
+}
+
+.pp-stat--karma .pp-stat-label {
+  color: #00cc00;
+}
+
+/* ── Tabs ─────────────────────────────────────────────────────────────────── */
+.pp-tabs {
+  display: flex;
+  gap: 0;
+    border-bottom: 2px solid #003300;
+    margin-bottom: 1.25rem;
+  }
+  
+  .pp-tab {
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #005500;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.5rem 1.25rem;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    margin-bottom: -2px;
+  }
+  
+  .pp-tab:hover {
+    color: #00cc00;
+  }
+  
+  .pp-tab--active {
+    color: #00ff00;
+    border-bottom-color: #00ff00;
+  }
+  
+  
+  /* ── Posts grid ───────────────────────────────────────────────────────────── */
+  .pp-posts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+}
+
+.pp-post-card {
+  background: rgba(0, 10, 0, 0.7);
+  border: 1px solid #006600;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+
+.pp-post-card:hover {
+  border-color: #00ff00;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.2);
+}
+
+.pp-post-thumb-wrap {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: #001a00;
+}
+
+.pp-post-thumb {
+  width: 100%;
+  height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  
+  .pp-post-info {
+    padding: 8px 10px;
+    display: flex;
+  flex-direction: column;
+    gap: 4px;
+}
+
+.pp-post-kind {
+  font-family: 'Courier New', monospace;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  align-self: flex-start;
+  background: #002200;
+  color: #006600;
+  border: 1px solid #004400;
+}
+
+.pp-kind--poll {
+  color: #00aaff;
+  border-color: #005588;
+}
+
+.pp-kind--alert {
+  color: #ffaa00;
+  border-color: #885500;
+}
+
+.pp-kind--news {
+  color: #ff66cc;
+  border-color: #882266;
+}
+
+.pp-kind--image {
+  color: #00ccaa;
+  border-color: #006655;
+}
+
+.pp-post-title {
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  color: #ccffcc;
+  margin: 0;
+  line-height: 1.4;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.pp-post-meta {
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  color: #005500;
+  margin: 0;
+}
+
+/* ── Responsive ────────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .pp-header-card {
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto auto;
   }
 
-  .profile-details {
+  .pp-stats {
+    grid-column: 1 / 3;
+    flex-direction: row;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .pp-stat {
     align-items: center;
   }
 
-  .detail-item {
-    width: 100%;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .profile-actions {
-    flex-direction: column;
+  .pp-clerk-btn {
+    grid-column: 1 / 3;
+    justify-self: start;
   }
 }

@@ -3,8 +3,12 @@ import ReactMarkdown from "react-markdown";
 import { useUser } from "@clerk/clerk-react";
 import Card from "../ui/Card";
 import CommentSection from "./CommentSection";
+import ShareButton from "./ShareButton";
+import ToxicityMeter from "./ToxicityMeter";
+import BookmarkButton from "./BookmarkButton";
 import { useProtectedApi } from "../../hooks/useProtectedApi";
 import { useAuthContext } from "../../context/AuthContext";
+import { useToast } from "../../context/ToastContext";
 import "./Post.css";
 
 /**
@@ -38,7 +42,9 @@ const Post = ({ post }) => {
   const { post: apiPost } = useProtectedApi();
   const { user: clerkUser } = useUser();
   const { telegramUser } = useAuthContext();
+  const { addToast } = useToast();
   const [isAnimating, setIsAnimating] = useState(false);
+  const [reportState, setReportState] = useState("idle"); // idle | confirm | done
   const [particles, setParticles] = useState([]);
   const [textPosition, setTextPosition] = useState({ x: 0, y: 0 });
   const [showComments, setShowComments] = useState(false);
@@ -133,6 +139,28 @@ const Post = ({ post }) => {
       }
     }
   };
+  const handleReport = async () => {
+    if (reportState === "done") return;
+    if (reportState === "idle") {
+      setReportState("confirm");
+      // Auto-cancel after 4 seconds if not confirmed
+      setTimeout(
+        () => setReportState((s) => (s === "confirm" ? "idle" : s)),
+        4000,
+      );
+      return;
+    }
+    // confirm state — submit
+    try {
+      await apiPost(`/posts/${post.id}/report/`, { reason: "other" });
+      setReportState("done");
+      addToast("Post reported. Moderators will review it.", "success");
+    } catch {
+      setReportState("idle");
+      addToast("Failed to submit report. Try again.", "error");
+    }
+  };
+
   const formatTimestamp = (timestamp) => {
     const date = new Date(timestamp);
     const now = new Date();
@@ -263,12 +291,41 @@ const Post = ({ post }) => {
           <span className="action-icon">💬</span>
           <span className="action-count">{commentCount}</span>
         </button>
-        <button className="post-action">
-          <span className="action-icon">🔄</span>
+        <button
+          className={`post-action post-action--report${reportState === "confirm" ? " confirming" : ""}${reportState === "done" ? " reported" : ""}`}
+          onClick={handleReport}
+          aria-label="Report post"
+          title={
+            reportState === "confirm"
+              ? "Click again to confirm report"
+              : reportState === "done"
+                ? "Reported"
+                : "Report post"
+          }
+        >
+          <span className="action-icon">
+            {reportState === "done" ? "🚩" : "⚑"}
+          </span>
+          <span className="report-label">
+            {reportState === "confirm"
+              ? "CONFIRM?"
+              : reportState === "done"
+                ? "REPORTED"
+                : "REPORT"}
+          </span>
         </button>
-        <button className="post-action">
-          <span className="action-icon">🔗</span>
-        </button>
+        <ShareButton slug={post.slug} title={post.title} />
+        <span className="post-view-count">👁 {post.view_count ?? 0}</span>
+        <BookmarkButton
+          postId={post.id}
+          initialBookmarked={post.is_bookmarked ?? false}
+        />
+      </div>
+      <div className="post-toxicity">
+        <ToxicityMeter
+          likeCount={localLikeCount}
+          dislikeCount={post.reaction_counts?.dislike ?? 0}
+        />
       </div>
 
       {showComments && post.id && <CommentSection postId={post.id} />}

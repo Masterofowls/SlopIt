@@ -419,6 +419,65 @@
   font-size: 12px;
 }
 
+/* ── Post kind picker ─────────────────────────────────────────────────────── */
+.pcm-kind-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pcm-kind-btn {
+  padding: 6px 14px;
+  background: #001a00;
+  border: 1px solid #004400;
+  border-radius: 4px;
+  color: #00cc00;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.pcm-kind-btn:hover {
+  border-color: #00aa00;
+  color: #00ff00;
+}
+
+.pcm-kind-btn--active {
+  border-color: #00ff00;
+  color: #00ff00;
+  background: #002a00;
+}
+
+/* ── Poll options builder ────────────────────────────────────────────────── */
+.pcm-poll-options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pcm-poll-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.pcm-poll-remove {
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid #440000;
+  border-radius: 4px;
+  color: #ff4466;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+
+.pcm-poll-remove:hover {
+  background: rgba(255, 68, 102, 0.1);
+}
 .pcm-editor-holder .image-tool__caption:focus {
   border-color: #00ff00;
   outline: none;

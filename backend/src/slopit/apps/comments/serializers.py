@@ -16,6 +16,13 @@ class CommentSerializer(serializers.ModelSerializer):
 
     author = UserBriefSerializer(read_only=True)
     reply_count = serializers.IntegerField(read_only=True, default=0)
+    like_count = serializers.IntegerField(read_only=True, default=0)
+    dislike_count = serializers.IntegerField(read_only=True, default=0)
+    user_reaction = serializers.SerializerMethodField()
+
+    def get_user_reaction(self, obj: Comment) -> str | None:
+        user_reactions: dict = self.context.get("user_comment_reactions", {})
+        return user_reactions.get(obj.pk)
 
     class Meta:
         model = Comment
@@ -28,6 +35,9 @@ class CommentSerializer(serializers.ModelSerializer):
             "body_html",
             "is_deleted",
             "reply_count",
+            "like_count",
+            "dislike_count",
+            "user_reaction",
             "created_at",
             "updated_at",
         ]
@@ -39,6 +49,9 @@ class CommentSerializer(serializers.ModelSerializer):
             "body_html",
             "is_deleted",
             "reply_count",
+            "like_count",
+            "dislike_count",
+            "user_reaction",
             "created_at",
             "updated_at",
         ]

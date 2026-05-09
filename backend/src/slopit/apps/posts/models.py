@@ -90,6 +90,9 @@ class Post(models.Model):
         IMAGE = "image", "Image"
         VIDEO = "video", "Video"
         LINK = "link", "Link"
+        POLL = "poll", "Poll"
+        ALERT = "alert", "Alert"
+        NEWS = "news", "News"
 
     class Status(models.TextChoices):
         DRAFT = "draft", "Draft"
@@ -112,6 +115,16 @@ class Post(models.Model):
     link_url = models.URLField(blank=True, max_length=2000)
     slug = models.SlugField(max_length=120, unique=True, blank=True, db_index=True)
     tags = models.ManyToManyField(Tag, blank=True, related_name="posts")
+    template_data = models.JSONField(
+        blank=True,
+        null=True,
+        help_text=(
+            "Structured data for template kinds. "
+            "Poll: {options: [{text, votes}], allow_multiple: bool}. "
+            "Alert: {level: info|warn|danger, icon: str}."
+        ),
+    )
+    view_count = models.IntegerField(default=0)
     published_at = models.DateTimeField(null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -185,3 +198,99 @@ class Media(models.Model):
 
     def __str__(self) -> str:
         return f"{self.kind.upper()} for Post#{self.post_id}"
+
+
+class PollVote(models.Model):
+    """Records a single user's vote on a poll post.
+
+    ``option_index`` is a zero-based index into ``Post.template_data["options"]``.
+    One row per user per poll.  To change a vote, update the existing row.
+    """
+
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name="poll_votes",
+        limit_choices_to={"kind": Post.Kind.POLL},
+    )
+    voter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="poll_votes",
+    )
+    option_index = models.PositiveSmallIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "posts_pollvote"
+        unique_together = [("post", "voter")]
+        verbose_name = "poll vote"
+        verbose_name_plural = "poll votes"
+
+    def __str__(self) -> str:
+        return f"Vote by user#{self.voter_id} on Poll#{self.post_id} → option {self.option_index}"
+
+
+class Bookmark(models.Model):
+    """Records a user saving a post for later reading."""
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="bookmarks",
+    )
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name="bookmarks",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "posts_bookmark"
+        unique_together = [("user", "post")]
+        ordering = ["-created_at"]
+        verbose_name = "bookmark"
+        verbose_name_plural = "bookmarks"
+
+    def __str__(self) -> str:
+        return f"Bookmark by user#{self.user_id} on Post#{self.post_id}"
+
+
+class PostReport(models.Model):
+    """Records a user reporting a post for moderation."""
+
+    class Reason(models.TextChoices):
+        SPAM = "spam", "Spam"
+        HATE = "hate", "Hate speech"
+        MISINFORMATION = "misinfo", "Misinformation"
+        NSFW = "nsfw", "NSFW / inappropriate"
+        OTHER = "other", "Other"
+
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name="reports",
+    )
+    reporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="post_reports",
+    )
+    reason = models.CharField(
+        max_length=10,
+        choices=Reason.choices,
+        default=Reason.OTHER,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "posts_postreport"
+        unique_together = [("post", "reporter")]
+        ordering = ["-created_at"]
+        verbose_name = "post report"
+        verbose_name_plural = "post reports"
+
+    def __str__(self) -> str:
+        return f"Report by user#{self.reporter_id} on Post#{self.post_id} [{self.reason}]"

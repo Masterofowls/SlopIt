@@ -93,6 +93,11 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
   const [error, setError] = useState(null);
   const [uploadingFiles, setUploadingFiles] = useState([]); // [{name, pct}]
 
+  // Post kind + template state
+  const [postKind, setPostKind] = useState("text");
+  const [pollOptions, setPollOptions] = useState(["", ""]);
+  const [alertLevel, setAlertLevel] = useState("info");
+
   // Inline GIF search
   const [gifQuery, setGifQuery] = useState("");
   const [gifResults, setGifResults] = useState([]);
@@ -280,7 +285,7 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
         setError("Failed to save editor content.");
         return;
       }
-      if (!bodyMarkdown.trim()) {
+      if (!bodyMarkdown.trim() && postKind !== "poll") {
         setError("Post content cannot be empty.");
         return;
       }
@@ -288,12 +293,27 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
 
     setSubmitting(true);
     try {
-      const created = await apiPost("/posts/", {
-        title: title.trim(),
-        kind: "text",
-        body_markdown: bodyMarkdown,
-      });
+      // Build payload based on kind
+      const payload = { title: title.trim(), kind: postKind };
 
+      if (postKind === "poll") {
+        const validOptions = pollOptions.map((o) => o.trim()).filter(Boolean);
+        if (validOptions.length < 2) {
+          setError("A poll needs at least 2 options.");
+          setSubmitting(false);
+          return;
+        }
+        payload.template_data = {
+          options: validOptions.map((text) => ({ text, votes: 0 })),
+        };
+      } else if (postKind === "alert") {
+        payload.template_data = { level: alertLevel };
+        payload.body_markdown = bodyMarkdown;
+      } else {
+        payload.body_markdown = bodyMarkdown;
+      }
+
+      const created = await apiPost("/posts/", payload);
       const published = await apiPost(`/posts/${created.id}/publish/`, {});
 
       if (onPostCreated) onPostCreated(published);
@@ -346,9 +366,104 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
 
             {/* Content — EditorJS */}
             <div className="pcm-field">
-              <label className="pcm-label">Content</label>
-              <div id={EDITOR_HOLDER_ID} className="pcm-editor-holder" />
+              <label className="pcm-label">Type</label>
+              <div className="pcm-kind-row">
+                {[
+                  { value: "text", label: "✏️ Text" },
+                  { value: "poll", label: "📊 Poll" },
+                  { value: "alert", label: "⚠️ Alert" },
+                  { value: "news", label: "📰 News" },
+                ].map(({ value, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`pcm-kind-btn${postKind === value ? " pcm-kind-btn--active" : ""}`}
+                    onClick={() => setPostKind(value)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {/* Poll options */}
+            {postKind === "poll" && (
+              <div className="pcm-field">
+                <label className="pcm-label">Poll Options</label>
+                <div className="pcm-poll-options">
+                  {pollOptions.map((opt, idx) => (
+                    <div key={idx} className="pcm-poll-row">
+                      <input
+                        className="pcm-input"
+                        type="text"
+                        value={opt}
+                        onChange={(e) => {
+                          const next = [...pollOptions];
+                          next[idx] = e.target.value;
+                          setPollOptions(next);
+                        }}
+                        placeholder={`Option ${idx + 1}`}
+                        maxLength={200}
+                      />
+                      {pollOptions.length > 2 && (
+                        <button
+                          type="button"
+                          className="pcm-poll-remove"
+                          onClick={() =>
+                            setPollOptions(
+                              pollOptions.filter((_, i) => i !== idx),
+                            )
+                          }
+                          aria-label="Remove option"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                  {pollOptions.length < 8 && (
+                    <button
+                      type="button"
+                      className="pcm-file-btn"
+                      onClick={() => setPollOptions([...pollOptions, ""])}
+                    >
+                      + Add option
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Alert severity */}
+            {postKind === "alert" && (
+              <div className="pcm-field">
+                <label className="pcm-label">Severity</label>
+                <div className="pcm-kind-row">
+                  {[
+                    { value: "info", label: "🟢 Info" },
+                    { value: "warn", label: "🟡 Warning" },
+                    { value: "danger", label: "🔴 Danger" },
+                  ].map(({ value, label }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      className={`pcm-kind-btn${alertLevel === value ? " pcm-kind-btn--active" : ""}`}
+                      onClick={() => setAlertLevel(value)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Content — EditorJS (hide for polls) */}
+            {postKind !== "poll" && (
+              <div className="pcm-field">
+                <label className="pcm-label">Content</label>
+                <div id={EDITOR_HOLDER_ID} className="pcm-editor-holder" />
+              </div>
+            )}
 
             {/* Media — file upload */}
             <div className="pcm-field">
@@ -474,6 +589,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
       </div>
     </div>
   );
-};
+};;
 
 export default PostCreateModal;

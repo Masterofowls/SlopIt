@@ -6,6 +6,9 @@ import PostCreateModal from "../components/posts/PostCreateModal";
 import { useProtectedApi } from "../hooks/useProtectedApi";
 import { dummyPosts } from "../config/dummyPosts";
 import Navigation from "../components/layout/Navigation";
+import TrendingTags from "../components/layout/TrendingTags";
+import MatrixRain from "../components/MatrixRain";
+import { useIdle } from "../hooks/useIdle";
 import "./HomePage.css";
 
 const HomePage = () => {
@@ -95,8 +98,11 @@ const HomePage = () => {
     [fetchFeed, mergePosts],
   );
 
+  const isIdle = useIdle(100_000); // 100 seconds
+
   return (
     <div className="page home-page">
+      {isIdle && <MatrixRain />}
       {/* <div className="radioactive-fog-container">
         <svg
           className="fog-svg fog-1"
@@ -157,15 +163,18 @@ const HomePage = () => {
         </svg>
       </div> */}
       <Navigation />
-      <div className="home-container">
-        <div className="home-toolbar">
-          <button className="new-post-btn" onClick={() => setShowModal(true)}>
-            + Post
-          </button>
+      <div className="home-layout">
+        <div className="home-container">
+          <div className="home-toolbar">
+            <button className="new-post-btn" onClick={() => setShowModal(true)}>
+              + Post
+            </button>
+          </div>
+          {loading && <p className="feed-status">loading feed…</p>}
+          {feedError && <p className="feed-status feed-error">{feedError}</p>}
+          {!loading && <PostFeed posts={posts} />}
         </div>
-        {loading && <p className="feed-status">loading feed…</p>}
-        {feedError && <p className="feed-status feed-error">{feedError}</p>}
-        {!loading && <PostFeed posts={posts} />}
+        <TrendingTags />
       </div>
       {showModal && (
         <PostCreateModal

@@ -214,6 +214,53 @@
   scale: 1.1;
 }
 
+.post-view-count {
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  color: #005500;
+  white-space: nowrap;
+}
+
+.post-toxicity {
+  padding: 0 16px 10px;
+  width: calc(80% - 0px);
+  margin: 0 auto;
+}
+
+/* Report button */
+.post-action--report {
+  margin-left: auto;
+  color: #005500;
+  gap: 3px;
+}
+
+.post-action--report .report-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+}
+
+.post-action--report.confirming {
+  color: #ffaa00;
+  border-color: #ffaa00;
+  animation: report-pulse 0.6s ease-in-out infinite alternate;
+}
+
+.post-action--report.reported {
+  color: #ff4444;
+  cursor: default;
+  opacity: 0.7;
+}
+
+@keyframes report-pulse {
+  from {
+    opacity: 0.7;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
 .slopped-text {
   position: absolute;
   left: 50%;

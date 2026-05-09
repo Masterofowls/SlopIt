@@ -67,12 +67,24 @@ class PostListSerializer(serializers.ModelSerializer):
     reaction_counts = serializers.SerializerMethodField()
     comment_count = serializers.IntegerField(read_only=True, default=0)
     user_reaction = serializers.SerializerMethodField()
+    is_bookmarked = serializers.SerializerMethodField()
 
     def get_reaction_counts(self, obj):
         return _build_reaction_counts(obj)
 
     def get_user_reaction(self, obj):
         return _get_user_reaction(obj, self.context)
+
+    def get_is_bookmarked(self, obj):
+        bookmarks = self.context.get("user_bookmarks")
+        if bookmarks is not None:
+            return obj.pk in bookmarks
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        from apps.posts.models import Bookmark
+
+        return Bookmark.objects.filter(user=request.user, post=obj).exists()
 
     class Meta:
         model = Post
@@ -84,12 +96,15 @@ class PostListSerializer(serializers.ModelSerializer):
             "slug",
             "body_markdown",
             "link_url",
+            "template_data",
             "author",
             "tags",
             "media",
             "reaction_counts",
             "comment_count",
             "user_reaction",
+            "view_count",
+            "is_bookmarked",
             "published_at",
             "created_at",
         ]
@@ -105,12 +120,21 @@ class PostDetailSerializer(serializers.ModelSerializer):
     reaction_counts = serializers.SerializerMethodField()
     comment_count = serializers.IntegerField(read_only=True, default=0)
     user_reaction = serializers.SerializerMethodField()
+    is_bookmarked = serializers.SerializerMethodField()
 
     def get_reaction_counts(self, obj):
         return _build_reaction_counts(obj)
 
     def get_user_reaction(self, obj):
         return _get_user_reaction(obj, self.context)
+
+    def get_is_bookmarked(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        from apps.posts.models import Bookmark
+
+        return Bookmark.objects.filter(user=request.user, post=obj).exists()
 
     class Meta:
         model = Post
@@ -123,12 +147,15 @@ class PostDetailSerializer(serializers.ModelSerializer):
             "body_markdown",
             "body_html",
             "link_url",
+            "template_data",
             "author",
             "tags",
             "media",
             "reaction_counts",
             "comment_count",
             "user_reaction",
+            "view_count",
+            "is_bookmarked",
             "published_at",
             "created_at",
             "updated_at",
@@ -153,6 +180,7 @@ class PostWriteSerializer(serializers.ModelSerializer):
             "kind",
             "body_markdown",
             "link_url",
+            "template_data",
             "tag_ids",
         ]
 
@@ -166,6 +194,18 @@ class PostWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 {"body_markdown": "Body text is required for text-type posts."}
             )
+        if kind == Post.Kind.POLL:
+            td = attrs.get("template_data") or {}
+            options = td.get("options", [])
+            if not isinstance(options, list) or len(options) < 2:
+                raise serializers.ValidationError(
+                    {"template_data": "Poll posts require at least 2 options."}
+                )
+            # Normalise: ensure each option has text + votes counter
+            attrs["template_data"] = {
+                **td,
+                "options": [{"text": str(o.get("text", "") or ""), "votes": 0} for o in options],
+            }
         return attrs
 
     def create(self, validated_data: dict) -> Post:
@@ -184,3 +224,20 @@ class PostWriteSerializer(serializers.ModelSerializer):
         return instance
 
 
+class PollVoteSerializer(serializers.Serializer):
+    """Accepts a poll option index from the voter."""
+
+    option_index = serializers.IntegerField(min_value=0)
+
+
+class BookmarkSerializer(serializers.ModelSerializer):
+    """Serialiser for the Bookmark model — used in list + create responses."""
+
+    post = PostListSerializer(read_only=True)
+
+    class Meta:
+        from apps.posts.models import Bookmark
+
+        model = Bookmark
+        fields = ["id", "post", "created_at"]
+        read_only_fields = fields

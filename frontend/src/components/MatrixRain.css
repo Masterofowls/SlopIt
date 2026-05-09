@@ -1,0 +1,41 @@
+/* Matrix Rain full-screen overlay */
+
+.matrix-rain-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  animation: matrix-fade-in 0.8s ease forwards;
+}
+
+@keyframes matrix-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.matrix-rain-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.matrix-rain-hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+.matrix-rain-hint-text {
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: #005500;
+  letter-spacing: 0.2em;
+  animation: matrix-blink 1.8s step-start infinite;
+}
+
+@keyframes matrix-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}

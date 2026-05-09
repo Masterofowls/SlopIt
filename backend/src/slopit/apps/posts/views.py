@@ -24,6 +24,7 @@ from apps.api.pagination import StandardResultsPagination
 from apps.api.permissions import IsAuthorOrReadOnly
 from apps.posts.models import Media, Post, Tag
 from apps.posts.serializers import (
+    BookmarkSerializer,
     PostDetailSerializer,
     PostListSerializer,
     PostWriteSerializer,
@@ -198,6 +199,7 @@ class PostViewSet(ModelViewSet):
         if request and request.user.is_authenticated:
             from django.contrib.contenttypes.models import ContentType
 
+            from apps.posts.models import Bookmark
             from apps.reactions.models import Reaction
 
             ct = ContentType.objects.get_for_model(Post)
@@ -206,14 +208,33 @@ class PostViewSet(ModelViewSet):
                 content_type=ct,
             ).values("object_id", "kind")
             ctx["user_reactions"] = {r["object_id"]: r["kind"] for r in rows}
+            ctx["user_bookmarks"] = set(
+                Bookmark.objects.filter(user=request.user).values_list("post_id", flat=True)
+            )
         return ctx
 
     def get_serializer_class(self):
         if self.action in ("create", "update", "partial_update"):
             return PostWriteSerializer
-        if self.action == "retrieve":
+        if self.action in ("retrieve", "by_slug"):
             return PostDetailSerializer
         return PostListSerializer
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path=r"by-slug/(?P<slug>[^/.]+)",
+        permission_classes=[IsAuthenticatedOrReadOnly],
+    )
+    def by_slug(self, request: Request, slug: str | None = None) -> Response:
+        """GET /api/v1/posts/by-slug/{slug}/ → retrieve a single post by slug."""
+        from django.db.models import F
+        from django.shortcuts import get_object_or_404
+
+        post = get_object_or_404(self.get_queryset(), slug=slug)
+        Post.objects.filter(pk=post.pk).update(view_count=F("view_count") + 1)
+        serializer = self.get_serializer(post)
+        return Response(serializer.data)
 
     def perform_create(self, serializer) -> None:  # type: ignore[override]
         serializer.save(
@@ -255,22 +276,59 @@ class PostViewSet(ModelViewSet):
     )
     def comments(self, request: Request, pk: str | None = None) -> Response:
         """List top-level comments for a post (paginated)."""
+        from django.contrib.contenttypes.models import ContentType
+        from django.db.models import Count, IntegerField, OuterRef, Subquery
+        from django.db.models.functions import Coalesce
+
         from apps.comments.models import Comment
         from apps.comments.serializers import CommentSerializer
+        from apps.reactions.models import Reaction
 
         post = self.get_object()
+        ct = ContentType.objects.get_for_model(Comment)
+
+        like_sq = (
+            Reaction.objects.filter(content_type=ct, object_id=OuterRef("pk"), kind="like")
+            .values("object_id")
+            .annotate(c=Count("id"))
+            .values("c")
+        )
+        dislike_sq = (
+            Reaction.objects.filter(content_type=ct, object_id=OuterRef("pk"), kind="dislike")
+            .values("object_id")
+            .annotate(c=Count("id"))
+            .values("c")
+        )
+
         qs = (
             Comment.objects.filter(post=post, parent__isnull=True)
             .annotate_reply_count()
+            .annotate(
+                like_count=Coalesce(Subquery(like_sq, output_field=IntegerField()), 0),
+                dislike_count=Coalesce(Subquery(dislike_sq, output_field=IntegerField()), 0),
+            )
             .select_related("author", "author__profile")
             .order_by("created_at")
         )
+
         page = self.paginate_queryset(qs)
+        items = page if page is not None else qs
+
+        # Build user reaction context for comments
+        ctx = {"request": request}
+        if request.user.is_authenticated:
+            comment_ids = [c.pk for c in items]
+            rows = Reaction.objects.filter(
+                user=request.user,
+                content_type=ct,
+                object_id__in=comment_ids,
+            ).values("object_id", "kind")
+            ctx["user_comment_reactions"] = {r["object_id"]: r["kind"] for r in rows}
+
+        serialized = CommentSerializer(items, many=True, context=ctx).data
         if page is not None:
-            return self.get_paginated_response(
-                CommentSerializer(page, many=True, context={"request": request}).data
-            )
-        return Response(CommentSerializer(qs, many=True, context={"request": request}).data)
+            return self.get_paginated_response(serialized)
+        return Response(serialized)
 
     @action(
         detail=True,
@@ -332,3 +390,184 @@ class PostViewSet(ModelViewSet):
             },
             status=status.HTTP_200_OK,
         )
+
+    def retrieve(self, request: Request, pk: str | None = None) -> Response:
+        """GET /api/v1/posts/{id}/ — increment view_count on each fetch."""
+        from django.db.models import F
+
+        instance = self.get_object()
+        Post.objects.filter(pk=instance.pk).update(view_count=F("view_count") + 1)
+        instance.refresh_from_db(fields=["view_count"])
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
+    @action(
+        detail=True,
+        methods=["post", "delete"],
+        url_path="bookmark",
+        permission_classes=[IsAuthenticated],
+    )
+    def bookmark(self, request: Request, pk: str | None = None) -> Response:
+        """POST   → save post to bookmarks.
+        DELETE → remove bookmark.
+        """
+        from apps.posts.models import Bookmark
+
+        post = self.get_object()
+
+        if request.method == "DELETE":
+            deleted, _ = Bookmark.objects.filter(user=request.user, post=post).delete()
+            if not deleted:
+                return Response(
+                    {"detail": "Bookmark not found."},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+            return Response({"is_bookmarked": False}, status=status.HTTP_200_OK)
+
+        # POST — create (ignore if already exists)
+        _, created = Bookmark.objects.get_or_create(user=request.user, post=post)
+        return Response(
+            {"is_bookmarked": True},
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="report",
+        permission_classes=[IsAuthenticated],
+    )
+    def report(self, request: Request, pk: str | None = None) -> Response:
+        """POST → submit a moderation report for a post.
+
+        Body (optional): ``{"reason": "spam"}``
+        Idempotent — a second report from the same user returns 200 instead of 201.
+        """
+        from apps.posts.models import PostReport
+
+        post = self.get_object()
+
+        # Validate reason if provided
+        reason = request.data.get("reason", PostReport.Reason.OTHER)
+        valid_reasons = {r.value for r in PostReport.Reason}
+        if reason not in valid_reasons:
+            reason = PostReport.Reason.OTHER
+
+        _, created = PostReport.objects.get_or_create(
+            post=post,
+            reporter=request.user,
+            defaults={"reason": reason},
+        )
+        return Response(
+            {"reported": True},
+            status=status.HTTP_201_CREATED if created else status.HTTP_200_OK,
+        )
+
+    @action(
+        detail=True,
+        methods=["post"],
+        url_path="vote",
+        permission_classes=[IsAuthenticated],
+    )
+    def vote(self, request: Request, pk: str | None = None) -> Response:
+        """Submit or change a vote on a poll post.
+
+        Body: ``{"option_index": 0}``
+        Sending the same index again removes the vote (toggle).
+        Returns updated ``template_data`` with fresh vote counts.
+        """
+        from django.db import transaction
+
+        from apps.posts.models import PollVote
+        from apps.posts.serializers import PollVoteSerializer
+
+        post = self.get_object()
+        if post.kind != Post.Kind.POLL:
+            return Response(
+                {"detail": "This post is not a poll."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = PollVoteSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        option_index = serializer.validated_data["option_index"]
+
+        td = post.template_data or {}
+        options = td.get("options", [])
+        if option_index >= len(options):
+            return Response(
+                {"detail": "Invalid option index."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        with transaction.atomic():
+            existing_vote = PollVote.objects.filter(post=post, voter=request.user).first()
+
+            if existing_vote:
+                if existing_vote.option_index == option_index:
+                    # Toggle off — remove vote
+                    options[existing_vote.option_index]["votes"] = max(
+                        0, options[existing_vote.option_index]["votes"] - 1
+                    )
+                    existing_vote.delete()
+                    user_vote = None
+                else:
+                    # Change vote
+                    options[existing_vote.option_index]["votes"] = max(
+                        0, options[existing_vote.option_index]["votes"] - 1
+                    )
+                    options[option_index]["votes"] = options[option_index].get("votes", 0) + 1
+                    existing_vote.option_index = option_index
+                    existing_vote.save(update_fields=["option_index", "updated_at"])
+                    user_vote = option_index
+            else:
+                # New vote
+                options[option_index]["votes"] = options[option_index].get("votes", 0) + 1
+                PollVote.objects.create(
+                    post=post,
+                    voter=request.user,
+                    option_index=option_index,
+                )
+                user_vote = option_index
+
+            td["options"] = options
+            post.template_data = td
+            post.save(update_fields=["template_data", "updated_at"])
+
+        return Response(
+            {"template_data": post.template_data, "user_vote": user_vote},
+            status=status.HTTP_200_OK,
+        )
+
+
+class TrendingTagsView(APIView):
+    """Return the top hashtags parsed from post bodies in the last 24 hours.
+
+    GET /api/v1/trending-tags/
+    → [{"tag": "chaos", "count": 47}, ...]
+    """
+
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def get(self, request: Request) -> Response:
+        import re
+        from collections import Counter
+        from datetime import timedelta
+
+        from django.utils import timezone
+
+        cutoff = timezone.now() - timedelta(hours=24)
+        bodies = Post.objects.filter(
+            status=Post.Status.PUBLISHED,
+            published_at__gte=cutoff,
+        ).values_list("body_markdown", flat=True)
+
+        counter: Counter = Counter()
+        pattern = re.compile(r"#(\w{2,50})")
+        for body in bodies:
+            if body:
+                for tag in pattern.findall(body):
+                    counter[tag.lower()] += 1
+
+        top = [{"tag": tag, "count": cnt} for tag, cnt in counter.most_common(10)]
+        return Response(top)

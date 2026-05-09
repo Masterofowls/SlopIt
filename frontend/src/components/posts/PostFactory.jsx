@@ -3,17 +3,27 @@ import TextPost from './TextPost';
 import ImagePost from './ImagePostNew';
 import VideoPost from './VideoPost';
 import QuestionnairePost from './QuestionnairePost';
+import PollPost from "./PollPost";
+import AlertPost from "./AlertPost";
 
 const PostFactory = ({ post }) => {
-  switch (post.type) {
-    case 'text':
+  // Backend uses `kind`; legacy dummy data uses `type`
+  const kind = post.kind || post.type;
+
+  switch (kind) {
+    case "poll":
+      return <PollPost post={post} />;
+    case "alert":
+    case "news":
+      return <AlertPost post={post} />;
+    case "text":
       return <TextPost post={post} />;
-    case 'image':
-    case 'collage':
+    case "image":
+    case "collage":
       return <ImagePost post={post} />;
-    case 'video':
+    case "video":
       return <VideoPost post={post} />;
-    case 'questionnaire':
+    case "questionnaire":
       return <QuestionnairePost post={post} />;
     default:
       return <TextPost post={post} />;

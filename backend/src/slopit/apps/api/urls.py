@@ -16,10 +16,10 @@ from apps.accounts.passphrase_views import (
     PassphraseVerifyView,
     PassphraseView,
 )
-from apps.accounts.views import MeViewSet
+from apps.accounts.views import MeViewSet, UserProfileViewSet
 from apps.comments.views import CommentViewSet
 from apps.feed.views import FeedViewSet
-from apps.posts.views import MediaUploadView, PostViewSet, TagViewSet
+from apps.posts.views import MediaUploadView, PostViewSet, TagViewSet, TrendingTagsView
 
 router = DefaultRouter()
 router.register("me", MeViewSet, basename="me")
@@ -27,6 +27,7 @@ router.register("posts", PostViewSet, basename="post")
 router.register("tags", TagViewSet, basename="tag")
 router.register("comments", CommentViewSet, basename="comment")
 router.register("feed", FeedViewSet, basename="feed")
+router.register("users", UserProfileViewSet, basename="user-profile")
 
 auth_urlpatterns = [
     path("session/", AuthSessionView.as_view(), name="auth-session"),
@@ -41,10 +42,26 @@ auth_urlpatterns = [
 urlpatterns = [
     path("auth/", include(auth_urlpatterns)),
     path("media/", MediaUploadView.as_view(), name="media-upload"),
+    path("trending-tags/", TrendingTagsView.as_view(), name="trending-tags"),
     path(
         "me/",
         MeViewSet.as_view({"get": "list", "patch": "partial_update"}),
         name="me-self",
+    ),
+    path(
+        "me/bookmarks/",
+        MeViewSet.as_view({"get": "bookmarks"}),
+        name="me-bookmarks",
+    ),
+    path(
+        "users/<str:username>/",
+        UserProfileViewSet.as_view({"get": "retrieve"}),
+        name="user-profile-detail",
+    ),
+    path(
+        "users/<str:username>/posts/",
+        UserProfileViewSet.as_view({"get": "posts"}),
+        name="user-profile-posts",
     ),
     path("", include(router.urls)),
 ]
