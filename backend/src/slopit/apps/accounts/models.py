@@ -8,6 +8,14 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 
+class AuthMethod(models.TextChoices):
+    """OAuth / external provider that was used to authenticate this user."""
+
+    GOOGLE = "google", "Google"
+    GITHUB = "github", "GitHub"
+    TELEGRAM = "telegram", "Telegram"
+
+
 class User(AbstractUser):
     email = models.EmailField(unique=True)
     clerk_id = models.CharField(
@@ -25,6 +33,17 @@ class User(AbstractUser):
         unique=True,
         db_index=True,
         help_text="Telegram user ID from the Login Widget / OIDC callback.",
+    )
+    auth_method = models.CharField(
+        max_length=16,
+        blank=True,
+        choices=AuthMethod.choices,
+        default="",
+        db_index=True,
+        help_text=(
+            "OAuth provider used on most recent login: google, github, or telegram. "
+            "Blank means not yet determined."
+        ),
     )
 
     class Meta:

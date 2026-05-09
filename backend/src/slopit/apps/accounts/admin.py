@@ -11,7 +11,7 @@ from .models import Passkey, Passphrase, Profile, User
 
 @admin.register(User)
 class UserAdmin(ModelAdmin, BaseUserAdmin):
-    list_display = ["username", "email", "is_active", "is_staff", "date_joined"]
+    list_display = ["username", "email", "auth_method", "clerk_id", "telegram_id", "is_active", "is_staff", "date_joined"]
     list_filter = ["is_active", "is_staff", "is_superuser"]
     search_fields = ["username", "email", "first_name", "last_name"]
     ordering = ["-date_joined"]
