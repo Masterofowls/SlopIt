@@ -128,6 +128,20 @@ class TagViewSet(ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
 
+def _record_view(request: "Request", post: "Post") -> None:  # noqa: F821
+    """Increment view_count once per authenticated user, always for anonymous."""
+    from django.db.models import F
+
+    from apps.posts.models import PostView
+
+    if request.user.is_authenticated:
+        _, created = PostView.objects.get_or_create(user=request.user, post=post)
+        if created:
+            Post.objects.filter(pk=post.pk).update(view_count=F("view_count") + 1)
+    else:
+        Post.objects.filter(pk=post.pk).update(view_count=F("view_count") + 1)
+
+
 class PostViewSet(ModelViewSet):
     """CRUD for posts with publish action and nested comments/reactions.
 
@@ -182,7 +196,7 @@ class PostViewSet(ModelViewSet):
             .annotate(
                 comment_count=Count(
                     "comments",
-                    filter=Q(comments__is_deleted=False, comments__parent__isnull=True),
+                    filter=Q(comments__is_deleted=False),
                     distinct=True,
                 ),
                 like_count=Coalesce(Subquery(like_sq, output_field=IntegerField()), 0),
@@ -220,6 +234,13 @@ class PostViewSet(ModelViewSet):
             return PostDetailSerializer
         return PostListSerializer
 
+    def retrieve(self, request: Request, *args: object, **kwargs: object) -> Response:
+        """GET /api/v1/posts/{pk}/ → post detail with real view tracking."""
+        instance = self.get_object()
+        _record_view(request, instance)
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
+
     @action(
         detail=False,
         methods=["get"],
@@ -231,8 +252,10 @@ class PostViewSet(ModelViewSet):
         from django.db.models import F
         from django.shortcuts import get_object_or_404
 
+        from apps.posts.models import PostView
+
         post = get_object_or_404(self.get_queryset(), slug=slug)
-        Post.objects.filter(pk=post.pk).update(view_count=F("view_count") + 1)
+        _record_view(request, post)
         serializer = self.get_serializer(post)
         return Response(serializer.data)
 

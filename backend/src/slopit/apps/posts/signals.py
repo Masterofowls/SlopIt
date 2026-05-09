@@ -33,6 +33,13 @@ def _on_post_saved(sender: type, instance: object, created: bool, **kwargs: obje
     original = getattr(instance, "_original_status", None)
 
     if current == "published" and original != "published":
+        # Assign a random toxicity score on first publish
+        import random
+
+        sender.objects.filter(pk=instance.pk).update(  # type: ignore[union-attr]
+            toxicity_score=round(random.uniform(0.0, 1.0), 4),
+        )
+
         from apps.feed.jobs import enqueue_post_published
 
         enqueue_post_published(instance.pk)  # type: ignore[union-attr]

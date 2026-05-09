@@ -125,6 +125,7 @@ class Post(models.Model):
         ),
     )
     view_count = models.IntegerField(default=0)
+    toxicity_score = models.FloatField(default=0.0)
     published_at = models.DateTimeField(null=True, blank=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -294,3 +295,31 @@ class PostReport(models.Model):
 
     def __str__(self) -> str:
         return f"Report by user#{self.reporter_id} on Post#{self.post_id} [{self.reason}]"
+
+
+class PostView(models.Model):
+    """Tracks unique post views per authenticated user for real view counting.
+
+    Anonymous views are counted without a row in this table.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="post_views",
+    )
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name="views",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "posts_postview"
+        unique_together = [("user", "post")]
+        verbose_name = "post view"
+        verbose_name_plural = "post views"
+
+    def __str__(self) -> str:
+        return f"View by user#{self.user_id} on Post#{self.post_id}"
