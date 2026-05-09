@@ -30,13 +30,15 @@ class UserBriefSerializer(serializers.ModelSerializer):
                     return request.build_absolute_uri(profile.avatar.url)
         return None
 
-    def get_display_name(self, obj: User) -> str:
+    def get_display_name(self, obj: User) -> str | None:
         """Return a human-readable name, never a raw Clerk user_xxx ID."""
         import re
 
         is_clerk_id = lambda s: bool(
             s and re.match(r"^(clerk_|k_)?user_[a-z0-9]{6,}", s, re.IGNORECASE)
         )
+        # Auto-generated placeholder usernames from migration 0006 (e.g. "user38")
+        is_placeholder = lambda s: bool(s and re.match(r"^user\d+$", s, re.IGNORECASE))
         # Sentinel email domain used when Clerk has no real email
         is_sentinel_email = lambda e: bool(
             e and (e.endswith("@no-email.local") or is_clerk_id(e.split("@")[0]))
@@ -44,11 +46,12 @@ class UserBriefSerializer(serializers.ModelSerializer):
         full = " ".join(filter(None, [obj.first_name, obj.last_name])).strip()
         if full:
             return full
-        if obj.username and not is_clerk_id(obj.username):
+        if obj.username and not is_clerk_id(obj.username) and not is_placeholder(obj.username):
             return obj.username
         if obj.email and not is_sentinel_email(obj.email):
             return obj.email.split("@")[0]
-        return None
+        # Absolute last resort — always return something human-readable
+        return f"User {obj.pk}"
 
 
 class ProfileSerializer(serializers.ModelSerializer):

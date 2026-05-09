@@ -8,9 +8,11 @@ import "./ProfilePage.css";
 /* ── Strip Clerk raw IDs from display names ─────────────────────────────── */
 const isClerkId = (s) =>
   typeof s === "string" && /^(clerk_|k_)?user_[a-z0-9]{6,}/i.test(s);
+const isPlaceholder = (s) => typeof s === "string" && /^user\d+$/i.test(s);
 const isSentinelEmail = (e) =>
   !e || e.endsWith("@no-email.local") || isClerkId(e.split("@")[0]);
-const cleanName = (name) => (name && !isClerkId(name) ? name : null);
+const cleanName = (name) =>
+  name && !isClerkId(name) && !isPlaceholder(name) ? name : null;
 
 const ProfilePage = () => {
   const { user, isLoaded } = useUser();
