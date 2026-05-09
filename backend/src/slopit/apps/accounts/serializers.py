@@ -33,7 +33,10 @@ class UserBriefSerializer(serializers.ModelSerializer):
     def get_display_name(self, obj: User) -> str:
         """Return a human-readable name, never a raw Clerk user_xxx ID."""
         import re
-        is_clerk_id = lambda s: bool(s and re.match(r"^(clerk_)?user_[a-z0-9]{6,}", s, re.IGNORECASE))
+
+        is_clerk_id = lambda s: bool(
+            s and re.match(r"^(clerk_|k_)?user_[a-z0-9]{6,}", s, re.IGNORECASE)
+        )
         full = " ".join(filter(None, [obj.first_name, obj.last_name])).strip()
         if full:
             return full
@@ -49,12 +52,14 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     username = serializers.CharField(source="user.username", read_only=True)
     email = serializers.EmailField(source="user.email", read_only=True)
+    display_name = serializers.SerializerMethodField()
     avatar_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Profile
         fields = [
             "username",
+            "display_name",
             "email",
             "bio",
             "avatar",
@@ -67,6 +72,7 @@ class ProfileSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "username",
+            "display_name",
             "email",
             "avatar_url",
             "social_avatar_url",
@@ -76,6 +82,10 @@ class ProfileSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "avatar": {"write_only": True},
         }
+
+    def get_display_name(self, obj: Profile) -> str:
+        """Delegate to UserBriefSerializer's display_name logic for consistency."""
+        return UserBriefSerializer().get_display_name(obj.user)
 
     def get_avatar_url(self, obj: Profile) -> str | None:
         request = self.context.get("request")
@@ -148,7 +158,7 @@ class PublicProfileSerializer(serializers.ModelSerializer):
 
         user = obj.user
         is_clerk_id = lambda s: bool(
-            s and re.match(r"^(clerk_)?user_[a-z0-9]{6,}", s, re.IGNORECASE)
+            s and re.match(r"^(clerk_|k_)?user_[a-z0-9]{6,}", s, re.IGNORECASE)
         )
         full = " ".join(filter(None, [user.first_name, user.last_name])).strip()
         if full:

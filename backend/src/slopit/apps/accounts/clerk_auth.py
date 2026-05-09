@@ -160,10 +160,10 @@ def _sync_clerk_profile(user: Any, claims: dict[str, Any]) -> None:
         user_fields.append("last_name")
 
     # Prefer the Clerk username (human-readable slug) over the internal
-    # user_xxx / clerk_user_xxx ID.  Only adopt it when it looks like a real username.
+    # user_xxx / clerk_user_xxx / k_user_xxx ID.  Only adopt it when it looks like a real username.
     clerk_username: str = claims.get("username") or ""
     is_real_username = clerk_username and not re.match(
-        r"^(clerk_)?user_[a-z0-9]{6,}", clerk_username, re.IGNORECASE
+        r"^(clerk_|k_)?user_[a-z0-9]{6,}", clerk_username, re.IGNORECASE
     )
     if is_real_username and user.username != clerk_username:
         if not User.objects.filter(username=clerk_username).exclude(pk=user.pk).exists():
@@ -275,7 +275,7 @@ def get_or_create_from_clerk(claims: dict[str, Any]) -> Any:
     # 3. Create a brand-new Django user.
     clerk_username: str = claims.get("username") or ""
     is_real_username = clerk_username and not re.match(
-        r"^(clerk_)?user_[a-z0-9]{6,}", clerk_username, re.IGNORECASE
+        r"^(clerk_|k_)?user_[a-z0-9]{6,}", clerk_username, re.IGNORECASE
     )
     base = clerk_username if is_real_username else (email.split("@")[0] if email else clerk_id)
     username = _derive_unique_username(base)
