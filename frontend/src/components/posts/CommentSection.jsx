@@ -5,15 +5,17 @@ import "./CommentSection.css";
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 const isClerkId = (s) =>
   typeof s === "string" && /^(clerk_|k_)?user_[a-z0-9]{6,}/i.test(s);
+const isPlaceholder = (s) => typeof s === "string" && /^user\d+$/i.test(s);
+const isBad = (s) => isClerkId(s) || isPlaceholder(s);
 
 const isSentinelEmail = (e) =>
   !e || e.endsWith("@no-email.local") || isClerkId(e.split("@")[0]);
 
 const resolveCommentAuthor = (author) => {
   if (!author) return "anon";
-  if (author.display_name && !isClerkId(author.display_name))
-    return author.display_name;
-  if (author.username && !isClerkId(author.username)) return author.username;
+  // Trust display_name from backend — it's already curated server-side
+  if (author.display_name) return author.display_name;
+  if (author.username && !isBad(author.username)) return author.username;
   if (author.email && !isSentinelEmail(author.email))
     return author.email.split("@")[0];
   return "anon";

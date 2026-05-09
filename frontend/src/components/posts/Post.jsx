@@ -21,10 +21,13 @@ function resolveAuthorName(author) {
   if (!author) return "anon";
   const isClerkId = (s) =>
     typeof s === "string" && /^(clerk_|k_)?user_[a-z0-9]{6,}/i.test(s);
+  // Auto-generated placeholder from migration (e.g. "user38")
+  const isPlaceholder = (s) => typeof s === "string" && /^user\d+$/i.test(s);
+  const isBad = (s) => isClerkId(s) || isPlaceholder(s);
 
-  if (author.display_name && !isClerkId(author.display_name))
-    return author.display_name;
-  if (author.full_name && !isClerkId(author.full_name)) return author.full_name;
+  // Trust display_name from backend — it's already curated server-side
+  if (author.display_name) return author.display_name;
+  if (author.full_name && !isBad(author.full_name)) return author.full_name;
 
   const nameParts = [author.first_name, author.last_name]
     .filter(Boolean)
@@ -32,8 +35,8 @@ function resolveAuthorName(author) {
     .trim();
   if (nameParts) return nameParts;
 
-  if (author.username && !isClerkId(author.username)) return author.username;
-  if (author.name && !isClerkId(author.name)) return author.name;
+  if (author.username && !isBad(author.username)) return author.username;
+  if (author.name && !isBad(author.name)) return author.name;
   // Skip sentinel emails — clerk_user_XXX@no-email.local prefix is also a Clerk ID
   if (
     author.email &&

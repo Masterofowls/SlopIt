@@ -82,16 +82,18 @@ export function AuthProvider({ children }) {
         // from Google/GitHub. Backend profile supplements with app-specific data.
         const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress ?? null;
         const isClerkId = (s) =>
-          typeof s === 'string' && /^(clerk_|k_)?user_[a-z0-9]{6,}/i.test(s);
+          typeof s === "string" && /^(clerk_|k_)?user_[a-z0-9]{6,}/i.test(s);
         const clerkName =
           clerkUser?.fullName ||
           clerkUser?.firstName ||
           (!isClerkId(clerkUser?.username) ? clerkUser?.username : null) ||
           (clerkEmail ? clerkEmail.split("@")[0] : null);
+        // Use backend display_name as the primary source so the logged-in
+        // user's own name always matches what appears on their posts.
         setClerkProfile({
           username: d.username ?? null,
           email: clerkEmail ?? d.email ?? null,
-          displayName: clerkName || d.display_name || null,
+          displayName: d.display_name || clerkName || null,
           avatarUrl:
             clerkUser?.imageUrl ?? d.avatar_url ?? d.social_avatar_url ?? null,
           bio: d.bio ?? null,

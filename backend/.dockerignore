@@ -17,4 +17,3 @@ staticfiles/
 db.sqlite3
 *.log
 tests/
-*** End Patch
