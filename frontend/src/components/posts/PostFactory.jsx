@@ -26,6 +26,7 @@ const PostFactory = ({ post }) => {
     case "questionnaire":
       return <QuestionnairePost post={post} />;
     default:
+      console.warn(`[PostFactory] Unknown post kind: "${kind}"`, post);
       return <TextPost post={post} />;
   }
 };

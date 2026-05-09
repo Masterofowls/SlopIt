@@ -56,29 +56,6 @@ export function useClerkInterceptor() {
   }, [getToken]);
 }
 
-/**
- * React hook — returns an apiFetch function backed by the axios instance.
- * Keeps backward compatibility with existing call sites.
- */
-export function useApi() {
-  const { getToken } = useAuth();
-
-  return async function apiFetch(path, init = {}) {
-    const token = await getToken();
-    const res = await fetch(`${API_URL}${path}`, {
-      ...init,
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...init.headers,
-      },
-    });
-    if (!res.ok)
-      throw await res.json().catch(() => ({ error: res.statusText }));
-    return res.json();
-  };
-}
-
 /** Standalone helper — pass token explicitly (for non-hook contexts). */
 export async function apiFetchWithToken(path, token, init = {}) {
   const res = await fetch(`${API_URL}${path}`, {

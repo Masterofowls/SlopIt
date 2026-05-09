@@ -126,6 +126,18 @@
   text-align: left;
 }
 
+.post-title--link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(0, 255, 0, 0.4);
+  text-underline-offset: 3px;
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+
+.post-title--link:hover {
+  color: #00ff00;
+  text-decoration-color: #00ff00;
+}
 .post-link {
   display: inline-block;
   margin-top: 8px;

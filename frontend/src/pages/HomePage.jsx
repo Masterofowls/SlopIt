@@ -19,6 +19,10 @@ const HomePage = () => {
   const [loading, setLoading] = useState(true);
   const [feedError, setFeedError] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  // Cursor-based pagination state for the /feed/ endpoint
+  const [feedCursor, setFeedCursor] = useState(null);
+  const [feedHasMore, setFeedHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   /**
    * Merge two post arrays, deduplicate by id, sort newest-first.
@@ -68,6 +72,10 @@ const HomePage = () => {
 
           const merged = mergePosts(feedPosts, ownPosts);
           setPosts(merged.length > 0 ? merged : dummyPosts);
+
+          // Persist cursor for infinite-scroll load-more
+          setFeedCursor(feedData?.next_cursor ?? null);
+          setFeedHasMore(feedData?.has_more ?? false);
         })
         .catch((err) => {
           if (signal?.aborted) return;
@@ -79,6 +87,23 @@ const HomePage = () => {
     },
     [get, mergePosts],
   );
+
+  /** Fetch the next cursor page from /feed/ and append to posts. */
+  const loadMoreFeed = useCallback(async () => {
+    if (loadingMore || !feedHasMore || feedCursor === null) return;
+    setLoadingMore(true);
+    try {
+      const data = await get(`/feed/?cursor=${feedCursor}&limit=25`);
+      const newPosts = Array.isArray(data) ? data : (data?.results ?? []);
+      setPosts((prev) => mergePosts(prev, newPosts));
+      setFeedCursor(data?.next_cursor ?? null);
+      setFeedHasMore(data?.has_more ?? false);
+    } catch {
+      // silently absorb — user can scroll again to retry
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, feedHasMore, feedCursor, get, mergePosts]);
 
   // Initial load — wait for auth to settle first
   useEffect(() => {
@@ -103,65 +128,6 @@ const HomePage = () => {
   return (
     <div className="page home-page">
       {isIdle && <MatrixRain />}
-      {/* <div className="radioactive-fog-container">
-        <svg
-          className="fog-svg fog-1"
-          viewBox="0 0 1920 600"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            className="fog-outline"
-            d="M0,300 Q200,250 400,300 T800,300 T1200,300 T1600,300 T1920,300"
-            fill="none"
-            stroke="#00ff00"
-            strokeWidth="4"
-          />
-          <path
-            className="fog-fill"
-            d="M0,300 Q200,250 400,300 T800,300 T1200,300 T1600,300 T1920,300 L1920,600 L0,600 Z"
-            fill="rgba(0,255,0,0.2)"
-          />
-        </svg>
-        <svg
-          className="fog-svg fog-2"
-          viewBox="0 0 1920 600"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            className="fog-outline"
-            d="M0,350 Q250,280 500,350 T1000,350 T1500,350 T1920,350"
-            fill="none"
-            stroke="#00ff00"
-            strokeWidth="4"
-          />
-          <path
-            className="fog-fill"
-            d="M0,350 Q250,280 500,350 T1000,350 T1500,350 T1920,350 L1920,600 L0,600 Z"
-            fill="rgba(0,255,100,0.15)"
-          />
-        </svg>
-        <svg
-          className="fog-svg fog-3"
-          viewBox="0 0 1920 600"
-          preserveAspectRatio="none"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            className="fog-outline"
-            d="M0,280 Q300,220 600,280 T1200,280 T1800,280 T1920,280"
-            fill="none"
-            stroke="#00ff00"
-            strokeWidth="4"
-          />
-          <path
-            className="fog-fill"
-            d="M0,280 Q300,220 600,280 T1200,280 T1800,280 T1920,280 L1920,600 L0,600 Z"
-            fill="rgba(100,255,0,0.1)"
-          />
-        </svg>
-      </div> */}
       <Navigation />
       <div className="home-layout">
         <div className="home-container">
@@ -172,7 +138,14 @@ const HomePage = () => {
           </div>
           {loading && <p className="feed-status">loading feed…</p>}
           {feedError && <p className="feed-status feed-error">{feedError}</p>}
-          {!loading && <PostFeed posts={posts} />}
+          {!loading && (
+            <PostFeed
+              posts={posts}
+              onLoadMore={loadMoreFeed}
+              hasMore={feedHasMore}
+              loadingMore={loadingMore}
+            />
+          )}
         </div>
         <TrendingTags />
       </div>
@@ -184,6 +157,6 @@ const HomePage = () => {
       )}
     </div>
   );
-};
+};;
 
 export default HomePage;

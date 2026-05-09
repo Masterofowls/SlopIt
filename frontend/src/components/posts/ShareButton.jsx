@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const BASE_URL = 'https://peaceful-flower-536.fly.dev';
+const BASE_URL = window.location.origin;
 
 /**
  * ShareButton — uses Web Share API with clipboard fallback.

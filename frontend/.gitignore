@@ -65,6 +65,12 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 
+# Playwright
+e2e/.auth/
+playwright-test-results/
+playwright-report/
+e2e/__snapshots__/
+
 # Memory bank / Copilot
 memory-bank/
 .copilot/

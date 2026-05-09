@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import Card from "../ui/Card";
 import CommentSection from "./CommentSection";
@@ -39,6 +40,7 @@ function resolveAuthorName(author) {
 }
 
 const Post = ({ post }) => {
+  const navigate = useNavigate();
   const { post: apiPost } = useProtectedApi();
   const { user: clerkUser } = useUser();
   const { telegramUser } = useAuthContext();
@@ -62,15 +64,6 @@ const Post = ({ post }) => {
   const postContent = post.title
     ? { title: post.title, body: bodyText, bodyHtml, kind: post.kind }
     : { title: null, body: bodyText, bodyHtml: null, kind: "text" };
-
-  // Debug: log post body so images/markdown issues are visible in browser console
-  if (bodyText && bodyText.includes("![")) {
-    console.log(
-      "[Post] body_markdown with image →",
-      post.id,
-      JSON.stringify(bodyText),
-    );
-  }
 
   const authorName = resolveAuthorName(post.author);
 
@@ -190,7 +183,19 @@ const Post = ({ post }) => {
       </div>
 
       <div className="post-content">
-        {postContent.title && <p className="post-title">{postContent.title}</p>}
+        {postContent.title && (
+          <p
+            className={`post-title${post.slug ? " post-title--link" : ""}`}
+            onClick={() => post.slug && navigate(`/post/${post.slug}`)}
+            role={post.slug ? "link" : undefined}
+            tabIndex={post.slug ? 0 : undefined}
+            onKeyDown={(e) =>
+              e.key === "Enter" && post.slug && navigate(`/post/${post.slug}`)
+            }
+          >
+            {postContent.title}
+          </p>
+        )}
         {postContent.bodyHtml ? (
           <div
             className="post-text"

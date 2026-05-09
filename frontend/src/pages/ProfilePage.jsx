@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useUser, UserButton } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 import { useProtectedApi } from "../hooks/useProtectedApi";
 import FrogBackground from "../components/ToxicBackground";
 import "./ProfilePage.css";
@@ -11,6 +12,7 @@ const cleanName = (name) =>
 const ProfilePage = () => {
   const { user, isLoaded } = useUser();
   const { get } = useProtectedApi();
+  const navigate = useNavigate();
 
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
@@ -74,10 +76,11 @@ const ProfilePage = () => {
     };
   }, [activeTab, get, bookmarks.length]);
 
+  const cleanUsername = cleanName(profile?.username);
   const displayName =
     cleanName(user?.fullName) ||
     cleanName(user?.username) ||
-    profile?.username ||
+    cleanUsername ||
     "ANON";
 
   const avatarUrl = profile?.avatar_url || user?.imageUrl || null;
@@ -115,9 +118,7 @@ const ProfilePage = () => {
 
           <div className="pp-identity">
             <h1 className="pp-displayname">{displayName}</h1>
-            {profile?.username && (
-              <p className="pp-username">@{profile.username}</p>
-            )}
+            {cleanUsername && <p className="pp-username">@{cleanUsername}</p>}
             {profile?.bio && <p className="pp-bio">{profile.bio}</p>}
             {profile?.website_url && (
               <a
@@ -181,7 +182,12 @@ const ProfilePage = () => {
             ) : (
               <div className="pp-posts-grid">
                 {posts.map((p) => (
-                  <div key={p.id} className="pp-post-card">
+                  <div
+                    key={p.id}
+                    className="pp-post-card"
+                    onClick={() => p.slug && navigate(`/post/${p.slug}`)}
+                    style={{ cursor: p.slug ? "pointer" : "default" }}
+                  >
                     {p.media?.[0]?.file && (
                       <div className="pp-post-thumb-wrap">
                         <img
@@ -220,7 +226,12 @@ const ProfilePage = () => {
                 {bookmarks.map((b) => {
                   const p = b.post ?? b;
                   return (
-                    <div key={b.id} className="pp-post-card">
+                    <div
+                      key={b.id}
+                      className="pp-post-card"
+                      onClick={() => p.slug && navigate(`/post/${p.slug}`)}
+                      style={{ cursor: p.slug ? "pointer" : "default" }}
+                    >
                       {p.media?.[0]?.file && (
                         <div className="pp-post-thumb-wrap">
                           <img

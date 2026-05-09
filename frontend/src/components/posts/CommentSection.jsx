@@ -3,6 +3,18 @@ import { useProtectedApi } from "../../hooks/useProtectedApi";
 import "./CommentSection.css";
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
+const isClerkId = (s) =>
+  typeof s === "string" && /^(clerk_)?user_[a-z0-9]{6,}/i.test(s);
+
+const resolveCommentAuthor = (author) => {
+  if (!author) return "anon";
+  if (author.display_name && !isClerkId(author.display_name))
+    return author.display_name;
+  if (author.username && !isClerkId(author.username)) return author.username;
+  if (author.email) return author.email.split("@")[0];
+  return "anon";
+};
+
 const formatTime = (iso) => {
   if (!iso) return "";
   const diff = (Date.now() - new Date(iso)) / 1000;
@@ -166,7 +178,7 @@ const CommentItem = ({
           {comment.author?.avatar_url && (
             <img src={comment.author.avatar_url} alt="" className="cs-avatar" />
           )}
-          {comment.author?.display_name || comment.author?.username || "anon"}
+          {resolveCommentAuthor(comment.author)}
         </span>
         <span className="cs-time">{formatTime(comment.created_at)}</span>
         {isOwn && !editing && (
