@@ -48,7 +48,7 @@ class UserBriefSerializer(serializers.ModelSerializer):
             return obj.username
         if obj.email and not is_sentinel_email(obj.email):
             return obj.email.split("@")[0]
-        return "anon"
+        return None
 
 
 class ProfileSerializer(serializers.ModelSerializer):

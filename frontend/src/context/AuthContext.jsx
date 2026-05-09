@@ -81,10 +81,12 @@ export function AuthProvider({ children }) {
         // Prefer Clerk's OAuth data for display — it has the real name/email
         // from Google/GitHub. Backend profile supplements with app-specific data.
         const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress ?? null;
+        const isClerkId = (s) =>
+          typeof s === 'string' && /^(clerk_|k_)?user_[a-z0-9]{6,}/i.test(s);
         const clerkName =
           clerkUser?.fullName ||
           clerkUser?.firstName ||
-          clerkUser?.username ||
+          (!isClerkId(clerkUser?.username) ? clerkUser?.username : null) ||
           (clerkEmail ? clerkEmail.split("@")[0] : null);
         setClerkProfile({
           username: d.username ?? null,
