@@ -1,9 +1,8 @@
-export { default as Post } from './Post';
-export { default as TextPost } from './TextPost';
-export { default as ImagePost } from './ImagePost';
-export { default as VideoPost } from './VideoPost';
-export { default as CollagePost } from './CollagePost';
-export { default as QuestionnairePost } from './QuestionnairePost';
-export { default as PostFactory } from './PostFactory';
-export { default as PostCreator } from './PostCreator';
-export { default as PostFeed } from './PostFeed';
+export { default as Post } from "./Post";
+export { default as TextPost } from "./TextPost";
+export { default as ImagePost } from "./ImagePost";
+export { default as VideoPost } from "./VideoPost";
+export { default as CollagePost } from "./CollagePost";
+export { default as PostFactory } from "./PostFactory";
+export { default as PostCreator } from "./PostCreator";
+export { default as PostFeed } from "./PostFeed";

@@ -1,20 +1,19 @@
-import React, { useState } from 'react';
-import Post from './Post';
-import './ImagePost.css';
+import React, { useState } from "react";
+import Post from "./Post";
+import "./ImagePost.css";
 
 const ImagePost = ({ post }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Handle both single image (imageUrl) and multiple images (images array)
   const images = post.images || (post.imageUrl ? [post.imageUrl] : []);
   const hasMultipleImages = images.length > 1;
 
   const goToPrevious = () => {
-    setCurrentIndex(prev => (prev === 0 ? images.length - 1 : prev - 1));
+    setCurrentIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
   };
 
   const goToNext = () => {
-    setCurrentIndex(prev => (prev === images.length - 1 ? 0 : prev + 1));
+    setCurrentIndex((prev) => (prev === images.length - 1 ? 0 : prev + 1));
   };
 
   return (
