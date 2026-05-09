@@ -5,7 +5,7 @@ import React, {
   useState,
   useRef,
 } from "react";
-import { useUser, useClerk } from "@clerk/clerk-react";
+import { useUser, useClerk, useAuth } from "@clerk/clerk-react";
 import { api } from "../lib/api";
 
 /**
@@ -14,6 +14,11 @@ import { api } from "../lib/api";
  *
  * Use `useAuthContext()` instead of Clerk's `useAuth()` when you need
  * provider-agnostic auth state.
+ *
+ * For Clerk users, `clerkProfile` holds the backend-resolved profile
+ * (username, display_name, avatar_url) fetched from GET /api/v1/me/.
+ * This ensures the DB-stored clean username is used instead of the raw
+ * Clerk internal ID.
  */
 
 const AuthContext = createContext({
@@ -21,16 +26,23 @@ const AuthContext = createContext({
   isAuthenticated: false,
   isLoading: true,
   telegramUser: null,
+  clerkProfile: null,
   authLogs: [],
   logout: async () => {},
 });
 
 export function AuthProvider({ children }) {
-  const { isSignedIn: clerkSignedIn, isLoaded: clerkLoaded } = useUser();
+  const {
+    isSignedIn: clerkSignedIn,
+    isLoaded: clerkLoaded,
+    user: clerkUser,
+  } = useUser();
   const { signOut: clerkSignOut } = useClerk();
+  const { getToken } = useAuth();
 
   const [telegramUser, setTelegramUser] = useState(null);
   const [telegramLoading, setTelegramLoading] = useState(true);
+  const [clerkProfile, setClerkProfile] = useState(null);
   const [authLogs, setAuthLogs] = useState([]);
 
   function addLog(msg, data) {
@@ -47,13 +59,61 @@ export function AuthProvider({ children }) {
     addLog("clerkLoaded=" + clerkLoaded + " clerkSignedIn=" + clerkSignedIn);
   }, [clerkLoaded, clerkSignedIn]);
 
+  // Fetch backend profile when Clerk is signed in so we get the DB-resolved
+  // clean username (auth_method, display_name) instead of the raw Clerk ID.
+  useEffect(() => {
+    if (!clerkLoaded || !clerkSignedIn) return;
+    let cancelled = false;
+    addLog("Clerk signed in — fetching backend profile from /me/");
+    setTelegramLoading(false);
+
+    getToken()
+      .then((token) => {
+        if (!token || cancelled) return;
+        return api.get("/me/", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+      })
+      .then((res) => {
+        if (!res || cancelled) return;
+        const d = res.data;
+        addLog("GET /me/ success", d);
+        // Prefer Clerk's OAuth data for display — it has the real name/email
+        // from Google/GitHub. Backend profile supplements with app-specific data.
+        const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress ?? null;
+        const isClerkId = (s) =>
+          typeof s === 'string' && /^(clerk_|k_)?user_[a-z0-9]{6,}/i.test(s);
+        const clerkName =
+          clerkUser?.fullName ||
+          clerkUser?.firstName ||
+          (!isClerkId(clerkUser?.username) ? clerkUser?.username : null) ||
+          (clerkEmail ? clerkEmail.split("@")[0] : null);
+        setClerkProfile({
+          username: d.username ?? null,
+          email: clerkEmail ?? d.email ?? null,
+          displayName: clerkName || d.display_name || null,
+          avatarUrl:
+            clerkUser?.imageUrl ?? d.avatar_url ?? d.social_avatar_url ?? null,
+          bio: d.bio ?? null,
+        });
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        addLog("GET /me/ ERROR", {
+          message: err.message,
+          status: err.response?.status,
+        });
+        // Non-fatal: profile just stays null; components fall back to Clerk data.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [clerkLoaded, clerkSignedIn, clerkUser, getToken]);
+
   useEffect(() => {
     if (!clerkLoaded) return;
-    if (clerkSignedIn) {
-      addLog("Clerk signed in — skipping session probe");
-      setTelegramLoading(false);
-      return;
-    }
+    if (clerkSignedIn) return; // handled above
 
     addLog("Clerk not signed in — probing /auth/session/");
     api
@@ -88,6 +148,7 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     if (clerkSignedIn) {
       addLog("Logging out Clerk user");
+      setClerkProfile(null);
       await clerkSignOut();
     } else {
       addLog("Logging out Telegram user");
@@ -108,6 +169,7 @@ export function AuthProvider({ children }) {
         isAuthenticated: !!provider,
         isLoading,
         telegramUser,
+        clerkProfile,
         authLogs,
         logout,
       }}

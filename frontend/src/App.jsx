@@ -5,7 +5,9 @@ import LandingPage from "./pages/LandingPage";
 import TestConsolePage from "./pages/TestConsolePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import DebugToolbar from "./components/debug/DebugToolbar";
+import PostPage from "./pages/PostPage";
 import { AuthProvider } from "./context/AuthContext";
+import { ToastProvider } from "./context/ToastContext";
 import { useClerkInterceptor } from "./lib/api";
 
 function InnerApp() {
@@ -25,6 +27,7 @@ function InnerApp() {
           }
         />
         <Route path="/tests" element={<TestConsolePage />} />
+        <Route path="/post/:slug" element={<PostPage />} />
       </Routes>
       <DebugToolbar />
     </>
@@ -35,7 +38,9 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <InnerApp />
+        <ToastProvider>
+          <InnerApp />
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
   );

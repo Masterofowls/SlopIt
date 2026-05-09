@@ -1,0 +1,81 @@
+/* ToxicityMeter — terminal diagnostic bar */
+
+.toxicity-meter {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: #005500;
+}
+
+.toxicity-label {
+  color: #005500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.toxicity-bar-wrap {
+  flex: 1;
+  height: 4px;
+  background: #001400;
+  border: 1px solid #003300;
+  max-width: 80px;
+  overflow: hidden;
+}
+
+.toxicity-bar {
+  height: 100%;
+  background: #00ff00;
+  transition: width 0.4s ease, background 0.4s ease;
+}
+
+.toxicity-meter[data-level='elevated'] .toxicity-bar {
+  background: #ffcc00;
+}
+
+.toxicity-meter[data-level='critical'] .toxicity-bar {
+  background: #ff4466;
+}
+
+.toxicity-meter[data-level='moderate'] .toxicity-bar {
+  background: #ffaa00;
+}
+
+.toxicity-pct {
+  color: #005500;
+  min-width: 2.5ch;
+  text-align: right;
+}
+
+.toxicity-meter[data-level='elevated'] .toxicity-pct,
+.toxicity-meter[data-level='elevated'] .toxicity-label {
+  color: #ffcc00;
+}
+
+.toxicity-meter[data-level='critical'] .toxicity-pct,
+.toxicity-meter[data-level='critical'] .toxicity-label {
+  color: #ff4466;
+}
+
+.toxicity-meter[data-level='moderate'] .toxicity-pct,
+.toxicity-meter[data-level='moderate'] .toxicity-label {
+  color: #ffaa00;
+}
+
+.toxicity-meter--analyzing .toxicity-scanning {
+  color: #003300;
+  animation: scanning-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes scanning-pulse {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
+}

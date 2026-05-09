@@ -1,0 +1,72 @@
+.post-page {
+  min-height: 100vh;
+  background: #000;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+}
+
+.post-page__content {
+  max-width: 780px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.post-page__loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40vh;
+}
+
+.post-page__loading-text {
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  color: #005500;
+  letter-spacing: 0.1em;
+  animation: blink-cursor 1s step-end infinite;
+}
+
+@keyframes blink-cursor {
+  50% {
+    opacity: 0;
+  }
+}
+
+.post-page__error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  min-height: 40vh;
+  justify-content: center;
+}
+
+.post-page__error-text {
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  color: #ff4444;
+  border: 1px solid #550000;
+  background: rgba(80, 0, 0, 0.3);
+  padding: 1rem 1.5rem;
+  border-radius: 2px;
+  margin: 0;
+}
+
+.post-page__back-btn {
+  background: transparent;
+  border: 1px solid #005500;
+  color: #005500;
+  font-family: 'Courier New', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  padding: 0.4rem 1rem;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: 1.25rem;
+  display: inline-block;
+}
+
+.post-page__back-btn:hover {
+  color: #00ff00;
+  border-color: #00ff00;
+}

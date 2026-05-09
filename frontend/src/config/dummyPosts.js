@@ -1,5 +1,18 @@
 export const dummyPosts = [
   {
+    id: 0,
+    type: "text",
+    author: {
+      id: 1,
+      username: "user1",
+      avatar: "/frog.png",
+    },
+    content: "hi user2",
+    timestamp: "2026-05-08T12:00:00Z",
+    likes: 0,
+    comments: 0,
+  },
+  {
     id: 1,
     type: "text",
     author: {

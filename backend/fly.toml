@@ -1,0 +1,71 @@
+# Fly.io configuration — SlopIt backend
+# Docs: https://fly.io/docs/reference/configuration/
+
+app = "slopit-api"
+primary_region = "fra"   # Frankfurt — change to nearest
+
+kill_signal = "SIGINT"
+kill_timeout = "30s"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[processes]
+  app = "gunicorn config.wsgi:application --chdir src/slopit --bind 0.0.0.0:8000 --workers 3 --access-logfile - --error-logfile -"
+  bot = "sh -c 'cd src/slopit && exec python manage.py runbot'"
+
+[deploy]
+  # Run DB migrations on every release (Clerk replaces allauth OAuth — no sync_social_apps needed).
+  release_command = "sh -c 'cd src/slopit && python manage.py migrate --noinput'"
+  strategy = "rolling"
+
+[env]
+  PORT = "8000"
+  DJANGO_SETTINGS_MODULE = "config.settings.prod"
+  PYTHONUNBUFFERED = "1"
+  FRONTEND_URL = "https://peaceful-flower-536.fly.dev"
+  # Clerk — public values (safe to commit)
+  CLERK_JWKS_URL         = "https://quick-bulldog-91.clerk.accounts.dev/.well-known/jwks.json"
+  CLERK_PUBLISHABLE_KEY  = "pk_test_cXVpY2stYnVsbGRvZy05MS5jbGVyay5hY2NvdW50cy5kZXYk"
+  CLERK_FRONTEND_API_URL = "https://quick-bulldog-91.clerk.accounts.dev"
+  # Telegram — public values (safe to commit)
+  TELEGRAM_CLIENT_ID    = "8728778322"
+  TELEGRAM_BOT_NAME     = "slopitbot"
+  TELEGRAM_REDIRECT_URI = "https://slopit-api.fly.dev/accounts/telegram/login/callback/"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "off"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 2000
+    hard_limit = 2500
+
+  [[http_service.checks]]
+    grace_period = "60s"
+    interval = "30s"
+    timeout = "10s"
+    method = "GET"
+    path = "/api/v1/system/status"
+    headers = {Host = "slopit-api.fly.dev", X-Forwarded-Proto = "https"}
+
+[[vm]]
+  processes = ["app"]
+  cpu_kind = "shared"
+  cpus = 4
+  memory = "1gb"
+
+[[vm]]
+  processes = ["bot"]
+  cpu_kind = "shared"
+  cpus = 1
+  memory = "256mb"
+
+# Public env vars are in [env] above.
+# Secrets (never commit) — set once with:
+#   flyctl secrets set DJANGO_SECRET_KEY=... DATABASE_URL=... CLERK_SECRET_KEY=...

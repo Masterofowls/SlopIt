@@ -8,6 +8,38 @@ body {
   left: 0;
 }
 
+.home-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.home-layout .home-container {
+  flex: 1;
+  min-width: 0;
+}
+
+.home-layout .trending-tags {
+  flex-shrink: 0;
+  position: sticky;
+  top: 1rem;
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .home-layout {
+    flex-direction: column;
+  }
+
+  .home-layout .trending-tags {
+    width: 100%;
+    max-width: 100%;
+    position: static;
+  }
+}
 .radioactive-fog-container {
   position: fixed;
   top: 0;
@@ -97,4 +129,54 @@ body {
 
 .header button {
   padding: 10px 20px;
+}
+
+/* ── Homepage toolbar ─────────────────────────────────────────────────────── */
+.home-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 14px;
+}
+
+.new-post-btn {
+  display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 22px;
+    background: #003300;
+  border: 2px solid #00ff00;
+  border-radius: 6px;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+    box-shadow: 4px 4px 0 rgba(0, 255, 0, 0.12);
+    transition: background 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+
+.new-post-btn:hover {
+  background: #004d00;
+    box-shadow: 4px 4px 0 rgba(0, 255, 0, 0.3),
+      0 0 12px rgba(0, 255, 0, 0.25);
+  }
+
+  .new-post-btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 rgba(0, 255, 0, 0.15);
+}
+
+/* ── Feed loading / error ─────────────────────────────────────────────────── */
+.feed-status {
+  text-align: center;
+  color: #005500;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  margin: 20px 0;
+}
+
+.feed-error {
+  color: #ff4466;
 }

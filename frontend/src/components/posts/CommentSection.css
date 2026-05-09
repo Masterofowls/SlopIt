@@ -1,0 +1,371 @@
+.cs-root {
+  padding: 10px 16px 14px;
+  border-top: 1px solid #003300;
+}
+
+.cs-status {
+  color: #005500;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  margin: 6px 0;
+}
+
+/* ── Comment list ─────────────────────────────────────────────────────────── */
+.cs-list,
+.cs-replies {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cs-replies {
+  margin: 8px 0 0 16px;
+  padding-left: 10px;
+  border-left: 2px solid #003300;
+  gap: 6px;
+}
+
+.cs-item {
+  padding: 8px 10px;
+  background: rgba(0, 30, 0, 0.6);
+  border-left: 2px solid #006600;
+  border-radius: 0 4px 4px 0;
+}
+
+.cs-item--reply {
+  background: rgba(0, 20, 0, 0.5);
+  border-left-color: #004400;
+}
+
+/* ── Meta row ─────────────────────────────────────────────────────────────── */
+.cs-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.cs-author {
+  color: #00cc00;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.cs-avatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.cs-time {
+  color: #005500;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+}
+
+.cs-own-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}
+
+.cs-action-btn {
+  background: none;
+  border: none;
+  color: #006600;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  transition: color 0.1s;
+}
+
+.cs-action-btn:hover {
+  color: #00cc00;
+}
+
+.cs-action-del:hover {
+  color: #ff4466;
+}
+
+.cs-body {
+  color: #ccffcc;
+  font-size: 13px;
+  margin: 4px 0 0;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.cs-deleted {
+  color: #003300;
+  font-style: italic;
+}
+
+/* ── Footer (reactions + reply controls) ──────────────────────────────────── */
+.cs-footer {
+  display: flex;
+  align-items: center;
+  margin-top: 6px;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.cs-footer-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Reactions ────────────────────────────────────────────────────────────── */
+.cs-reactions {
+  display: flex;
+  gap: 6px;
+}
+
+.cs-react-btn {
+  background: rgba(0, 20, 0, 0.6);
+  border: 1px solid #004400;
+  border-radius: 3px;
+  color: #006600;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  padding: 2px 7px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cs-react-btn:hover {
+  border-color: #00aa00;
+  color: #00cc00;
+}
+
+.cs-react-active {
+  border-color: #00ff00;
+  color: #00ff00;
+  background: rgba(0, 40, 0, 0.7);
+}
+
+.cs-react-dislike.cs-react-active {
+  border-color: #ff4466;
+  color: #ff4466;
+}
+
+.cs-reply-toggle {
+  background: none;
+  border: none;
+  color: #00aa00;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.1s;
+}
+
+.cs-reply-toggle:hover {
+  color: #00ff00;
+}
+
+/* ── Reply / edit forms ───────────────────────────────────────────────────── */
+.cs-reply-form,
+.cs-edit-form {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.cs-edit-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* ── New comment form ─────────────────────────────────────────────────────── */
+.cs-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cs-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  background: #001a00;
+  border: 1px solid #005500;
+  border-radius: 5px;
+  color: #ccffcc;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.cs-textarea:focus {
+  outline: none;
+  border-color: #00aa00;
+}
+
+.cs-textarea::placeholder {
+  color: #004400;
+}
+
+.cs-error {
+  color: #ff4466;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  margin: 0;
+}
+
+.cs-submit {
+  align-self: flex-end;
+  padding: 5px 16px;
+  background: transparent;
+  border: 1px solid #00aa00;
+  border-radius: 4px;
+  color: #00aa00;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cs-submit:hover:not(:disabled) {
+  background: #003300;
+  color: #00ff00;
+  border-color: #00ff00;
+}
+
+.cs-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+
+.cs-status {
+  color: #005500;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  margin: 6px 0;
+}
+/* ── Comment list ─────────────────────────────────────────────────────────── */
+.cs-list {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cs-item {
+  padding: 8px 10px;
+  background: rgba(0, 30, 0, 0.6);
+  border-left: 2px solid #006600;
+  border-radius: 0 4px 4px 0;
+}
+
+.cs-author {
+  color: #00cc00;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  font-weight: bold;
+  display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .cs-avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.cs-time {
+  color: #005500;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  margin-left: 8px;
+}
+
+.cs-body {
+  color: #ccffcc;
+  font-size: 13px;
+  margin: 4px 0 0;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* ── New comment form ─────────────────────────────────────────────────────── */
+.cs-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cs-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  background: #001a00;
+  border: 1px solid #005500;
+  border-radius: 5px;
+  color: #ccffcc;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  resize: vertical;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+
+.cs-textarea:focus {
+  outline: none;
+  border-color: #00aa00;
+}
+
+.cs-textarea::placeholder {
+  color: #004400;
+}
+
+.cs-error {
+  color: #ff4466;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  margin: 0;
+}
+
+.cs-submit {
+  align-self: flex-end;
+  padding: 5px 16px;
+  background: transparent;
+  border: 1px solid #00aa00;
+  border-radius: 4px;
+  color: #00aa00;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cs-submit:hover:not(:disabled) {
+  background: #003300;
+  color: #00ff00;
+  border-color: #00ff00;
+}
+
+.cs-submit:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

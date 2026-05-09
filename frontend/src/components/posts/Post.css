@@ -65,6 +65,91 @@
   text-indent: 2rem;
 }
 
+/* Markdown body — reset indent so block elements look right */
+.post-markdown {
+  text-indent: 0;
+}
+
+.post-markdown p {
+  margin: 0 0 8px;
+  text-indent: 2rem;
+}
+
+.post-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+/* Uploaded / embedded images */
+.post-md-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  margin: 10px auto;
+  border: 1px solid #003300;
+}
+
+/* Markdown links */
+.post-markdown a {
+  color: #00cc00;
+  text-decoration: underline;
+}
+
+/* Inline code */
+.post-markdown code {
+  background: rgba(0, 40, 0, 0.6);
+  color: #ccff00;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 13px;
+}
+
+/* Headings inside a post body */
+.post-markdown h2,
+.post-markdown h3,
+.post-markdown h4 {
+  color: #00ff00;
+  margin: 12px 0 4px;
+}
+
+/* Lists */
+.post-markdown ul,
+.post-markdown ol {
+  padding-left: 1.5rem;
+  margin: 6px 0;
+}
+.post-title {
+  margin: 0 0 8px;
+  color: #ccffcc;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: left;
+}
+
+.post-title--link {
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: rgba(0, 255, 0, 0.4);
+  text-underline-offset: 3px;
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+
+.post-title--link:hover {
+  color: #00ff00;
+  text-decoration-color: #00ff00;
+}
+.post-link {
+  display: inline-block;
+  margin-top: 8px;
+  color: #00cc00;
+  font-size: 13px;
+  word-break: break-all;
+  text-decoration: underline;
+}
+
+.post-link:hover {
+  color: #00ff00;
+}
 .post-footer {
   padding: 12px 16px;
   width: 100%;
@@ -141,6 +226,53 @@
   scale: 1.1;
 }
 
+.post-view-count {
+  font-family: 'Courier New', monospace;
+  font-size: 0.72rem;
+  color: #005500;
+  white-space: nowrap;
+}
+
+.post-toxicity {
+  padding: 0 16px 10px;
+  width: calc(80% - 0px);
+  margin: 0 auto;
+}
+
+/* Report button */
+.post-action--report {
+  margin-left: auto;
+  color: #005500;
+  gap: 3px;
+}
+
+.post-action--report .report-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.05em;
+}
+
+.post-action--report.confirming {
+  color: #ffaa00;
+  border-color: #ffaa00;
+  animation: report-pulse 0.6s ease-in-out infinite alternate;
+}
+
+.post-action--report.reported {
+  color: #ff4444;
+  cursor: default;
+  opacity: 0.7;
+}
+
+@keyframes report-pulse {
+  from {
+    opacity: 0.7;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
 .slopped-text {
   position: absolute;
   left: 50%;
