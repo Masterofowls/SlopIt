@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import textwrap
+import uuid
 
 from django.conf import settings
 from django.db import models
@@ -131,12 +132,10 @@ class Post(models.Model):
     def save(self, *args, **kwargs) -> None:  # type: ignore[override]
         if self.body_markdown:
             self.body_html = _render_markdown(self.body_markdown)
-        is_new = self._state.adding
+        if not self.slug:
+            base = slugify(self.title)[:100] or "post"
+            self.slug = f"{base}-{uuid.uuid4().hex[:8]}"
         super().save(*args, **kwargs)
-        if is_new and not self.slug:
-            base = slugify(self.title)[:100]
-            self.slug = f"{base}-{self.pk}"
-            Post.objects.filter(pk=self.pk).update(slug=self.slug)
 
 
 class Media(models.Model):
