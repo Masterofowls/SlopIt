@@ -21,30 +21,37 @@ import { mockBackendApi } from './helpers/api-mock';
 import {
   CLERK_ID,
   CLERK_ID_ALT,
+  CLERK_ID_K_PREFIX,
   CLERK_ID_PATTERN,
   MOCK_AUTHOR_CLERK_USERNAME,
   MOCK_AUTHOR_CLERK_DISPLAY_NAME,
   MOCK_COMMENTS_WITH_CLERK_AUTHOR,
   makeMockPost,
-} from './mock-data';
-import { expectNoClerkIds } from './helpers/assertions';
+} from "./mock-data";
+import { expectNoClerkIds } from "./helpers/assertions";
 
 // ── Post author regression tests ──────────────────────────────────────────────
 
-test.describe('Post author — Clerk ID regression', () => {
+test.describe("Post author — Clerk ID regression", () => {
   test('post with author.username = Clerk ID shows "anon", not the raw ID', async ({
     page,
   }) => {
     const badPost = makeMockPost({
-      slug: 'clerk-id-author',
-      title: 'Clerk ID Author Post',
+      slug: "clerk-id-author",
+      title: "Clerk ID Author Post",
       author: MOCK_AUTHOR_CLERK_USERNAME,
     });
-    await mockBackendApi(page, { postBySlug: badPost, comments: { results: [], next: null, count: 0 } });
-    await page.goto('/post/clerk-id-author');
-    await page.waitForSelector('.author-username', { timeout: 15_000 });
+    await mockBackendApi(page, {
+      postBySlug: badPost,
+      comments: { results: [], next: null, count: 0 },
+    });
+    await page.goto("/post/clerk-id-author");
+    await page.waitForSelector(".author-username", { timeout: 15_000 });
 
-    const authorText = await page.locator('.author-username').first().innerText();
+    const authorText = await page
+      .locator(".author-username")
+      .first()
+      .innerText();
 
     // Must NOT be the raw Clerk ID
     expect(authorText).not.toMatch(CLERK_ID_PATTERN);
@@ -52,36 +59,79 @@ test.describe('Post author — Clerk ID regression', () => {
     expect(authorText).not.toBe(CLERK_ID_ALT);
   });
 
-  test('post with author.display_name = Clerk ID shows safe fallback', async ({
+  test("post with author.display_name = Clerk ID shows safe fallback", async ({
     page,
   }) => {
     const badPost = makeMockPost({
-      slug: 'clerk-display-author',
-      title: 'Clerk Display Name Author',
+      slug: "clerk-display-author",
+      title: "Clerk Display Name Author",
       author: MOCK_AUTHOR_CLERK_DISPLAY_NAME,
     });
-    await mockBackendApi(page, { postBySlug: badPost, comments: { results: [], next: null, count: 0 } });
-    await page.goto('/post/clerk-display-author');
-    await page.waitForSelector('.author-username', { timeout: 15_000 });
+    await mockBackendApi(page, {
+      postBySlug: badPost,
+      comments: { results: [], next: null, count: 0 },
+    });
+    await page.goto("/post/clerk-display-author");
+    await page.waitForSelector(".author-username", { timeout: 15_000 });
 
-    const authorText = await page.locator('.author-username').first().innerText();
+    const authorText = await page
+      .locator(".author-username")
+      .first()
+      .innerText();
     expect(authorText).not.toMatch(CLERK_ID_PATTERN);
+  });
+
+  test("post with k_user_ prefixed Clerk ID shows safe fallback", async ({
+    page,
+  }) => {
+    // Regression: live Clerk responses can return k_user_XXXX IDs which the
+    // old regex /^(clerk_)?user_/ did NOT catch, causing raw IDs in the UI.
+    const badPost = makeMockPost({
+      slug: "k-user-author",
+      title: "k_user_ Prefix Author",
+      author: {
+        id: 99,
+        username: CLERK_ID_K_PREFIX,
+        display_name: null,
+        first_name: null,
+        last_name: null,
+        email: null,
+        avatar_url: null,
+      },
+    });
+    await mockBackendApi(page, {
+      postBySlug: badPost,
+      comments: { results: [], next: null, count: 0 },
+    });
+    await page.goto("/post/k-user-author");
+    await page.waitForSelector(".author-username", { timeout: 15_000 });
+
+    const authorText = await page
+      .locator(".author-username")
+      .first()
+      .innerText();
+    expect(authorText).not.toMatch(CLERK_ID_PATTERN);
+    expect(authorText).not.toContain("k_user_");
+    expect(authorText).not.toContain("user_");
   });
 
   test('post with all author fields null shows "anon"', async ({ page }) => {
     const badPost = makeMockPost({
-      slug: 'null-author',
-      title: 'No Author Post',
+      slug: "null-author",
+      title: "No Author Post",
       author: null,
     });
-    await mockBackendApi(page, { postBySlug: badPost, comments: { results: [], next: null, count: 0 } });
-    await page.goto('/post/null-author');
-    await page.waitForSelector('.author-username, .post-title', {
+    await mockBackendApi(page, {
+      postBySlug: badPost,
+      comments: { results: [], next: null, count: 0 },
+    });
+    await page.goto("/post/null-author");
+    await page.waitForSelector(".author-username, .post-title", {
       timeout: 15_000,
     });
 
-    const authorEl = page.locator('.author-username');
-    if (await authorEl.count() > 0) {
+    const authorEl = page.locator(".author-username");
+    if ((await authorEl.count()) > 0) {
       const authorText = await authorEl.first().innerText();
       // Should show "anon" or similar fallback
       expect(authorText.toLowerCase()).toMatch(/anon|unknown|user/);
@@ -89,16 +139,20 @@ test.describe('Post author — Clerk ID regression', () => {
     }
   });
 
-  test('feed of posts with Clerk ID authors — none shown in UI', async ({
+  test("feed of posts with Clerk ID authors — none shown in UI", async ({
     page,
   }) => {
     const clerkPosts = {
       results: [
-        makeMockPost({ id: 1, slug: 'p1', author: MOCK_AUTHOR_CLERK_USERNAME }),
-        makeMockPost({ id: 2, slug: 'p2', author: MOCK_AUTHOR_CLERK_DISPLAY_NAME }),
+        makeMockPost({ id: 1, slug: "p1", author: MOCK_AUTHOR_CLERK_USERNAME }),
+        makeMockPost({
+          id: 2,
+          slug: "p2",
+          author: MOCK_AUTHOR_CLERK_DISPLAY_NAME,
+        }),
         makeMockPost({
           id: 3,
-          slug: 'p3',
+          slug: "p3",
           author: {
             id: 4,
             username: CLERK_ID_ALT,
@@ -114,7 +168,7 @@ test.describe('Post author — Clerk ID regression', () => {
       count: 3,
     };
     await mockBackendApi(page, { feed: clerkPosts, posts: clerkPosts });
-    await page.goto('/home');
+    await page.goto("/home");
     // Wait for any post content to appear
     await page.waitForTimeout(3000);
 

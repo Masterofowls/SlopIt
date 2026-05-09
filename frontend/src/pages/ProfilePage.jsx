@@ -7,7 +7,7 @@ import "./ProfilePage.css";
 
 /* ── Strip Clerk raw IDs from display names ─────────────────────────────── */
 const cleanName = (name) =>
-  name ? name.replace(/^(clerk_)?user_[a-z0-9]{6,}$/i, "") || null : null;
+  name ? name.replace(/^(clerk_|k_)?user_[a-z0-9]{6,}$/i, "") || null : null;
 
 const ProfilePage = () => {
   const { user, isLoaded } = useUser();

@@ -8,9 +8,11 @@
 /** Raw Clerk ID that should NEVER appear in the UI after our display-name fix. */
 export const CLERK_ID = 'user_3DT6aKB92KuolU9RxoPF0naad3g';
 export const CLERK_ID_ALT = 'clerk_user_abc123def456xyz';
+/** k_user_ variant seen in live Clerk responses (also must not appear in UI). */
+export const CLERK_ID_K_PREFIX = 'k_user_3DT6aKB92KuolU9RxoPF0naad3g';
 
 /** Regex used by cleanName / isClerkId in the source code (mirrors source). */
-export const CLERK_ID_PATTERN = /^(clerk_)?user_[a-z0-9]{6,}/i;
+export const CLERK_ID_PATTERN = /^(clerk_|k_)?user_[a-z0-9]{6,}/i;
 
 // ── Author objects ────────────────────────────────────────────────────────────
 

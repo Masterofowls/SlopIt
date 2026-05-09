@@ -4,7 +4,7 @@ import "./CommentSection.css";
 
 /* ── Helpers ───────────────────────────────────────────────────────────────── */
 const isClerkId = (s) =>
-  typeof s === "string" && /^(clerk_)?user_[a-z0-9]{6,}/i.test(s);
+  typeof s === "string" && /^(clerk_|k_)?user_[a-z0-9]{6,}/i.test(s);
 
 const resolveCommentAuthor = (author) => {
   if (!author) return "anon";
