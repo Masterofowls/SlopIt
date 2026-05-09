@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useProtectedApi } from "../../hooks/useProtectedApi";
+import Post from "./Post";
 import "./PollPost.css";
 
 /**
