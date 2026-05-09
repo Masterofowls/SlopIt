@@ -16,6 +16,9 @@ const Navigation = () => {
     if (isAuthenticated) setShowAuthModal(false);
   }, [isAuthenticated]);
 
+  const ADMIN_URL =
+    (import.meta.env.VITE_API_URL || "https://slopit-api.fly.dev") + "/admin/";
+
   function renderUserArea() {
     if (isLoading) return null;
     if (!isAuthenticated) {
@@ -25,7 +28,19 @@ const Navigation = () => {
         </button>
       );
     }
-    return <UserButton afterSignOutUrl="/" />;
+    return (
+      <div className="nav-user-actions">
+        <a
+          href={ADMIN_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="manage-button"
+        >
+          Manage
+        </a>
+        <UserButton afterSignOutUrl="/" />
+      </div>
+    );
   }
 
   return (
@@ -70,7 +85,7 @@ const Navigation = () => {
                 },
               }}
             />
-            {/* 
+            {/*
             <div className="nav-auth-divider">
               <span>or</span>
             </div> */}

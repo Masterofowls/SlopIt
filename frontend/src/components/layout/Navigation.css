@@ -81,6 +81,31 @@
   background: #11cc00;
 }
 
+.nav-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.manage-button {
+  padding: 6px 14px;
+  background: transparent;
+  color: #00ff15;
+  border: 1px solid #00ff15;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  font-family: "Courier New", Courier, monospace;
+  letter-spacing: 0.03em;
+}
+
+.manage-button:hover {
+  background: #00ff15;
+  color: rgb(3, 17, 1);
+}
 @media (max-width: 768px) {
   .nav-container {
     padding: 12px 16px;
