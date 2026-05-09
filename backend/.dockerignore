@@ -1,0 +1,20 @@
+.venv/
+.pytest_cache/
+.ruff_cache/
+.playwright/
+__pycache__/
+.mypy_cache/
+.coverage
+htmlcov/
+*.pyc
+*.pyo
+*.pyd
+.git/
+.gitignore
+.vscode/
+media/
+staticfiles/
+db.sqlite3
+*.log
+tests/
+*** End Patch

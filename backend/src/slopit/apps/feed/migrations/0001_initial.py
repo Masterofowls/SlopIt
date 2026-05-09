@@ -1,0 +1,78 @@
+
+import django.contrib.postgres.fields
+import django.contrib.postgres.indexes
+import django.contrib.postgres.search
+import django.db.models.deletion
+import uuid
+from django.conf import settings
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    initial = True
+
+    dependencies = [
+        ('accounts', '0001_initial'),
+        ('posts', '0001_initial'),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name='FeedPreferences',
+            fields=[
+                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, related_name='feed_preferences', serialize=False, to=settings.AUTH_USER_MODEL)),
+                ('filter_words', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=100), blank=True, default=list, size=None)),
+                ('filter_post_types', django.contrib.postgres.fields.ArrayField(base_field=models.CharField(max_length=20), blank=True, default=list, size=None)),
+                ('muted_tag_ids', django.contrib.postgres.fields.ArrayField(base_field=models.BigIntegerField(), blank=True, default=list, size=None)),
+                ('muted_user_ids', django.contrib.postgres.fields.ArrayField(base_field=models.BigIntegerField(), blank=True, default=list, size=None)),
+                ('updated_at', models.DateTimeField(auto_now=True)),
+            ],
+            options={
+                'verbose_name': 'feed preferences',
+                'verbose_name_plural': 'feed preferences',
+                'db_table': 'feed_feedpreferences',
+            },
+        ),
+        migrations.CreateModel(
+            name='PostFeedMeta',
+            fields=[
+                ('post', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, primary_key=True, related_name='feed_meta', serialize=False, to='posts.post')),
+                ('bucket', models.PositiveSmallIntegerField(default=0)),
+                ('content_hash', models.CharField(db_index=True, max_length=16)),
+                ('kind', models.CharField(max_length=10)),
+                ('tag_ids', django.contrib.postgres.fields.ArrayField(base_field=models.BigIntegerField(), blank=True, default=list, size=None)),
+                ('keyword_set', django.contrib.postgres.search.SearchVectorField(blank=True, null=True)),
+                ('rotation_offset', models.PositiveSmallIntegerField(default=0)),
+                ('published_at', models.DateTimeField(db_index=True)),
+                ('is_eligible', models.BooleanField(db_index=True, default=True)),
+                ('version', models.PositiveIntegerField(default=1)),
+            ],
+            options={
+                'verbose_name': 'post feed meta',
+                'verbose_name_plural': 'post feed meta entries',
+                'db_table': 'feed_postfeedmeta',
+                'indexes': [models.Index(fields=['is_eligible', 'bucket'], name='pfm_eligible_bucket_idx'), django.contrib.postgres.indexes.GinIndex(fields=['tag_ids'], name='pfm_tag_ids_gin'), django.contrib.postgres.indexes.GinIndex(fields=['keyword_set'], name='pfm_keyword_set_gin')],
+            },
+        ),
+        migrations.CreateModel(
+            name='FeedSnapshot',
+            fields=[
+                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
+                ('seed', models.BigIntegerField()),
+                ('post_ids', django.contrib.postgres.fields.ArrayField(base_field=models.BigIntegerField(), default=list, size=None)),
+                ('created_at', models.DateTimeField(auto_now_add=True)),
+                ('expires_at', models.DateTimeField(db_index=True)),
+                ('version', models.PositiveIntegerField(default=1)),
+                ('is_active', models.BooleanField(db_index=True, default=True)),
+                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='feed_snapshots', to=settings.AUTH_USER_MODEL)),
+            ],
+            options={
+                'verbose_name': 'feed snapshot',
+                'verbose_name_plural': 'feed snapshots',
+                'db_table': 'feed_feedsnapshot',
+                'indexes': [models.Index(fields=['user', 'is_active', 'expires_at'], name='snap_user_active_expires_idx')],
+            },
+        ),
+    ]
