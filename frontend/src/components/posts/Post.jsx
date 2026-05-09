@@ -183,7 +183,15 @@ const Post = ({ post }) => {
     <Card className="post">
       <div className="post-header">
         <div className="post-author">
-          <img src={authorAvatar} alt={authorName} className="author-avatar" />
+          <img
+            src={authorAvatar}
+            alt={authorName}
+            className="author-avatar"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/frog.png";
+            }}
+          />
           <div className="author-info">
             <span className="author-username">{authorName}</span>
             <span className="post-timestamp">{formatTimestamp(createdAt)}</span>

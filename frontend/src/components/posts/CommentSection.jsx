@@ -182,7 +182,15 @@ const CommentItem = ({
       <div className="cs-meta">
         <span className="cs-author">
           {comment.author?.avatar_url && (
-            <img src={comment.author.avatar_url} alt="" className="cs-avatar" />
+            <img
+              src={comment.author.avatar_url}
+              alt=""
+              className="cs-avatar"
+              onError={(e) => {
+                e.currentTarget.onerror = null;
+                e.currentTarget.src = "/frog.png";
+              }}
+            />
           )}
           {resolveCommentAuthor(comment.author)}
         </span>

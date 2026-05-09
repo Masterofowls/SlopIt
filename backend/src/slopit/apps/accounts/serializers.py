@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
+from apps.accounts.avatar import generate_avatar_data_url
 from apps.accounts.models import Profile, User
 
 
@@ -21,7 +22,7 @@ class UserBriefSerializer(serializers.ModelSerializer):
     def get_avatar_url(self, obj: User) -> str | None:
         """Return the best available avatar URL for this user.
 
-        Priority: user-uploaded avatar > social/Clerk avatar URL.
+        Priority: user-uploaded avatar > social/Clerk avatar URL > local generated avatar.
         """
         profile = getattr(obj, "profile", None)
         if profile:
@@ -31,7 +32,30 @@ class UserBriefSerializer(serializers.ModelSerializer):
                     return request.build_absolute_uri(profile.avatar.url)
             if profile.social_avatar_url:
                 return profile.social_avatar_url
-        return None
+        seed = self._avatar_seed_for_user(obj)
+        return generate_avatar_data_url(seed)
+
+    @staticmethod
+    def _avatar_seed_for_user(user: User) -> str:
+        """Return the best seed for avatar generation — avoids Clerk user_xxx IDs."""
+        import re
+
+        is_clerk_id = lambda s: bool(
+            s and re.match(r"^(clerk_|k_)?user_[a-z0-9]{6,}", s, re.IGNORECASE)
+        )
+        profile = getattr(user, "profile", None)
+        if profile and profile.display_name:
+            return profile.display_name
+        full = " ".join(filter(None, [user.first_name, user.last_name])).strip()
+        if full:
+            return full
+        if user.username and not is_clerk_id(user.username):
+            return user.username
+        if user.email:
+            local = user.email.split("@")[0]
+            if not is_clerk_id(local):
+                return local
+        return str(user.pk)
 
     def get_display_name(self, obj: User) -> str | None:
         """Return a human-readable name, never a raw Clerk user_xxx ID.
@@ -104,7 +128,32 @@ class ProfileSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if obj.avatar and request:
             return request.build_absolute_uri(obj.avatar.url)
-        return obj.social_avatar_url or None
+        if obj.social_avatar_url:
+            return obj.social_avatar_url
+        seed = self._avatar_seed_for_profile(obj)
+        return generate_avatar_data_url(seed)
+
+    @staticmethod
+    def _avatar_seed_for_profile(profile: "Profile") -> str:  # type: ignore[name-defined]
+        """Pick a human-readable seed for avatar, skipping Clerk user_xxx IDs."""
+        import re
+
+        is_clerk_id = lambda s: bool(
+            s and re.match(r"^(clerk_|k_)?user_[a-z0-9]{6,}", s, re.IGNORECASE)
+        )
+        if profile.display_name:
+            return profile.display_name
+        user = profile.user
+        full = " ".join(filter(None, [user.first_name, user.last_name])).strip()
+        if full:
+            return full
+        if user.username and not is_clerk_id(user.username):
+            return user.username
+        if user.email:
+            local = user.email.split("@")[0]
+            if not is_clerk_id(local):
+                return local
+        return str(profile.user_id)
 
 
 class PublicProfileSerializer(serializers.ModelSerializer):
@@ -186,11 +235,12 @@ class PublicProfileSerializer(serializers.ModelSerializer):
         return "anon"
 
     def get_avatar_url(self, obj: Profile) -> str | None:
-        """Priority: user-uploaded avatar > social/Clerk avatar URL."""
+        """Priority: user-uploaded avatar > social/Clerk avatar URL > local generated avatar."""
         if obj.avatar:
             request = self.context.get("request")
             if request:
                 return request.build_absolute_uri(obj.avatar.url)
         if obj.social_avatar_url:
             return obj.social_avatar_url
-        return None
+        seed = ProfileSerializer._avatar_seed_for_profile(obj)
+        return generate_avatar_data_url(seed)

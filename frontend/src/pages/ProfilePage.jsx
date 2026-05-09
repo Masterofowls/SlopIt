@@ -33,10 +33,20 @@ const ProfilePage = () => {
   const saveProfile = async () => {
     setSaving(true);
     try {
-      const d = editAvatar
-        ? ((fd) => { fd.append('display_name', editName.trim()); fd.append('bio', editBio.trim()); fd.append('avatar', editAvatar); return fd; })(new FormData())
+      const isFile = Boolean(editAvatar);
+      const d = isFile
+        ? ((fd) => {
+            fd.append("display_name", editName.trim());
+            fd.append("bio", editBio.trim());
+            fd.append("avatar", editAvatar);
+            return fd;
+          })(new FormData())
         : { display_name: editName.trim(), bio: editBio.trim() };
-      setProfile(await patch('/me/', d)); cancelEdit();
+      // Let axios auto-detect multipart/form-data boundary for file uploads.
+      // Passing Content-Type: undefined removes the default 'application/json'.
+      const cfg = isFile ? { headers: { "Content-Type": undefined } } : {};
+      setProfile(await patch("/me/", d, cfg));
+      cancelEdit();
     } finally { setSaving(false); }
   };
 
