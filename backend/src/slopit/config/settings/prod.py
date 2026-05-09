@@ -72,25 +72,20 @@ _supabase_ref = env("SUPABASE_PROJECT_REF", default="")
 _supabase_bucket = env("SUPABASE_STORAGE_BUCKET", default="slopit-media")
 
 if _supabase_ref:
-    STORAGES = {
-        "default": {
-            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
-            "OPTIONS": {
-                "bucket_name": _supabase_bucket,
-                "endpoint_url": (f"https://{_supabase_ref}.supabase.co/storage/v1/s3"),
-                "access_key": env("SUPABASE_STORAGE_KEY", default=""),
-                "secret_key": env("SUPABASE_STORAGE_SECRET", default=""),
-                "region_name": "auto",
-                "default_acl": "public-read",
-                "file_overwrite": False,
-                "querystring_auth": False,
-                "custom_domain": (
-                    f"{_supabase_ref}.supabase.co/storage/v1/object/public/{_supabase_bucket}"
-                ),
-            },
-        },
-        "staticfiles": {
-            "BACKEND": ("whitenoise.storage.CompressedManifestStaticFilesStorage"),
+    STORAGES["default"] = {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        "OPTIONS": {
+            "bucket_name": _supabase_bucket,
+            "endpoint_url": (f"https://{_supabase_ref}.supabase.co/storage/v1/s3"),
+            "access_key": env("SUPABASE_STORAGE_KEY", default=""),
+            "secret_key": env("SUPABASE_STORAGE_SECRET", default=""),
+            "region_name": "auto",
+            "default_acl": "public-read",
+            "file_overwrite": False,
+            "querystring_auth": False,
+            "custom_domain": (
+                f"{_supabase_ref}.supabase.co/storage/v1/object/public/{_supabase_bucket}"
+            ),
         },
     }
     MEDIA_URL = f"https://{_supabase_ref}.supabase.co/storage/v1/object/public/{_supabase_bucket}/"
