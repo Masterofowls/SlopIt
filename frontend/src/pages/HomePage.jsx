@@ -9,7 +9,9 @@ import Navigation from "../components/layout/Navigation";
 import TrendingTags from "../components/layout/TrendingTags";
 import MatrixRain from "../components/MatrixRain";
 import { useIdle } from "../hooks/useIdle";
+import MatrixBackground from "../components/MatrixBackground.jsx";
 import "./HomePage.css";
+import { MAX_FILE_BYTES } from "../lib/uploadMedia.js";
 
 const HomePage = () => {
   const { user: clerkUser } = useUser();
@@ -129,6 +131,7 @@ const HomePage = () => {
     <div className="page home-page">
       {isIdle && <MatrixRain />}
       <Navigation />
+      <MatrixBackground />
       <div className="home-layout">
         <div className="home-container">
           <div className="home-toolbar">
@@ -157,6 +160,6 @@ const HomePage = () => {
       )}
     </div>
   );
-};;
+};
 
 export default HomePage;

@@ -1,8 +1,7 @@
-import React from 'react';
-import TextPost from './TextPost';
-import ImagePost from './ImagePostNew';
-import VideoPost from './VideoPost';
-import QuestionnairePost from './QuestionnairePost';
+import React from "react";
+import TextPost from "./TextPost";
+import ImagePost from "./ImagePostNew";
+import VideoPost from "./VideoPost";
 import PollPost from "./PollPost";
 import AlertPost from "./AlertPost";
 
@@ -23,8 +22,6 @@ const PostFactory = ({ post }) => {
       return <ImagePost post={post} />;
     case "video":
       return <VideoPost post={post} />;
-    case "questionnaire":
-      return <QuestionnairePost post={post} />;
     default:
       console.warn(`[PostFactory] Unknown post kind: "${kind}"`, post);
       return <TextPost post={post} />;
