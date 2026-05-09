@@ -32,6 +32,17 @@
   font-family: 'Courier New', monospace;
   font-size: 12px;
   font-weight: bold;
+  display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .cs-avatar {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
 }
 
 .cs-time {

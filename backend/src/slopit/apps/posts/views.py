@@ -123,14 +123,69 @@ class PostViewSet(ModelViewSet):
     lookup_field = "pk"
 
     def get_queryset(self):
+        from django.contrib.contenttypes.models import ContentType
+        from django.db.models import Count, IntegerField, OuterRef, Q, Subquery
+        from django.db.models.functions import Coalesce
+
+        from apps.reactions.models import Reaction
+
+        ct = ContentType.objects.get_for_model(Post)
+
+        like_sq = (
+            Reaction.objects.filter(
+                content_type=ct,
+                object_id=OuterRef("pk"),
+                kind="like",
+            )
+            .values("object_id")
+            .annotate(c=Count("id"))
+            .values("c")
+        )
+        dislike_sq = (
+            Reaction.objects.filter(
+                content_type=ct,
+                object_id=OuterRef("pk"),
+                kind="dislike",
+            )
+            .values("object_id")
+            .annotate(c=Count("id"))
+            .values("c")
+        )
+
         qs = (
             Post.objects.select_related("author", "author__profile")
             .prefetch_related("tags", "media")
+            .annotate(
+                comment_count=Count(
+                    "comments",
+                    filter=Q(comments__is_deleted=False, comments__parent__isnull=True),
+                    distinct=True,
+                ),
+                like_count=Coalesce(Subquery(like_sq, output_field=IntegerField()), 0),
+                dislike_count=Coalesce(Subquery(dislike_sq, output_field=IntegerField()), 0),
+            )
             .order_by("-published_at", "-created_at")
         )
+
         if not self.request.user.is_authenticated:
             return qs.filter(status=Post.Status.PUBLISHED)
         return qs.filter(status=Post.Status.PUBLISHED) | qs.filter(author=self.request.user)
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        request = self.request
+        if request and request.user.is_authenticated:
+            from django.contrib.contenttypes.models import ContentType
+
+            from apps.reactions.models import Reaction
+
+            ct = ContentType.objects.get_for_model(Post)
+            rows = Reaction.objects.filter(
+                user=request.user,
+                content_type=ct,
+            ).values("object_id", "kind")
+            ctx["user_reactions"] = {r["object_id"]: r["kind"] for r in rows}
+        return ctx
 
     def get_serializer_class(self):
         if self.action in ("create", "update", "partial_update"):
@@ -206,8 +261,10 @@ class PostViewSet(ModelViewSet):
 
         If the user already has the same reaction, it is removed (toggle off).
         If the user has a different reaction, it is changed.
+        Returns updated reaction_counts and user_reaction.
         """
         from django.contrib.contenttypes.models import ContentType
+        from django.db.models import Count
 
         from apps.reactions.models import Reaction
         from apps.reactions.serializers import ReactionToggleSerializer
@@ -225,15 +282,31 @@ class PostViewSet(ModelViewSet):
         if existing:
             if existing.kind == kind:
                 existing.delete()
-                return Response({"detail": "Reaction removed."}, status=status.HTTP_200_OK)
-            existing.kind = kind
-            existing.save(update_fields=["kind"])
-            return Response({"detail": f"Reaction changed to {kind}."})
+                user_reaction = None
+            else:
+                existing.kind = kind
+                existing.save(update_fields=["kind"])
+                user_reaction = kind
+        else:
+            Reaction.objects.create(
+                user=request.user,
+                kind=kind,
+                content_type=ct,
+                object_id=post.pk,
+            )
+            user_reaction = kind
 
-        Reaction.objects.create(
-            user=request.user,
-            kind=kind,
-            content_type=ct,
-            object_id=post.pk,
+        # Return fresh counts so the frontend doesn't need a re-fetch
+        qs = Reaction.objects.filter(content_type=ct, object_id=post.pk)
+        counts_rows = qs.values("kind").annotate(n=Count("id"))
+        reaction_counts = {"like": 0, "dislike": 0}
+        for row in counts_rows:
+            reaction_counts[row["kind"]] = row["n"]
+
+        return Response(
+            {
+                "reaction_counts": reaction_counts,
+                "user_reaction": user_reaction,
+            },
+            status=status.HTTP_200_OK,
         )
-        return Response({"detail": f"Reaction '{kind}' added."}, status=status.HTTP_201_CREATED)

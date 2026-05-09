@@ -73,7 +73,10 @@ const CommentSection = ({ postId }) => {
           {comments.map((c) => (
             <li key={c.id} className="cs-item">
               <span className="cs-author">
-                {c.author?.username ?? 'anon'}
+                {c.author?.avatar_url && (
+                  <img src={c.author.avatar_url} alt="" className="cs-avatar" />
+                )}
+                {c.author?.display_name || c.author?.username || "anon"}
               </span>
               <span className="cs-time">{formatTime(c.created_at)}</span>
               <p className="cs-body">{c.body_markdown ?? c.body}</p>
@@ -97,7 +100,7 @@ const CommentSection = ({ postId }) => {
           className="cs-submit"
           disabled={submitting || !text.trim()}
         >
-          {submitting ? 'posting…' : 'comment'}
+          {submitting ? "posting…" : "comment"}
         </button>
       </form>
     </div>

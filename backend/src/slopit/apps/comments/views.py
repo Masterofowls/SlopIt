@@ -36,7 +36,7 @@ class CommentViewSet(RetrieveModelMixin, GenericViewSet):
     def get_queryset(self):
         return (
             Comment.objects.annotate_reply_count()
-            .select_related("author", "post")
+            .select_related("author", "author__profile", "post")
             .order_by("created_at")
         )
 

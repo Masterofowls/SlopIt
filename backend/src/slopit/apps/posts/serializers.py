@@ -8,6 +8,42 @@ from apps.accounts.serializers import UserBriefSerializer
 from apps.posts.models import Media, Post, Tag
 
 
+def _build_reaction_counts(obj) -> dict:
+    """Return like/dislike counts from queryset annotations or a fallback query."""
+    like = getattr(obj, "like_count", None)
+    dislike = getattr(obj, "dislike_count", None)
+    if like is None or dislike is None:
+        # Fallback for views that bypass the annotated queryset
+        from django.contrib.contenttypes.models import ContentType
+
+        from apps.reactions.models import Reaction
+
+        ct = ContentType.objects.get_for_model(Post)
+        qs = Reaction.objects.filter(content_type=ct, object_id=obj.pk)
+        like = qs.filter(kind="like").count()
+        dislike = qs.filter(kind="dislike").count()
+    return {"like": like or 0, "dislike": dislike or 0}
+
+
+def _get_user_reaction(obj, context) -> str | None:
+    """Return the current user's reaction kind ('like'/'dislike') or None."""
+    # Fast path: user_reactions dict injected by PostViewSet.get_serializer_context
+    user_reactions = context.get("user_reactions")
+    if user_reactions is not None:
+        return user_reactions.get(obj.pk)
+    # Fallback: per-object query (used by views that don't inject user_reactions)
+    request = context.get("request")
+    if not request or not request.user.is_authenticated:
+        return None
+    from django.contrib.contenttypes.models import ContentType
+
+    from apps.reactions.models import Reaction
+
+    ct = ContentType.objects.get_for_model(Post)
+    reaction = Reaction.objects.filter(user=request.user, content_type=ct, object_id=obj.pk).first()
+    return reaction.kind if reaction else None
+
+
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -28,6 +64,15 @@ class PostListSerializer(serializers.ModelSerializer):
     author = UserBriefSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     media = MediaSerializer(many=True, read_only=True)
+    reaction_counts = serializers.SerializerMethodField()
+    comment_count = serializers.IntegerField(read_only=True, default=0)
+    user_reaction = serializers.SerializerMethodField()
+
+    def get_reaction_counts(self, obj):
+        return _build_reaction_counts(obj)
+
+    def get_user_reaction(self, obj):
+        return _get_user_reaction(obj, self.context)
 
     class Meta:
         model = Post
@@ -42,6 +87,9 @@ class PostListSerializer(serializers.ModelSerializer):
             "author",
             "tags",
             "media",
+            "reaction_counts",
+            "comment_count",
+            "user_reaction",
             "published_at",
             "created_at",
         ]
@@ -54,6 +102,15 @@ class PostDetailSerializer(serializers.ModelSerializer):
     author = UserBriefSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
     media = MediaSerializer(many=True, read_only=True)
+    reaction_counts = serializers.SerializerMethodField()
+    comment_count = serializers.IntegerField(read_only=True, default=0)
+    user_reaction = serializers.SerializerMethodField()
+
+    def get_reaction_counts(self, obj):
+        return _build_reaction_counts(obj)
+
+    def get_user_reaction(self, obj):
+        return _get_user_reaction(obj, self.context)
 
     class Meta:
         model = Post
@@ -69,6 +126,9 @@ class PostDetailSerializer(serializers.ModelSerializer):
             "author",
             "tags",
             "media",
+            "reaction_counts",
+            "comment_count",
+            "user_reaction",
             "published_at",
             "created_at",
             "updated_at",

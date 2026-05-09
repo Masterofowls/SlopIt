@@ -46,6 +46,11 @@ const Post = ({ post }) => {
   // Support both real API format and legacy dummy-data format
   const likeCount = post.reaction_counts?.like ?? post.likes ?? 0;
   const commentCount = post.comment_count ?? post.comments ?? 0;
+
+  const [localLikeCount, setLocalLikeCount] = useState(likeCount);
+  const [userReaction, setUserReaction] = useState(post.user_reaction ?? null);
+  const liked = userReaction === "like";
+
   const bodyText = post.body_markdown || post.content || "";
   const bodyHtml = post.body_html || null;
   const postContent = post.title
@@ -64,7 +69,6 @@ const Post = ({ post }) => {
   const authorName = resolveAuthorName(post.author);
 
   // Detect if this post belongs to the currently logged-in user.
-  // Match on clerk_id stored as clerk_id field, or fall back to username comparison.
   const isCurrentUsersPost =
     (clerkUser &&
       (post.author?.clerk_id === clerkUser.id ||
@@ -79,42 +83,53 @@ const Post = ({ post }) => {
   const createdAt =
     post.created_at || post.timestamp || new Date().toISOString();
 
-  const [localLikeCount, setLocalLikeCount] = useState(likeCount);
-
   const handleLikeClick = async () => {
     if (isAnimating) return;
 
-    setIsAnimating(true);
+    const wasLiked = liked;
 
-    // Optimistic update
-    setLocalLikeCount((n) => n + 1);
+    // Optimistic update — toggle
+    if (wasLiked) {
+      setUserReaction(null);
+      setLocalLikeCount((n) => Math.max(0, n - 1));
+    } else {
+      setUserReaction("like");
+      setLocalLikeCount((n) => n + 1);
+      setIsAnimating(true);
+      // Particle animation only when adding a like
+      const newParticles = Array.from({ length: 12 }, (_, i) => ({
+        id: Date.now() + i,
+        angle: (Math.PI * 2 * i) / 12,
+        distance: 40 + Math.random() * 30,
+        size: 8 + Math.random() * 8,
+        delay: Math.random() * 0.1,
+      }));
+      setParticles(newParticles);
+      setTextPosition({
+        x: -60 + Math.random() * 120,
+        y: -20 - Math.random() * 40,
+      });
+      setTimeout(() => {
+        setIsAnimating(false);
+        setParticles([]);
+      }, 1000);
+    }
 
-    // Particle animation
-    const newParticles = Array.from({ length: 12 }, (_, i) => ({
-      id: Date.now() + i,
-      angle: (Math.PI * 2 * i) / 12,
-      distance: 40 + Math.random() * 30,
-      size: 8 + Math.random() * 8,
-      delay: Math.random() * 0.1,
-    }));
-    setParticles(newParticles);
-    setTextPosition({
-      x: -60 + Math.random() * 120,
-      y: -20 - Math.random() * 40,
-    });
-
-    setTimeout(() => {
-      setIsAnimating(false);
-      setParticles([]);
-    }, 1000);
-
-    // Call real API if post has a numeric/string id from the server
+    // Call real API if post has a server id
     if (post.id && !String(post.id).startsWith("dummy")) {
       try {
-        await apiPost(`/posts/${post.id}/react/`, { kind: "like" });
+        const res = await apiPost(`/posts/${post.id}/react/`, { kind: "like" });
+        // Sync with server's authoritative counts
+        if (res?.reaction_counts) {
+          setLocalLikeCount(res.reaction_counts.like ?? 0);
+        }
+        if ("user_reaction" in (res ?? {})) {
+          setUserReaction(res.user_reaction);
+        }
       } catch {
-        // Silently revert optimistic update on failure
-        setLocalLikeCount((n) => Math.max(0, n - 1));
+        // Revert optimistic update on failure
+        setUserReaction(wasLiked ? "like" : null);
+        setLocalLikeCount((n) => (wasLiked ? n + 1 : Math.max(0, n - 1)));
       }
     }
   };
@@ -208,8 +223,12 @@ const Post = ({ post }) => {
       </div>
 
       <div className="post-footer">
-        <button className="post-action" onClick={handleLikeClick}>
-          <span className="action-icon">❤️</span>
+        <button
+          className={`post-action${liked ? " liked" : ""}`}
+          onClick={handleLikeClick}
+          aria-label={liked ? "Unlike" : "Like"}
+        >
+          <span className="action-icon">{liked ? "❤️" : "🤍"}</span>
           <span className="action-count">{localLikeCount}</span>
           {isAnimating && (
             <>

@@ -1,8 +1,14 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import EditorJS from "@editorjs/editorjs";
 import Header from "@editorjs/header";
 import List from "@editorjs/list";
 import ImageTool from "@editorjs/image";
+import Quote from "@editorjs/quote";
+import Code from "@editorjs/code";
+import Delimiter from "@editorjs/delimiter";
+import Checklist from "@editorjs/checklist";
+import InlineCode from "@editorjs/inline-code";
+import Marker from "@editorjs/marker";
 import {
   uploadMediaFile,
   validateMediaFile,
@@ -10,6 +16,9 @@ import {
 } from "../../lib/uploadMedia";
 import { useProtectedApi } from "../../hooks/useProtectedApi";
 import "./PostCreateModal.css";
+
+const GIPHY_API_KEY =
+  import.meta.env.VITE_GIPHY_API_KEY || "whgAeYFKkKMTgtPHXms13jmULWdxN6g7";
 
 /**
  * Converts an EditorJS output object into a plain markdown string
@@ -32,8 +41,24 @@ function editorDataToMarkdown(data) {
           }
           return items.map((item) => `- ${item}`).join("\n");
         }
+        case "checklist": {
+          const items = block.data.items || [];
+          return items
+            .map((item) => `- [${item.checked ? "x" : " "}] ${item.text}`)
+            .join("\n");
+        }
+        case "quote": {
+          const text = (block.data.text || "").replace(/<[^>]+>/g, "");
+          const caption = block.data.caption
+            ? `\n> — ${block.data.caption}`
+            : "";
+          return `> ${text}${caption}`;
+        }
+        case "code":
+          return `\`\`\`\n${block.data.code || ""}\n\`\`\``;
+        case "delimiter":
+          return "---";
         case "image": {
-          // EditorJS Image tool stores url in file.url (uploaded) or url (pasted)
           const imgUrl = block.data.file?.url || block.data.url || "";
           const imgAlt = block.data.caption || "image";
           if (!imgUrl) {
@@ -47,10 +72,10 @@ function editorDataToMarkdown(data) {
         }
         case "paragraph":
         default:
-          // Strip basic HTML tags EditorJS may leave in text
           return (block.data.text || "").replace(/<[^>]+>/g, "");
       }
     })
+    .filter(Boolean)
     .join("\n\n");
 }
 
@@ -59,17 +84,23 @@ const EDITOR_HOLDER_ID = "post-create-editorjs";
 const PostCreateModal = ({ onClose, onPostCreated }) => {
   const { post: apiPost } = useProtectedApi();
   const editorRef = useRef(null);
-  const editorReadyRef = useRef(null); // Promise — resolves when EditorJS is initialised
-  const dragCountRef = useRef(0); // counter avoids flickering on child dragenter/leave
+  const editorReadyRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const gifDebounceRef = useRef(null);
+
   const [title, setTitle] = useState("");
-  const [kind, setKind] = useState("text");
-  const [linkUrl, setLinkUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const [dragOver, setDragOver] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState([]); // [{name, pct}]
 
-  // Initialise EditorJS once
+  // Inline GIF search
+  const [gifQuery, setGifQuery] = useState("");
+  const [gifResults, setGifResults] = useState([]);
+  const [gifLoading, setGifLoading] = useState(false);
+  const [gifError, setGifError] = useState(null);
+
+  // ── EditorJS init ──────────────────────────────────────────────────────
+
   useEffect(() => {
     if (editorRef.current) return;
 
@@ -85,15 +116,33 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
           class: List,
           inlineToolbar: true,
         },
+        checklist: {
+          class: Checklist,
+          inlineToolbar: true,
+        },
+        quote: {
+          class: Quote,
+          inlineToolbar: true,
+        },
+        code: {
+          class: Code,
+        },
+        delimiter: {
+          class: Delimiter,
+        },
+        inlineCode: {
+          class: InlineCode,
+        },
+        marker: {
+          class: Marker,
+        },
         image: {
           class: ImageTool,
           config: {
             uploader: {
-              // Real backend upload — validated before sending
               async uploadByFile(file) {
                 return uploadMediaFile(file);
               },
-              // URL passthrough (paste a link directly)
               async uploadByUrl(url) {
                 return { success: 1, file: { url } };
               },
@@ -101,7 +150,7 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
           },
         },
       },
-      minHeight: 120,
+      minHeight: 160,
     });
 
     editorRef.current = editor;
@@ -115,34 +164,30 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
     };
   }, []);
 
-  // ── Drag-and-drop file insertion ────────────────────────────────────────
+  // ── File upload via <input type="file"> ───────────────────────────────
 
-  /**
-   * Validate, upload, then insert every dropped file as an image block.
-   * Automatically switches the post kind to "text" so the editor is visible.
-   */
-  const insertDroppedFiles = useCallback(async (files) => {
-    const mediaFiles = [];
+  const handleFileChange = useCallback(async (e) => {
+    const files = Array.from(e.target.files || []);
+    // Reset so the same file can be selected again later
+    e.target.value = "";
+    if (!files.length) return;
+
     const errors = [];
-
+    const validFiles = [];
     for (const file of files) {
       try {
-        validateMediaFile(file); // throws if unsupported or too large
-        mediaFiles.push(file);
+        validateMediaFile(file);
+        validFiles.push(file);
       } catch (err) {
         errors.push(err.message);
       }
     }
-
     if (errors.length) setError(errors.join(" "));
-    if (!mediaFiles.length) return;
+    if (!validFiles.length) return;
 
-    // Switch to text mode so the editor is rendered
-    setKind("text");
     await editorReadyRef.current;
 
-    // Upload files sequentially, tracking progress per file
-    for (const file of mediaFiles) {
+    for (const file of validFiles) {
       setUploadingFiles((prev) => [...prev, { name: file.name, pct: 0 }]);
       try {
         const result = await uploadMediaFile(file, (pct) => {
@@ -150,7 +195,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
             prev.map((f) => (f.name === file.name ? { ...f, pct } : f)),
           );
         });
-
         editorRef.current?.blocks.insert("image", {
           file: { url: result.file.url },
           caption: file.name,
@@ -166,40 +210,57 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
     }
   }, []);
 
-  const handleDragEnter = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCountRef.current += 1;
-    if (dragCountRef.current === 1) setDragOver(true);
-  };
+  // ── Inline GIF search ─────────────────────────────────────────────────
 
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // Signal we accept file drops
-    e.dataTransfer.dropEffect = "copy";
-  };
-
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCountRef.current -= 1;
-    if (dragCountRef.current <= 0) {
-      dragCountRef.current = 0;
-      setDragOver(false);
+  const searchGif = useCallback(async (q) => {
+    if (!q.trim()) {
+      setGifResults([]);
+      return;
     }
+    setGifLoading(true);
+    setGifError(null);
+    try {
+      const url = new URL("https://api.giphy.com/v1/gifs/search");
+      url.searchParams.set("api_key", GIPHY_API_KEY);
+      url.searchParams.set("q", q);
+      url.searchParams.set("limit", "18");
+      url.searchParams.set("rating", "g");
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error(`Giphy ${res.status}`);
+      const data = await res.json();
+      setGifResults(data.data || []);
+    } catch {
+      setGifError("Search failed. Try again.");
+      setGifResults([]);
+    } finally {
+      setGifLoading(false);
+    }
+  }, []);
+
+  const handleGifQueryChange = (e) => {
+    const val = e.target.value;
+    setGifQuery(val);
+    clearTimeout(gifDebounceRef.current);
+    gifDebounceRef.current = setTimeout(() => searchGif(val), 450);
   };
 
-  const handleDrop = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dragCountRef.current = 0;
-    setDragOver(false);
-    const files = Array.from(e.dataTransfer.files);
-    if (files.length) await insertDroppedFiles(files);
-  };
+  const handleGifSelect = useCallback(async (gif) => {
+    const gifUrl =
+      gif.images?.original?.url ||
+      gif.images?.fixed_height?.url ||
+      gif.images?.downsized?.url;
+    if (!gifUrl) return;
+    await editorReadyRef.current;
+    editorRef.current?.blocks.insert("image", {
+      file: { url: gifUrl },
+      caption: "gif",
+      withBorder: false,
+      stretched: false,
+      withBackground: false,
+    });
+  }, []);
 
-  // ── Form submit ─────────────────────────────────────────────────────────
+  // ── Submit ────────────────────────────────────────────────────────────
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -211,7 +272,7 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
     }
 
     let bodyMarkdown = "";
-    if (kind === "text" && editorRef.current) {
+    if (editorRef.current) {
       try {
         const editorData = await editorRef.current.save();
         bodyMarkdown = editorDataToMarkdown(editorData);
@@ -227,17 +288,12 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
 
     setSubmitting(true);
     try {
-      // 1. Create the post (always starts as draft — status field not writable)
-      const payload = {
+      const created = await apiPost("/posts/", {
         title: title.trim(),
-        kind,
-        ...(kind === "text" ? { body_markdown: bodyMarkdown } : {}),
-        ...(kind === "link" ? { link_url: linkUrl.trim() } : {}),
-      };
+        kind: "text",
+        body_markdown: bodyMarkdown,
+      });
 
-      const created = await apiPost("/posts/", payload);
-
-      // 2. Publish the draft — separate endpoint sets status → published
       const published = await apiPost(`/posts/${created.id}/publish/`, {});
 
       if (onPostCreated) onPostCreated(published);
@@ -247,7 +303,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
         err?.response?.data?.detail ||
         err?.response?.data?.title?.[0] ||
         err?.response?.data?.body_markdown?.[0] ||
-        err?.response?.data?.link_url?.[0] ||
         "Failed to create post. Please try again.";
       setError(detail);
     } finally {
@@ -259,25 +314,7 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
 
   return (
     <div className="pcm-overlay" onClick={onClose}>
-      <div
-        className={`pcm-modal${dragOver ? " pcm-drag-over" : ""}`}
-        onClick={(e) => e.stopPropagation()}
-        onDragEnter={handleDragEnter}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        {/* Full-modal drag-and-drop overlay */}
-        {dragOver && (
-          <div className="pcm-drop-overlay" aria-hidden="true">
-            <span className="pcm-drop-icon">⬇</span>
-            <span className="pcm-drop-label">DROP FILES</span>
-            <span className="pcm-drop-hint">
-              max {MAX_FILE_MB} MB · images &amp; videos
-            </span>
-          </div>
-        )}
-
+      <div className="pcm-modal" onClick={(e) => e.stopPropagation()}>
         {/* Window chrome */}
         <div className="pcm-header">
           <div className="pcm-window-controls">
@@ -301,73 +338,113 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="Post title..."
+                placeholder="Post title…"
                 maxLength={300}
                 autoFocus
               />
             </div>
 
-            {/* Kind selector */}
+            {/* Content — EditorJS */}
             <div className="pcm-field">
-              <label className="pcm-label">Type</label>
-              <div className="pcm-kind-row">
-                {["text", "link"].map((k) => (
-                  <button
-                    key={k}
-                    type="button"
-                    className={`pcm-kind-btn${kind === k ? " active" : ""}`}
-                    onClick={() => setKind(k)}
-                  >
-                    {k}
-                  </button>
-                ))}
-              </div>
+              <label className="pcm-label">Content</label>
+              <div id={EDITOR_HOLDER_ID} className="pcm-editor-holder" />
             </div>
 
-            {/* Editor (text) or URL (link) */}
-            {kind === "text" ? (
-              <div className="pcm-field">
-                <label className="pcm-label">
-                  Content
-                  <span className="pcm-label-hint">
-                    — drag &amp; drop images/videos anywhere on this window
-                  </span>
-                </label>
-                <div id={EDITOR_HOLDER_ID} className="pcm-editor-holder" />
-              </div>
-            ) : (
-              <div className="pcm-field">
-                <label className="pcm-label" htmlFor="pcm-link">
-                  URL
-                </label>
+            {/* Media — file upload */}
+            <div className="pcm-field">
+              <label className="pcm-label">Media</label>
+              <div className="pcm-media-row">
+                {/* Hidden native file input; triggered by the button */}
                 <input
-                  id="pcm-link"
-                  className="pcm-input"
-                  type="url"
-                  value={linkUrl}
-                  onChange={(e) => setLinkUrl(e.target.value)}
-                  placeholder="https://..."
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  className="pcm-file-input"
+                  onChange={handleFileChange}
+                  aria-label="Upload media files"
                 />
+                <button
+                  type="button"
+                  className="pcm-file-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                >
+                  📎 Attach files
+                </button>
+                <span className="pcm-file-hint">
+                  images &amp; videos · max {MAX_FILE_MB} MB each
+                </span>
               </div>
-            )}
 
-            {/* Per-file upload progress */}
-            {isUploading && (
-              <div className="pcm-upload-progress" role="status">
-                {uploadingFiles.map((f) => (
-                  <div key={f.name} className="pcm-upload-row">
-                    <span className="pcm-upload-name">↑ {f.name}</span>
-                    <div className="pcm-upload-bar-track">
-                      <div
-                        className="pcm-upload-bar-fill"
-                        style={{ width: `${f.pct}%` }}
-                      />
+              {/* Per-file upload progress */}
+              {isUploading && (
+                <div className="pcm-upload-progress" role="status">
+                  {uploadingFiles.map((f) => (
+                    <div key={f.name} className="pcm-upload-row">
+                      <span className="pcm-upload-name">↑ {f.name}</span>
+                      <div className="pcm-upload-bar-track">
+                        <div
+                          className="pcm-upload-bar-fill"
+                          style={{ width: `${f.pct}%` }}
+                        />
+                      </div>
+                      <span className="pcm-upload-pct">{f.pct}%</span>
                     </div>
-                    <span className="pcm-upload-pct">{f.pct}%</span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* GIF search */}
+            <div className="pcm-field">
+              <label className="pcm-label" htmlFor="pcm-gif-search">
+                GIF
+              </label>
+              <input
+                id="pcm-gif-search"
+                className="pcm-gif-search"
+                type="search"
+                value={gifQuery}
+                onChange={handleGifQueryChange}
+                placeholder="Search GIFs and click to insert…"
+              />
+              {gifLoading && <p className="pcm-gif-status">Searching…</p>}
+              {gifError && (
+                <p className="pcm-gif-status pcm-gif-error">{gifError}</p>
+              )}
+              {!gifLoading &&
+                gifQuery.trim() &&
+                gifResults.length === 0 &&
+                !gifError && (
+                  <p className="pcm-gif-status">No results for "{gifQuery}"</p>
+                )}
+              {gifResults.length > 0 && (
+                <>
+                  <div className="pcm-gif-grid">
+                    {gifResults.map((gif) => (
+                      <button
+                        key={gif.id}
+                        type="button"
+                        className="pcm-gif-thumb"
+                        onClick={() => handleGifSelect(gif)}
+                        title={gif.title}
+                      >
+                        <img
+                          src={
+                            gif.images?.fixed_width_small?.url ||
+                            gif.images?.fixed_height_small?.url
+                          }
+                          alt={gif.title}
+                          loading="lazy"
+                        />
+                      </button>
+                    ))}
                   </div>
-                ))}
-              </div>
-            )}
+                  <p className="pcm-gif-powered">Powered by GIPHY</p>
+                </>
+              )}
+            </div>
 
             {error && <p className="pcm-error">{error}</p>}
 
