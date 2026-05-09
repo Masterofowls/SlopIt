@@ -167,9 +167,7 @@ class PostViewSet(ModelViewSet):
             .order_by("-published_at", "-created_at")
         )
 
-        if not self.request.user.is_authenticated:
-            return qs.filter(status=Post.Status.PUBLISHED)
-        return qs.filter(status=Post.Status.PUBLISHED) | qs.filter(author=self.request.user)
+        return qs.filter(status=Post.Status.PUBLISHED)
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
@@ -195,7 +193,11 @@ class PostViewSet(ModelViewSet):
         return PostListSerializer
 
     def perform_create(self, serializer) -> None:  # type: ignore[override]
-        serializer.save(author=self.request.user)
+        serializer.save(
+            author=self.request.user,
+            status=Post.Status.PUBLISHED,
+            published_at=timezone.now(),
+        )
 
     @action(
         detail=True,
@@ -208,10 +210,7 @@ class PostViewSet(ModelViewSet):
         post: Post = self.get_object()
 
         if post.status == Post.Status.PUBLISHED:
-            return Response(
-                {"detail": "Post is already published."},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response(PostDetailSerializer(post, context={"request": request}).data)
         if post.status == Post.Status.REMOVED:
             return Response(
                 {"detail": "Removed posts cannot be republished."},
