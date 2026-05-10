@@ -23,9 +23,14 @@ const Navigation = () => {
     if (isLoading) return null;
     if (!isAuthenticated) {
       return (
-        <button className="login-button" onClick={() => setShowAuthModal(true)}>
-          Login
-        </button>
+        <>
+          <button
+            className="login-button"
+            onClick={() => setShowAuthModal(true)}
+          >
+            Login
+          </button>
+        </>
       );
     }
     return (
@@ -39,6 +44,9 @@ const Navigation = () => {
           Manage
         </a>
         <UserButton afterSignOutUrl="/" />
+        <button className="nav-profile" onClick={navigate("/profile")}>
+          BRO CLICK ME BRO
+        </button>
       </div>
     );
   }

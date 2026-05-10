@@ -17,6 +17,10 @@
   align-items: center;
 }
 
+.nav-profile {
+  z-index: 100000000000000000000000;
+}
+
 .nav-brand {
   cursor: pointer;
   display: flex;
