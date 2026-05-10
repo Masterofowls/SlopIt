@@ -1,11 +1,14 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useUser, UserButton } from '@clerk/clerk-react';
-import { useNavigate } from 'react-router-dom';
-import { useProtectedApi } from '../hooks/useProtectedApi';
-import FrogBackground from '../components/ToxicBackground';
+import React, { useEffect, useRef, useState } from "react";
+import { useUser, UserButton } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
+import { useProtectedApi } from "../hooks/useProtectedApi";
+import FrogBackground from "../components/ToxicBackground";
+import "./ProfilePage.css";
 
 const clean = (s) =>
-  s && !/^(clerk_|k_)?user_[a-z0-9]{6,}/i.test(s) && !/^user\d+$/i.test(s) ? s : null;
+  s && !/^(clerk_|k_)?user_[a-z0-9]{6,}/i.test(s) && !/^user\d+$/i.test(s)
+    ? s
+    : null;
 
 const ProfilePage = () => {
   const { user, isLoaded } = useUser();
@@ -15,21 +18,59 @@ const ProfilePage = () => {
   const [profile, setProfile] = useState(null);
   const [posts, setPosts] = useState([]);
   const [editing, setEditing] = useState(false);
-  const [editName, setEditName] = useState('');
-  const [editBio, setEditBio] = useState('');
+  const [editName, setEditName] = useState("");
+  const [editBio, setEditBio] = useState("");
   const [editAvatar, setEditAvatar] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => { if (isLoaded) get('/me/').then(setProfile).catch(() => {}); }, [isLoaded, get]);
-  useEffect(() => { if (profile?.username) get(`/users/${profile.username}/posts/`).then((d) => setPosts(Array.isArray(d) ? d : (d.results ?? []))).catch(() => {}); }, [profile?.username, get]);
+  useEffect(() => {
+    if (isLoaded)
+      get("/me/")
+        .then(setProfile)
+        .catch(() => {});
+  }, [isLoaded, get]);
+  useEffect(() => {
+    if (profile?.username)
+      get(`/users/${profile.username}/posts/`)
+        .then((d) => setPosts(Array.isArray(d) ? d : (d.results ?? [])))
+        .catch(() => {});
+  }, [profile?.username, get]);
 
-  const displayName = profile?.display_name || clean(user?.fullName) || clean(profile?.username) || 'ANON';
-  const avatarUrl = profile?.avatar_url || user?.imageUrl;
-  const revoke = () => { if (previewUrlRef.current) { URL.revokeObjectURL(previewUrlRef.current); previewUrlRef.current = null; } };
-  const openEdit = () => { setEditName(profile?.display_name || ''); setEditBio(profile?.bio || ''); setEditing(true); };
-  const cancelEdit = () => { revoke(); setEditing(false); setEditAvatar(null); setAvatarPreview(null); };
-  const onAvatarChange = (e) => { const f = e.target.files?.[0]; if (!f) return; revoke(); setEditAvatar(f); previewUrlRef.current = URL.createObjectURL(f); setAvatarPreview(previewUrlRef.current); };
+  const displayName =
+    profile?.display_name ||
+    clean(user?.fullName) ||
+    clean(profile?.username) ||
+    "ANON";
+  const avatarUrl =
+    profile?.avatar_url ||
+    user?.imageUrl ||
+    "../../../dist/background-green.png";
+  const revoke = () => {
+    if (previewUrlRef.current) {
+      URL.revokeObjectURL(previewUrlRef.current);
+      previewUrlRef.current = null;
+    }
+  };
+  const openEdit = () => {
+    setEditName(profile?.display_name || "");
+    setEditBio(profile?.bio || "");
+    setEditing(true);
+  };
+  const cancelEdit = () => {
+    revoke();
+    setEditing(false);
+    setEditAvatar(null);
+    setAvatarPreview(null);
+  };
+  const onAvatarChange = (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    revoke();
+    setEditAvatar(f);
+    previewUrlRef.current = URL.createObjectURL(f);
+    setAvatarPreview(previewUrlRef.current);
+  };
   const saveProfile = async () => {
     setSaving(true);
     try {
@@ -47,44 +88,148 @@ const ProfilePage = () => {
       const cfg = isFile ? { headers: { "Content-Type": undefined } } : {};
       setProfile(await patch("/me/", d, cfg));
       cancelEdit();
-    } finally { setSaving(false); }
+    } finally {
+      setSaving(false);
+    }
   };
 
-  if (!isLoaded) return <div><FrogBackground /><p>Loading...</p></div>;
+  if (!isLoaded)
+    return (
+      <div>
+        <FrogBackground />
+        <p>Loading...</p>
+      </div>
+    );
 
   return (
-    <div>
+    <div className="pp-page">
       <FrogBackground />
-      <div>
-        <div>
-          {avatarUrl ? <img src={avatarUrl} alt="avatar" /> : <div>{displayName[0].toUpperCase()}</div>}
-          <h1>{displayName}</h1>
-          {clean(profile?.username) && <p>@{clean(profile.username)}</p>}
-          {profile?.bio && <p>{profile.bio}</p>}
-          <p>{posts.length} posts</p>
-          <UserButton afterSignOutUrl="/" />
-          <button onClick={editing ? cancelEdit : openEdit}>{editing ? 'Close' : 'Edit'}</button>
+      <button className="pp-back-btn" onClick={() => navigate(-1)}>
+        ← Back
+      </button>
+      <div className="pp-container">
+        <div className="pp-card pp-header-card">
+          <div className="pp-avatar-wrap">
+            <div className="pp-avatar-glow"></div>
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="avatar" className="pp-avatar" />
+            ) : (
+              <div className="pp-avatar-placeholder">
+                {displayName[0].toUpperCase()}
+              </div>
+            )}
+          </div>
+          <div className="pp-identity">
+            <h1 className="pp-displayname">{displayName}</h1>
+            {clean(profile?.username) && (
+              <p className="pp-username">@{clean(profile.username)}</p>
+            )}
+            {profile?.bio && <p className="pp-bio">{profile.bio}</p>}
+          </div>
+          <div className="pp-stats">
+            <div className="pp-stat">
+              <span className="pp-stat-val">{posts.length}</span>
+              <span className="pp-stat-label">Posts</span>
+            </div>
+            <div className="pp-clerk-btn">
+              <UserButton afterSignOutUrl="/" />
+            </div>
+            <button
+              className="pp-edit-toggle"
+              onClick={editing ? cancelEdit : openEdit}
+            >
+              {editing ? "Close" : "Edit"}
+            </button>
+          </div>
         </div>
         {editing && (
-          <div>
-            <h2>Edit Profile</h2>
-            <div>
-              {(avatarPreview || avatarUrl) ? <img src={avatarPreview || avatarUrl} alt="avatar" /> : <div>{displayName[0].toUpperCase()}</div>}
-              <label>Choose Avatar<input type="file" accept="image/*" onChange={onAvatarChange} style={{ display: 'none' }} /></label>
+          <div className="pp-card pp-edit-panel">
+            <h2 className="pp-edit-title">Edit Profile</h2>
+            <div className="pp-edit-avatar-row">
+              <div className="pp-edit-avatar-preview">
+                {avatarPreview || avatarUrl ? (
+                  <img src={avatarPreview || avatarUrl} alt="avatar" />
+                ) : (
+                  <div className="pp-edit-avatar-placeholder">
+                    {displayName[0].toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <label className="pp-edit-upload-btn">
+                Choose Avatar
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={onAvatarChange}
+                  style={{ display: "none" }}
+                />
+              </label>
             </div>
-            <div><label>Display Name</label><input maxLength={100} placeholder="Enter your display name" value={editName} onChange={(e) => setEditName(e.target.value)} /></div>
-            <div><label>Bio</label><textarea maxLength={500} placeholder="Tell the world" value={editBio} onChange={(e) => setEditBio(e.target.value)} rows={3} /></div>
-            <div>
-              <button onClick={saveProfile} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
-              <button onClick={cancelEdit} disabled={saving}>Cancel</button>
+            <div className="pp-edit-field">
+              <label className="pp-edit-label">Display Name</label>
+              <input
+                className="pp-edit-input"
+                maxLength={100}
+                placeholder="Enter your display name"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+              />
+            </div>
+            <div className="pp-edit-field">
+              <label className="pp-edit-label">Bio</label>
+              <textarea
+                className="pp-edit-input pp-edit-textarea"
+                maxLength={500}
+                placeholder="Tell the world"
+                value={editBio}
+                onChange={(e) => setEditBio(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <div className="pp-edit-actions">
+              <button
+                className="pp-edit-btn pp-edit-btn--primary"
+                onClick={saveProfile}
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Save"}
+              </button>
+              <button
+                className="pp-edit-btn pp-edit-btn--cancel"
+                onClick={cancelEdit}
+                disabled={saving}
+              >
+                Cancel
+              </button>
             </div>
           </div>
         )}
-        <div>
+      </div>
+      <div className="pp-posts-section">
+        <div className="pp-posts-grid">
           {posts.map((p) => (
-            <div key={p.id} onClick={() => p.slug && navigate(`/post/${p.slug}`)} style={{ cursor: p.slug ? 'pointer' : 'default' }}>
-              {p.media?.[0]?.file && <img src={p.media[0].file} alt={p.title} />}
-              <p>{p.kind} — {p.title}</p>
+            <div
+              key={p.id}
+              className="pp-post-card"
+              onClick={() => p.slug && navigate(`/post/${p.slug}`)}
+            >
+              {p.media?.[0]?.file && (
+                <div className="pp-post-thumb-wrap">
+                  <img
+                    src={p.media[0].file}
+                    alt={p.title}
+                    className="pp-post-thumb"
+                  />
+                </div>
+              )}
+              <div className="pp-post-info">
+                <span
+                  className={`pp-post-kind pp-kind--${p.kind?.toLowerCase()}`}
+                >
+                  {p.kind}
+                </span>
+                <p className="pp-post-title">{p.title}</p>
+              </div>
             </div>
           ))}
         </div>

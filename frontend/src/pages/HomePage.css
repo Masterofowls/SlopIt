@@ -174,11 +174,16 @@ body {
 
 /* ── Feed loading / error ─────────────────────────────────────────────────── */
 .feed-status {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   text-align: center;
   color: #005500;
   font-family: "Courier New", monospace;
-  font-size: 13px;
-  margin: 20px 0;
+  font-size: 36px;
+  margin: 0;
+  z-index: 10;
 }
 
 .feed-error {
