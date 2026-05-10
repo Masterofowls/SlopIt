@@ -44,7 +44,7 @@ const Navigation = () => {
           Manage
         </a>
         <UserButton afterSignOutUrl="/" />
-        <button className="nav-profile" onClick={navigate("/profile")}>
+        <button className="nav-profile" onClick={() => navigate("/profile")}>
           BRO CLICK ME BRO
         </button>
       </div>
