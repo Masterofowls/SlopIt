@@ -80,6 +80,20 @@
 }
 
 /* Uploaded / embedded images */
+.post-media {
+  margin: 8px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.post-media-image {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+  border: 1px solid #003300;
+}
 .post-md-image {
   display: block;
   max-width: 100%;

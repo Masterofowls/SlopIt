@@ -38,8 +38,17 @@ const PollPost = ({ post }) => {
     }
   };
 
+  const mediaImages = post.media?.filter((m) => m.kind === "image") ?? [];
+
   return (
     <Post post={post}>
+      {mediaImages.length > 0 && (
+        <div className="poll-media">
+          {mediaImages.map((m) => (
+            <img key={m.id} src={m.file} alt="" className="poll-media-image" />
+          ))}
+        </div>
+      )}
       {post.title && <p className="poll-question">{post.title}</p>}
       <ul className="poll-options">
         {options.map((opt, idx) => {

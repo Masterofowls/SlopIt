@@ -2,12 +2,27 @@
 
 from __future__ import annotations
 
+import mimetypes
+import os
 import textwrap
 import uuid
 
 from django.conf import settings
 from django.db import models
 from django.utils.text import slugify
+
+
+def _media_upload_to(instance: object, filename: str) -> str:
+    """Store media files as UUID hex names, preserving the original extension."""
+    ext = os.path.splitext(filename)[1].lower()
+    return f"posts/media/uploads/{uuid.uuid4().hex}{ext}"
+
+
+def _thumb_upload_to(instance: object, filename: str) -> str:
+    """Store thumbnails as UUID hex names, preserving the original extension."""
+    ext = os.path.splitext(filename)[1].lower()
+    return f"posts/thumbs/uploads/{uuid.uuid4().hex}{ext}"
+
 
 _MARKDOWN_ALLOWED_TAGS = [
     "p",
@@ -172,13 +187,13 @@ class Media(models.Model):
         related_name="media",
     )
     kind = models.CharField(max_length=10, choices=Kind.choices)
-    file = models.FileField(upload_to="posts/media/")
+    file = models.FileField(upload_to=_media_upload_to)
     thumbnail = models.ImageField(
-        upload_to="posts/thumbs/",
+        upload_to=_thumb_upload_to,
         null=True,
         blank=True,
     )
-    mime_type = models.CharField(max_length=100)
+    mime_type = models.CharField(max_length=100, blank=True, default="")
     file_size = models.PositiveBigIntegerField(default=0)
     width = models.PositiveIntegerField(null=True, blank=True)
     height = models.PositiveIntegerField(null=True, blank=True)
@@ -196,6 +211,31 @@ class Media(models.Model):
         ordering = ["created_at"]
         verbose_name = "media"
         verbose_name_plural = "media"
+
+    def save(self, *args, **kwargs) -> None:  # type: ignore[override]
+        if self.file:
+            # Auto-detect mime type from filename
+            if not self.mime_type:
+                guessed, _ = mimetypes.guess_type(self.file.name)
+                self.mime_type = guessed or "application/octet-stream"
+            # Auto-detect kind from mime type
+            if not self.kind:
+                mt = self.mime_type
+                if mt.startswith("image/gif"):
+                    self.kind = self.Kind.GIF
+                elif mt.startswith("image/"):
+                    self.kind = self.Kind.IMAGE
+                elif mt.startswith("video/"):
+                    self.kind = self.Kind.VIDEO
+                else:
+                    self.kind = self.Kind.IMAGE
+            # Auto-detect file size
+            if not self.file_size:
+                try:
+                    self.file_size = self.file.size
+                except Exception:
+                    pass
+        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return f"{self.kind.upper()} for Post#{self.post_id}"

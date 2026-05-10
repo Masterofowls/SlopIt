@@ -16,7 +16,7 @@ kill_timeout = "30s"
 
 [deploy]
   # Run DB migrations on every release (Clerk replaces allauth OAuth — no sync_social_apps needed).
-  release_command = "sh -c 'cd src/slopit && python manage.py migrate --noinput'"
+  release_command = "sh -c 'cd src/slopit && python manage.py migrate --noinput && python manage.py rebuild_feed_pool'"
   strategy = "rolling"
 
 [env]

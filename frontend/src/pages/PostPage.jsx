@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProtectedApi } from "../hooks/useProtectedApi";
 import Navigation from "../components/layout/Navigation";
-import Post from "../components/posts/Post";
+import PostFactory from "../components/posts/PostFactory";
 import "./PostPage.css";
 
 const PostPage = () => {
@@ -74,7 +74,7 @@ const PostPage = () => {
             >
               ← BACK
             </button>
-            <Post post={post} />
+            <PostFactory post={post} />
           </>
         )}
       </div>

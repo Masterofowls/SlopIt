@@ -6,11 +6,16 @@ const VideoPost = ({ post }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef(null);
 
+  // Backend: post.media = [{id, kind, file, ...}]; legacy: post.videoUrl
+  const videoMedia = post.media?.find((m) => m.kind === "video");
+  const videoUrl = videoMedia?.file || post.videoUrl;
+  const thumbUrl = videoMedia?.thumbnail || post.thumbnailUrl;
+
   useEffect(() => {
-    if (isPlaying && videoRef.current && post.videoUrl) {
-      videoRef.current.src = post.videoUrl;
+    if (isPlaying && videoRef.current && videoUrl) {
+      videoRef.current.src = videoUrl;
     }
-  }, [isPlaying, post.videoUrl]);
+  }, [isPlaying, videoUrl]);
 
   const handlePlay = () => {
     setIsPlaying(true);
@@ -24,7 +29,7 @@ const VideoPost = ({ post }) => {
         ) : (
           <div className="video-thumbnail" onClick={handlePlay}>
             <img
-              src={post.thumbnailUrl}
+              src={thumbUrl}
               alt="Video thumbnail"
               className="thumbnail-image"
             />
@@ -36,6 +41,6 @@ const VideoPost = ({ post }) => {
       </div>
     </Post>
   );
-};
+};;
 
 export default VideoPost;

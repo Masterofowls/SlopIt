@@ -1,10 +1,3 @@
-"""Django signals for the posts app.
-
-Hooks:
-- post_save on Post: when status changes to 'published', enqueue L2 intake.
-- post_save on Post: when status changes FROM 'published' to 'removed',
-  enqueue a mark-ineligible update on the PostFeedMeta record.
-"""
 
 from __future__ import annotations
 
@@ -33,18 +26,36 @@ def _on_post_saved(sender: type, instance: object, created: bool, **kwargs: obje
     original = getattr(instance, "_original_status", None)
 
     if current == "published" and original != "published":
-        # Assign a random toxicity score on first publish
+        # Assign a random toxicity score and ensure published_at is set.
         import random
 
-        sender.objects.filter(pk=instance.pk).update(  # type: ignore[union-attr]
-            toxicity_score=round(random.uniform(0.0, 1.0), 4),
-        )
+        from django.utils import timezone
 
-        from apps.feed.jobs import enqueue_post_published
+        update_fields: dict[str, object] = {
+            "toxicity_score": round(random.uniform(0.0, 1.0), 4),
+        }
+        if not instance.published_at:  # type: ignore[union-attr]
+            update_fields["published_at"] = timezone.now()
 
-        enqueue_post_published(instance.pk)  # type: ignore[union-attr]
+        sender.objects.filter(pk=instance.pk).update(**update_fields)  # type: ignore[union-attr]
+
+        # Run feed intake synchronously (no Redis/RQ available).
+        try:
+            from apps.feed.services.level2_intake import on_post_published
+
+            post = (
+                sender.objects.select_related("author").prefetch_related("tags").get(pk=instance.pk)
+            )  # type: ignore[union-attr]
+            on_post_published(post)
+        except Exception:
+            import logging
+
+            logging.getLogger(__name__).exception(
+                "on_post_published failed for post %s",
+                instance.pk,  # type: ignore[union-attr]
+            )
 
     elif current == "removed" and original == "published":
-        from apps.feed.jobs import enqueue_mark_ineligible
+        from apps.feed.models import PostFeedMeta
 
-        enqueue_mark_ineligible([instance.pk])  # type: ignore[union-attr]
+        PostFeedMeta.objects.filter(post_id=instance.pk).update(is_eligible=False)  # type: ignore[union-attr]

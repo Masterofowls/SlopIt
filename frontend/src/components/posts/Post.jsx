@@ -48,7 +48,7 @@ function resolveAuthorName(author) {
   return "anon";
 }
 
-const Post = ({ post }) => {
+const Post = ({ post, children }) => {
   const navigate = useNavigate();
   const { post: apiPost } = useProtectedApi();
   const { user: clerkUser } = useUser();
@@ -271,6 +271,8 @@ const Post = ({ post }) => {
           </a>
         )}
       </div>
+
+      {children}
 
       <div className="post-footer">
         <button

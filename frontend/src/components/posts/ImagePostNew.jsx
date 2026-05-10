@@ -5,7 +5,12 @@ import "./ImagePost.css";
 const ImagePost = ({ post }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const images = post.images || (post.imageUrl ? [post.imageUrl] : []);
+  // Backend returns post.media = [{id, kind, file, ...}]; legacy dummy data uses
+  // post.images (string[]) or post.imageUrl (string).
+  const images =
+    post.media?.length > 0
+      ? post.media.map((m) => m.file)
+      : post.images || (post.imageUrl ? [post.imageUrl] : []);
   const hasMultipleImages = images.length > 1;
 
   const goToPrevious = () => {
@@ -49,6 +54,6 @@ const ImagePost = ({ post }) => {
       </div>
     </Post>
   );
-};
+};;
 
 export default ImagePost;

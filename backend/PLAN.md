@@ -162,3 +162,11 @@ SlopIt_App/
 - Rate-limit заголовки: `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `Retry-After`.
 
 Полный контакт — `docs/API.md`. Гид по интеграции — `docs/FRONTEND_GUIDE.md`.
+
+## 9. Исправленные баги / Changelog
+
+| Дата       | Компонент                        | Симптом                                              | Причина                                                                                                                  | Фикс                                                                                                                                                               |
+| ---------- | -------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-05-10 | `accounts/avatar.py`             | Аватар всегда показывал букву «U» для всех пользователей | Clerk usernames имеют формат `user_abc123` — все начинаются на «U»; `isalpha()` исключал цифры и спецсимволы          | Убран `isalpha()`; seed выбирается по приоритету: `display_name` → `first_name + last_name` → non-Clerk username → email local-часть → `str(pk)`                 |
+| 2026-05-10 | `accounts/serializers.py`        | Тот же симптом (все три сериализатора)               | Все три `get_avatar_url` передавали сырой Clerk ID как seed                                                             | Добавлены статические методы `_avatar_seed_for_user` / `_avatar_seed_for_profile` с единой логикой приоритетов; `PublicProfileSerializer` переиспользует метод `ProfileSerializer` |
+| 2026-05-10 | `frontend/src/pages/ProfilePage.jsx` | `PATCH /api/v1/me/` возвращал 400 при загрузке аватар-файла | `api.js` создаёт axios-инстанс с дефолтным `Content-Type: application/json`, который перебивал автоматический `multipart/form-data; boundary=…` при отправке `FormData` | Передаём `{ headers: { 'Content-Type': undefined } }` для запросов с файлом — axios сам подставляет правильный `multipart/form-data` с boundary |
