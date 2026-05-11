@@ -38,7 +38,7 @@ const PostFeed = ({
       )}
 
       {posts.map((post) => (
-        <div key={post.id}>
+        <div key={post.id} id={`post-${post.id}`} data-post-id={String(post.id)}>
           <PostFactory post={post} />
         </div>
       ))}

@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useAuthContext } from "../context/AuthContext";
 import { PostFeed } from "../components/posts/index.js";
@@ -15,47 +15,44 @@ import { MAX_FILE_BYTES } from "../lib/uploadMedia.js";
 const HomePage = () => {
   const { user: clerkUser } = useUser();
   const { telegramUser, provider, isLoading: authLoading } = useAuthContext();
-  const { get } = useProtectedApi();
+  const { get, post } = useProtectedApi();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [feedError, setFeedError] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  // Cursor-based pagination state for the /feed/ endpoint
   const [feedCursor, setFeedCursor] = useState(null);
   const [feedHasMore, setFeedHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  /**
-   * Merge two post arrays, deduplicate by id, sort newest-first.
-   * Handles both numeric ids and string ids safely.
-   */
   const mergePosts = useCallback((a, b) => {
     const seen = new Set();
-    return [...a, ...b]
-      .filter((p) => {
-        const key = String(p.id);
-        if (seen.has(key)) return false;
+    const result = [];
+    for (const p of [...a, ...b]) {
+      const key = String(p.id);
+      if (!seen.has(key)) {
         seen.add(key);
-        return true;
-      })
-      .sort((x, y) => {
-        const tx = new Date(x.created_at || x.timestamp || 0).getTime();
-        const ty = new Date(y.created_at || y.timestamp || 0).getTime();
-        return ty - tx;
-      });
+        result.push(p);
+      }
+    }
+    return result;
   }, []);
 
-  /**
-   * Fetch the social feed AND the current user's own posts, then merge them.
-   * Own posts come from GET /posts/ (the same base resource used to create).
-   * The /feed/ endpoint is typically a "following" feed that excludes self.
-   */
+
   const fetchFeed = useCallback(
     (signal) => {
       setLoading(true);
       setFeedError(null);
 
-      const feedReq = get("/feed/?cursor=0&limit=25").catch(() => []);
+      const alreadyShuffled = sessionStorage.getItem('feedShuffled') === '1';
+      const refreshStep = alreadyShuffled
+        ? Promise.resolve()
+        : post('/feed/refresh/')
+            .catch(() => null)
+            .then(() => sessionStorage.setItem('feedShuffled', '1'));
+
+      const feedReq = refreshStep.then(() =>
+        get('/feed/?cursor=0&limit=25').catch(() => []),
+      );
       const ownReq = get("/posts/?ordering=-created_at&limit=25").catch(
         () => [],
       );
@@ -74,7 +71,6 @@ const HomePage = () => {
           const merged = mergePosts(feedPosts, ownPosts);
           setPosts(merged.length > 0 ? merged : dummyPosts);
 
-          // Persist cursor for infinite-scroll load-more
           setFeedCursor(feedData?.next_cursor ?? null);
           setFeedHasMore(feedData?.has_more ?? false);
         })
@@ -89,7 +85,7 @@ const HomePage = () => {
     [get, mergePosts],
   );
 
-  /** Fetch the next cursor page from /feed/ and append to posts. */
+ 
   const loadMoreFeed = useCallback(async () => {
     if (loadingMore || !feedHasMore || feedCursor === null) return;
     setLoadingMore(true);
@@ -100,13 +96,11 @@ const HomePage = () => {
       setFeedCursor(data?.next_cursor ?? null);
       setFeedHasMore(data?.has_more ?? false);
     } catch {
-      // silently absorb — user can scroll again to retry
     } finally {
       setLoadingMore(false);
     }
   }, [loadingMore, feedHasMore, feedCursor, get, mergePosts]);
 
-  // Initial load — wait for auth to settle first
   useEffect(() => {
     if (authLoading) return;
     const controller = new AbortController();
@@ -116,15 +110,50 @@ const HomePage = () => {
 
   const handlePostCreated = useCallback(
     (newPost) => {
-      // Optimistic insert so the post appears immediately
       setPosts((prev) => mergePosts([newPost], prev));
-      // Re-fetch in the background so the backend state is confirmed
       fetchFeed();
     },
     [fetchFeed, mergePosts],
   );
 
-  const isIdle = useIdle(100_000); // 100 seconds
+  const isIdle = useIdle(100_000);
+
+  const scrollRestoredRef = useRef(false);
+
+  useEffect(() => {
+    let timer = null;
+    const handleScroll = () => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        const el = document.elementFromPoint(
+          window.innerWidth / 2,
+          window.innerHeight / 2,
+        );
+        const postEl = el?.closest('[data-post-id]');
+        if (postEl) {
+          sessionStorage.setItem('feedLastPostId', postEl.dataset.postId);
+        }
+      }, 150);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(timer);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (loading || posts.length === 0 || scrollRestoredRef.current) return;
+    const savedId = sessionStorage.getItem('feedLastPostId');
+    if (!savedId) return;
+    requestAnimationFrame(() => {
+      const target = document.querySelector(`[data-post-id="${savedId}"]`);
+      if (target) {
+        target.scrollIntoView({ block: 'start', behavior: 'instant' });
+      }
+      scrollRestoredRef.current = true;
+    });
+  }, [loading, posts]);
 
   return (
     <div className="page home-page">

@@ -55,7 +55,7 @@ const PostCreator = ({ onCreatePost }) => {
       }
     } else if (postType === "video") {
       postData.videoUrl = videoUrl;
-      postData.thumbnailUrl = videoUrl; // In real app, this would be a separate thumbnail
+      postData.thumbnailUrl = videoUrl;
     } else if (postType === "questionnaire") {
       postData.question = question;
       postData.options = options
@@ -66,7 +66,6 @@ const PostCreator = ({ onCreatePost }) => {
 
     onCreatePost(postData);
 
-    // Reset form
     setContent("");
     setImages([]);
     setVideoUrl("");

@@ -1,7 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import LandingPage from "./pages/LandingPage";
-import TestConsolePage from "./pages/TestConsolePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import DebugToolbar from "./components/debug/DebugToolbar";
 import PostPage from "./pages/PostPage";
@@ -21,12 +20,9 @@ function InnerApp() {
         <Route
           path="/profile"
           element={
-            // <ProtectedRoute>
             <ProfilePage />
-            // </ProtectedRoute> TODO
           }
         />
-        <Route path="/tests" element={<TestConsolePage />} />
         <Route path="/post/:slug" element={<PostPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>

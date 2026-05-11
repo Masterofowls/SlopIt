@@ -4,20 +4,14 @@ import { useAuth } from "@clerk/clerk-react";
 
 const API_URL = import.meta.env.VITE_API_URL || "https://slopit-api.fly.dev";
 
-/**
- * Axios instance used for all API calls.
- * - Sends session cookies (withCredentials) so Telegram sessions work.
- * - CSRF interceptor reads the csrftoken cookie and adds it to mutating
- *   requests so Django's CSRF protection is satisfied for Telegram sessions.
- * - Clerk Bearer token is attached separately via useClerkInterceptor().
- */
+
 export const api = axios.create({
   baseURL: `${API_URL}/api/v1`,
   withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
 
-// Read a cookie by name
+
 function getCookie(name) {
   const match = document.cookie.match(
     new RegExp("(?:^|; )" + name + "=([^;]*)"),
@@ -25,7 +19,7 @@ function getCookie(name) {
   return match ? decodeURIComponent(match[1]) : null;
 }
 
-// Attach X-CSRFToken to all mutating requests (needed for Telegram/session auth)
+
 api.interceptors.request.use((config) => {
   const safeMethods = ["get", "head", "options", "trace"];
   if (!safeMethods.includes((config.method ?? "get").toLowerCase())) {
@@ -35,12 +29,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-/**
- * Mount this hook once inside <ClerkProvider> to attach the Clerk Bearer
- * token to every api request when the user is signed in via Clerk.
- * When the user is signed in via Telegram instead, getToken() returns null
- * and no Authorization header is added — the session cookie handles auth.
- */
+
 export function useClerkInterceptor() {
   const { getToken } = useAuth();
 
@@ -56,7 +45,7 @@ export function useClerkInterceptor() {
   }, [getToken]);
 }
 
-/** Standalone helper — pass token explicitly (for non-hook contexts). */
+
 export async function apiFetchWithToken(path, token, init = {}) {
   const res = await fetch(`${API_URL}${path}`, {
     ...init,

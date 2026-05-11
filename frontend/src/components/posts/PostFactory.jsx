@@ -6,7 +6,6 @@ import PollPost from "./PollPost";
 import AlertPost from "./AlertPost";
 
 const PostFactory = ({ post }) => {
-  // Backend uses `kind`; legacy dummy data uses `type`
   const kind = post.kind || post.type;
 
   switch (kind) {

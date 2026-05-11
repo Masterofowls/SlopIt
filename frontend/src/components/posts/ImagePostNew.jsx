@@ -5,8 +5,6 @@ import "./ImagePost.css";
 const ImagePost = ({ post }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Backend returns post.media = [{id, kind, file, ...}]; legacy dummy data uses
-  // post.images (string[]) or post.imageUrl (string).
   const images =
     post.media?.length > 0
       ? post.media.map((m) => m.file)

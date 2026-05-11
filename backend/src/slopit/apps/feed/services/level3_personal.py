@@ -1,14 +1,11 @@
 """Level 3: Per-user feed snapshot generation.
 
-Generates a deterministic, reproducible FeedSnapshot for a user:
-
+Algorithm:
 1. Apply the user's FeedPreferences to filter the eligible PostFeedMeta pool.
-2. Group filtered posts by bucket (anti-clustering groupings from L2).
-3. Generate a fresh cryptographic seed (secrets.randbits).
-4. Within each bucket, sort by (rotation_offset XOR seed_low32).
-5. Shuffle bucket order with the seed.
-6. Round-robin across buckets to produce the final ordered post_ids list.
-7. Persist in a new FeedSnapshot; deactivate any prior active snapshot.
+2. Generate a fresh cryptographic seed via secrets.randbelow.
+3. Shuffle all eligible posts randomly (no ranking by likes/time/type).
+4. Reorder to prevent two consecutive posts from the same author.
+5. Persist in a new FeedSnapshot; deactivate any prior active snapshot.
 
 Public API:
     get_or_create_snapshot(user) -> FeedSnapshot
@@ -21,7 +18,6 @@ from __future__ import annotations
 import logging
 import random
 import secrets
-from collections import defaultdict
 from datetime import timedelta
 from typing import TYPE_CHECKING
 
@@ -51,44 +47,43 @@ def _get_prefs(user: AbstractBaseUser) -> FeedPreferences:
     return prefs
 
 
-def _build_ordered_ids(
-    rows: list[tuple[int, int, int]],
-    seed: int,
+def _shuffle_no_consecutive_authors(
+    rows: list[tuple[int, int]],
+    rng: random.Random,
 ) -> list[int]:
-    """Convert (post_id, bucket, rotation_offset) rows to an ordered list.
+    """Randomly shuffle (post_id, author_id) pairs then reorder so no two
+    consecutive posts share the same author.
 
-    Algorithm (spec §5.2):
-    1. Group by bucket.
-    2. Within each bucket, sort by (rotation_offset XOR low32(seed)).
-    3. Shuffle bucket order with RNG seeded by `seed`.
-    4. Round-robin: take one item from each bucket in turn.
+    Uses a greedy forward-scan: when a violation is detected at position i,
+    finds the next post j > i with a different author and swaps them.
+    Falls back gracefully when all remaining posts share the same author
+    (impossible to avoid consecutive — just appends them in order).
 
-    Time: O(n log n).  Space: O(n).
+    Time: O(n²) worst-case, O(n) typical. Fine for feed sizes up to ~10k.
     """
     if not rows:
         return []
 
-    by_bucket: dict[int, list[tuple[int, int]]] = defaultdict(list)
-    for post_id, bucket, rotation_offset in rows:
-        by_bucket[bucket].append((post_id, rotation_offset))
+    items = list(rows)
+    rng.shuffle(items)
 
-    low32 = seed & 0xFFFF_FFFF
-    for items in by_bucket.values():
-        items.sort(key=lambda x: x[1] ^ low32)
+    result: list[tuple[int, int]] = []
+    remaining = items
 
-    rng = random.Random(seed)  # noqa: S311
-    bucket_keys = list(by_bucket.keys())
-    rng.shuffle(bucket_keys)
+    while remaining:
+        last_author = result[-1][1] if result else None
 
-    ordered: list[int] = []
-    lists = [by_bucket[b] for b in bucket_keys]
-    max_len = max(len(lst) for lst in lists)
-    for i in range(max_len):
-        for lst in lists:
-            if i < len(lst):
-                ordered.append(lst[i][0])
+        # Find the first item that doesn't repeat the last author
+        idx = 0
+        for i, (_, author_id) in enumerate(remaining):
+            if author_id != last_author:
+                idx = i
+                break
 
-    return ordered
+        result.append(remaining[idx])
+        remaining = remaining[:idx] + remaining[idx + 1 :]
+
+    return [post_id for post_id, _ in result]
 
 
 def get_or_create_snapshot(user: AbstractBaseUser) -> FeedSnapshot:
@@ -129,6 +124,7 @@ def force_new_snapshot(user: AbstractBaseUser) -> FeedSnapshot:
     prefs = _get_prefs(user)
 
     seed = secrets.randbelow(2**63)
+    rng = random.Random(seed)  # noqa: S311
 
     qs = PostFeedMeta.objects.filter(is_eligible=True)
 
@@ -148,9 +144,9 @@ def force_new_snapshot(user: AbstractBaseUser) -> FeedSnapshot:
     if prefs.muted_user_ids:
         qs = qs.exclude(post__author_id__in=prefs.muted_user_ids)
 
-    rows = list(qs.values_list("post_id", "bucket", "rotation_offset"))
+    rows = list(qs.values_list("post_id", "post__author_id"))
 
-    post_ids = _build_ordered_ids(rows, seed)
+    post_ids = _shuffle_no_consecutive_authors(rows, rng)
 
     lifetime_hours: int | None = None
     profile = getattr(user, "profile", None)
