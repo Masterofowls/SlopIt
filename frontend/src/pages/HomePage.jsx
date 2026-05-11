@@ -6,7 +6,6 @@ import PostCreateModal from "../components/posts/PostCreateModal";
 import { useProtectedApi } from "../hooks/useProtectedApi";
 import { dummyPosts } from "../config/dummyPosts";
 import Navigation from "../components/layout/Navigation";
-import TrendingTags from "../components/layout/TrendingTags";
 import MatrixRain from "../components/MatrixRain";
 import { useIdle } from "../hooks/useIdle";
 import MatrixBackground from "../components/MatrixBackground.jsx";
@@ -150,7 +149,6 @@ const HomePage = () => {
             />
           )}
         </div>
-        <TrendingTags />
       </div>
       {showModal && (
         <PostCreateModal
