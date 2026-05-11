@@ -12,20 +12,14 @@ import { useAuthContext } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import "./Post.css";
 
-/**
- * Return the best available display name for a post author.
- * Clerk users may have their internal ID (user_xxxx) stored as `username`
- * when no real username has been set — skip those and fall back to name fields.
- */
+
 function resolveAuthorName(author) {
   if (!author) return "anon";
   const isClerkId = (s) =>
     typeof s === "string" && /^(clerk_|k_)?user_[a-z0-9]{6,}/i.test(s);
-  // Auto-generated placeholder from migration (e.g. "user38")
   const isPlaceholder = (s) => typeof s === "string" && /^user\d+$/i.test(s);
   const isBad = (s) => isClerkId(s) || isPlaceholder(s);
 
-  // Trust display_name from backend — it's already curated server-side
   if (author.display_name) return author.display_name;
   if (author.full_name && !isBad(author.full_name)) return author.full_name;
 
@@ -37,7 +31,6 @@ function resolveAuthorName(author) {
 
   if (author.username && !isBad(author.username)) return author.username;
   if (author.name && !isBad(author.name)) return author.name;
-  // Skip sentinel emails — clerk_user_XXX@no-email.local prefix is also a Clerk ID
   if (
     author.email &&
     !author.email.endsWith("@no-email.local") &&
@@ -55,12 +48,11 @@ const Post = ({ post, children }) => {
   const { telegramUser } = useAuthContext();
   const { addToast } = useToast();
   const [isAnimating, setIsAnimating] = useState(false);
-  const [reportState, setReportState] = useState("idle"); // idle | confirm | done
+  const [reportState, setReportState] = useState("idle");
   const [particles, setParticles] = useState([]);
   const [textPosition, setTextPosition] = useState({ x: 0, y: 0 });
   const [showComments, setShowComments] = useState(false);
 
-  // Support both real API format and legacy dummy-data format
   const likeCount = post.reaction_counts?.like ?? post.likes ?? 0;
   const commentCount = post.comment_count ?? post.comments ?? 0;
 
@@ -76,7 +68,6 @@ const Post = ({ post, children }) => {
 
   const authorName = resolveAuthorName(post.author);
 
-  // Detect if this post belongs to the currently logged-in user.
   const isCurrentUsersPost =
     (clerkUser &&
       (post.author?.clerk_id === clerkUser.id ||
@@ -96,7 +87,6 @@ const Post = ({ post, children }) => {
 
     const wasLiked = liked;
 
-    // Optimistic update — toggle
     if (wasLiked) {
       setUserReaction(null);
       setLocalLikeCount((n) => Math.max(0, n - 1));
@@ -104,7 +94,6 @@ const Post = ({ post, children }) => {
       setUserReaction("like");
       setLocalLikeCount((n) => n + 1);
       setIsAnimating(true);
-      // Particle animation only when adding a like
       const newParticles = Array.from({ length: 12 }, (_, i) => ({
         id: Date.now() + i,
         angle: (Math.PI * 2 * i) / 12,
@@ -123,11 +112,9 @@ const Post = ({ post, children }) => {
       }, 1000);
     }
 
-    // Call real API if post has a server id
     if (post.id && !String(post.id).startsWith("dummy")) {
       try {
         const res = await apiPost(`/posts/${post.id}/react/`, { kind: "like" });
-        // Sync with server's authoritative counts
         if (res?.reaction_counts) {
           setLocalLikeCount(res.reaction_counts.like ?? 0);
         }
@@ -135,7 +122,6 @@ const Post = ({ post, children }) => {
           setUserReaction(res.user_reaction);
         }
       } catch {
-        // Revert optimistic update on failure
         setUserReaction(wasLiked ? "like" : null);
         setLocalLikeCount((n) => (wasLiked ? n + 1 : Math.max(0, n - 1)));
       }
@@ -145,14 +131,12 @@ const Post = ({ post, children }) => {
     if (reportState === "done") return;
     if (reportState === "idle") {
       setReportState("confirm");
-      // Auto-cancel after 4 seconds if not confirmed
       setTimeout(
         () => setReportState((s) => (s === "confirm" ? "idle" : s)),
         4000,
       );
       return;
     }
-    // confirm state — submit
     try {
       await apiPost(`/posts/${post.id}/report/`, { reason: "other" });
       setReportState("done");
@@ -216,20 +200,17 @@ const Post = ({ post, children }) => {
         {postContent.bodyHtml ? (
           <div
             className="post-text"
-            /* eslint-disable-next-line react/no-danger */
             dangerouslySetInnerHTML={{ __html: postContent.bodyHtml }}
           />
         ) : postContent.body ? (
           <div className="post-text post-markdown">
             <ReactMarkdown
               components={{
-                // Open links in new tab; block navigation away
                 a: ({ href, children }) => (
                   <a href={href} target="_blank" rel="noopener noreferrer">
                     {children}
                   </a>
                 ),
-                // Constrain images to the card width
                 img: ({ src, alt }) => {
                   if (!src) return null;
                   return (
@@ -245,8 +226,6 @@ const Post = ({ post, children }) => {
                     />
                   );
                 },
-                // Unwrap paragraphs that contain only an image so the img
-                // is not nested inside <p> (avoids invalid HTML + layout quirks)
                 p: ({ children }) => {
                   const arr = React.Children.toArray(children);
                   if (arr.length === 1 && arr[0]?.type === "img") {

@@ -44,8 +44,6 @@ const HomePage = () => {
       setLoading(true);
       setFeedError(null);
 
-      // Refresh snapshot once per browser session via sessionStorage flag.
-      // Reload → same shuffled order. New tab/window → new shuffle.
       const alreadyShuffled = sessionStorage.getItem('feedShuffled') === '1';
       const refreshStep = alreadyShuffled
         ? Promise.resolve()
@@ -88,7 +86,7 @@ const HomePage = () => {
     [get, mergePosts],
   );
 
-  /** Fetch the next cursor page from /feed/ and append to posts. */
+ 
   const loadMoreFeed = useCallback(async () => {
     if (loadingMore || !feedHasMore || feedCursor === null) return;
     setLoadingMore(true);
@@ -121,12 +119,8 @@ const HomePage = () => {
 
   const isIdle = useIdle(100_000);
 
-  // ── Scroll position tracking ──────────────────────────────────────────────
-  // Save the ID of the post currently in the center of the viewport.
-  // On reload the feed is restored to that post automatically.
   const scrollRestoredRef = useRef(false);
 
-  // Track which post is visible: debounce to avoid hammering sessionStorage.
   useEffect(() => {
     let timer = null;
     const handleScroll = () => {
@@ -149,12 +143,10 @@ const HomePage = () => {
     };
   }, []);
 
-  // After posts render, scroll once to the saved post (only on first load).
   useEffect(() => {
     if (loading || posts.length === 0 || scrollRestoredRef.current) return;
     const savedId = sessionStorage.getItem('feedLastPostId');
     if (!savedId) return;
-    // rAF ensures layout is complete before scrollIntoView.
     requestAnimationFrame(() => {
       const target = document.querySelector(`[data-post-id="${savedId}"]`);
       if (target) {
@@ -163,7 +155,6 @@ const HomePage = () => {
       scrollRestoredRef.current = true;
     });
   }, [loading, posts]);
-  // ──────────────────────────────────────────────────────────────────────────
 
   return (
     <div className="page home-page">

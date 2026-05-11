@@ -83,8 +83,6 @@ const ProfilePage = () => {
             return fd;
           })(new FormData())
         : { display_name: editName.trim(), bio: editBio.trim() };
-      // Let axios auto-detect multipart/form-data boundary for file uploads.
-      // Passing Content-Type: undefined removes the default 'application/json'.
       const cfg = isFile ? { headers: { "Content-Type": undefined } } : {};
       setProfile(await patch("/me/", d, cfg));
       cancelEdit();

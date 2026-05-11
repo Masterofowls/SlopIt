@@ -66,7 +66,6 @@ const LandingPage = () => {
     "your connection is unstable or am i trippin",
   ];
 
-  // Calculate random index ONCE when component function runs
   const [randomSubtitle] = useState(() => {
     const randomIndex = Math.floor(Math.random() * randomSubtitles.length);
     return randomSubtitles[randomIndex];

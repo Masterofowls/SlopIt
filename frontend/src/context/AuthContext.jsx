@@ -8,19 +8,6 @@ import React, {
 import { useUser, useClerk, useAuth } from "@clerk/clerk-react";
 import { api } from "../lib/api";
 
-/**
- * Unified auth context — covers both Clerk (Google/GitHub/email) and
- * Telegram (session-cookie via Django allauth).
- *
- * Use `useAuthContext()` instead of Clerk's `useAuth()` when you need
- * provider-agnostic auth state.
- *
- * For Clerk users, `clerkProfile` holds the backend-resolved profile
- * (username, display_name, avatar_url) fetched from GET /api/v1/me/.
- * This ensures the DB-stored clean username is used instead of the raw
- * Clerk internal ID.
- */
-
 const AuthContext = createContext({
   provider: null,
   isAuthenticated: false,
@@ -59,8 +46,6 @@ export function AuthProvider({ children }) {
     addLog("clerkLoaded=" + clerkLoaded + " clerkSignedIn=" + clerkSignedIn);
   }, [clerkLoaded, clerkSignedIn]);
 
-  // Fetch backend profile when Clerk is signed in so we get the DB-resolved
-  // clean username (auth_method, display_name) instead of the raw Clerk ID.
   useEffect(() => {
     if (!clerkLoaded || !clerkSignedIn) return;
     let cancelled = false;
@@ -78,8 +63,6 @@ export function AuthProvider({ children }) {
         if (!res || cancelled) return;
         const d = res.data;
         addLog("GET /me/ success", d);
-        // Prefer Clerk's OAuth data for display — it has the real name/email
-        // from Google/GitHub. Backend profile supplements with app-specific data.
         const clerkEmail = clerkUser?.primaryEmailAddress?.emailAddress ?? null;
         const isClerkId = (s) =>
           typeof s === "string" && /^(clerk_|k_)?user_[a-z0-9]{6,}/i.test(s);
@@ -88,8 +71,6 @@ export function AuthProvider({ children }) {
           clerkUser?.firstName ||
           (!isClerkId(clerkUser?.username) ? clerkUser?.username : null) ||
           (clerkEmail ? clerkEmail.split("@")[0] : null);
-        // Use backend display_name as the primary source so the logged-in
-        // user's own name always matches what appears on their posts.
         setClerkProfile({
           username: d.username ?? null,
           email: clerkEmail ?? d.email ?? null,
@@ -105,7 +86,6 @@ export function AuthProvider({ children }) {
           message: err.message,
           status: err.response?.status,
         });
-        // Non-fatal: profile just stays null; components fall back to Clerk data.
       });
 
     return () => {
@@ -115,7 +95,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (!clerkLoaded) return;
-    if (clerkSignedIn) return; // handled above
+    if (clerkSignedIn) return;
 
     addLog("Clerk not signed in — probing /auth/session/");
     api
@@ -181,5 +161,5 @@ export function AuthProvider({ children }) {
   );
 }
 
-/** Provider-agnostic auth hook. */
+
 export const useAuthContext = () => useContext(AuthContext);

@@ -17,7 +17,7 @@ export function useIdle(timeout = 100_000) {
       timerRef.current = setTimeout(() => setIsIdle(true), timeout);
     }
 
-    reset(); // start timer immediately
+    reset();
 
     EVENTS.forEach((e) => window.addEventListener(e, reset, { passive: true }));
     return () => {

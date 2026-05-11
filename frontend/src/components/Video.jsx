@@ -9,7 +9,6 @@ export default function Video({ src, isMuted }) {
     }
 
     if (isMuted) {
-      //open bug since 2017 that you cannot set muted in video element https://github.com/facebook/react/issues/10389
       refVideo.current.defaultMuted = true;
       refVideo.current.muted = true;
     }
@@ -21,7 +20,7 @@ export default function Video({ src, isMuted }) {
     <video
       ref={refVideo}
       autoPlay
-      playsInline //FIX iOS black screen
+      playsInline
     />
   );
 }

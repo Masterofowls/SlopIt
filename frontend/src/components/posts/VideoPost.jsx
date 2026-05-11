@@ -6,7 +6,6 @@ const VideoPost = ({ post }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef(null);
 
-  // Backend: post.media = [{id, kind, file, ...}]; legacy: post.videoUrl
   const videoMedia = post.media?.find((m) => m.kind === "video");
   const videoUrl = videoMedia?.file || post.videoUrl;
   const thumbUrl = videoMedia?.thumbnail || post.thumbnailUrl;

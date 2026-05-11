@@ -20,10 +20,6 @@ import "./PostCreateModal.css";
 const GIPHY_API_KEY =
   import.meta.env.VITE_GIPHY_API_KEY || "whgAeYFKkKMTgtPHXms13jmULWdxN6g7";
 
-/**
- * Converts an EditorJS output object into a plain markdown string
- * suitable for the `body_markdown` API field.
- */
 function editorDataToMarkdown(data) {
   if (!data || !data.blocks) return "";
   return data.blocks
@@ -91,20 +87,17 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
   const [title, setTitle] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
-  const [uploadingFiles, setUploadingFiles] = useState([]); // [{name, pct}]
+  const [uploadingFiles, setUploadingFiles] = useState([]);
 
-  // Post kind + template state
   const [postKind, setPostKind] = useState("text");
   const [pollOptions, setPollOptions] = useState(["", ""]);
   const [alertLevel, setAlertLevel] = useState("info");
 
-  // Inline GIF search
   const [gifQuery, setGifQuery] = useState("");
   const [gifResults, setGifResults] = useState([]);
   const [gifLoading, setGifLoading] = useState(false);
   const [gifError, setGifError] = useState(null);
 
-  // ── EditorJS init ──────────────────────────────────────────────────────
 
   useEffect(() => {
     if (editorRef.current) return;
@@ -169,11 +162,9 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
     };
   }, []);
 
-  // ── File upload via <input type="file"> ───────────────────────────────
 
   const handleFileChange = useCallback(async (e) => {
     const files = Array.from(e.target.files || []);
-    // Reset so the same file can be selected again later
     e.target.value = "";
     if (!files.length) return;
 
@@ -215,7 +206,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
     }
   }, []);
 
-  // ── Inline GIF search ─────────────────────────────────────────────────
 
   const searchGif = useCallback(async (q) => {
     if (!q.trim()) {
@@ -265,7 +255,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
     });
   }, []);
 
-  // ── Submit ────────────────────────────────────────────────────────────
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -293,7 +282,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
 
     setSubmitting(true);
     try {
-      // Build payload based on kind
       const payload = { title: title.trim(), kind: postKind };
 
       if (postKind === "poll") {
@@ -335,7 +323,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
   return (
     <div className="pcm-overlay" onClick={onClose}>
       <div className="pcm-modal" onClick={(e) => e.stopPropagation()}>
-        {/* Window chrome */}
         <div className="pcm-header">
           <div className="pcm-window-controls">
             <span className="pcm-btn pcm-btn-close" onClick={onClose} />
@@ -347,7 +334,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
 
         <div className="pcm-body">
           <form onSubmit={handleSubmit} noValidate>
-            {/* Title */}
             <div className="pcm-field">
               <label className="pcm-label" htmlFor="pcm-title">
                 Title
@@ -364,7 +350,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
               />
             </div>
 
-            {/* Content — EditorJS */}
             <div className="pcm-field">
               <label className="pcm-label">Type</label>
               <div className="pcm-kind-row">
@@ -386,7 +371,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
               </div>
             </div>
 
-            {/* Poll options */}
             {postKind === "poll" && (
               <div className="pcm-field">
                 <label className="pcm-label">Poll Options</label>
@@ -434,7 +418,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
               </div>
             )}
 
-            {/* Alert severity */}
             {postKind === "alert" && (
               <div className="pcm-field">
                 <label className="pcm-label">Severity</label>
@@ -457,7 +440,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
               </div>
             )}
 
-            {/* Content — EditorJS (hide for polls) */}
             {postKind !== "poll" && (
               <div className="pcm-field">
                 <label className="pcm-label">Content</label>
@@ -465,11 +447,9 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
               </div>
             )}
 
-            {/* Media — file upload */}
             <div className="pcm-field">
               <label className="pcm-label">Media</label>
               <div className="pcm-media-row">
-                {/* Hidden native file input; triggered by the button */}
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -492,7 +472,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
                 </span>
               </div>
 
-              {/* Per-file upload progress */}
               {isUploading && (
                 <div className="pcm-upload-progress" role="status">
                   {uploadingFiles.map((f) => (
@@ -511,7 +490,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
               )}
             </div>
 
-            {/* GIF search */}
             <div className="pcm-field">
               <label className="pcm-label" htmlFor="pcm-gif-search">
                 GIF

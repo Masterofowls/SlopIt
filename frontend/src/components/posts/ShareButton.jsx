@@ -15,24 +15,20 @@ const ShareButton = ({ slug, title }) => {
   const shareText = title || 'Check this out on SlopIt';
 
   const handleShare = async () => {
-    // Web Share API (mobile / supported desktop)
     if (navigator.share) {
       try {
         await navigator.share({ title: shareText, url: shareUrl });
         return;
       } catch (err) {
-        if (err.name === 'AbortError') return; // user cancelled
-        // fall through to clipboard
+        if (err.name === 'AbortError') return;
       }
     }
 
-    // Clipboard fallback
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // Last resort: prompt
       window.prompt('Copy link:', shareUrl);
     }
   };
