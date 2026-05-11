@@ -1,0 +1,32 @@
+# SLOPIT
+
+SLOPIT — социальная сеть с рандомной лентой постов и авторизацией через Google, GitHub и Telegram.
+Проект выполнен в стиле slop-дизайна.
+
+## Ссылки
+
+- Frontend: https://peaceful-flower-536.fly.dev
+- Backend API: https://slopit-api.fly.dev
+
+## Идея проекта
+
+Основная идея SLOPIT — дать пользователю нестандартный опыт просмотра контента через случайную (рандомную) ленту постов и удобную авторизацию через популярные платформы:
+- Google
+- GitHub
+- Telegram
+
+## Технологии
+
+- Frontend: React
+- Backend: Django
+- DevOps: Fly.io (деплой фронтенда и бэкенда)
+
+## Авторы и участники проекта
+
+- Михаил Махария — фронтенд, дизайн
+  GitHub: [Mikhail-Makharia-1105o](https://github.com/Mikhail-Makharia-1105o)
+
+- Штаркман Даниил — бэкенд
+  GitHub: [Masterofowls](https://github.com/Masterofowls)
+
+- Михаил Костюков — DevOps, фронтенд
