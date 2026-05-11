@@ -2,17 +2,15 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserButton, SignIn } from "@clerk/clerk-react";
 import { useAuthContext } from "../../context/AuthContext";
+import PostCreateModal from "../posts/PostCreateModal";
 import "./Navigation.css";
 
 const Navigation = () => {
   const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showDebug, setShowDebug] = useState(false);
+  const [showPostModal, setShowPostModal] = useState(false);
   const { isAuthenticated, isLoading, authLogs, logout } = useAuthContext();
-
-  React.useEffect(() => {
-    if (isAuthenticated) setShowAuthModal(false);
-  }, [isAuthenticated]);
 
   const ADMIN_URL =
     (import.meta.env.VITE_API_URL || "https://slopit-api.fly.dev") + "/admin/";
@@ -35,20 +33,28 @@ const Navigation = () => {
       );
     }
     return (
-      <div className="nav-user-actions">
-        <a
-          href={ADMIN_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="manage-button"
+      <>
+        <button
+          className="new-post-btn"
+          onClick={() => setShowPostModal(true)}
         >
-          Manage
-        </a>
-        <UserButton afterSignOutUrl="/" />
-        <button className="nav-profile" onClick={() => navigate("/profile")}>
-          Profile
+          + Post
         </button>
-      </div>
+        <div className="nav-user-actions">
+          <a
+            href={ADMIN_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="manage-button"
+          >
+            Manage
+          </a>
+          <UserButton afterSignOutUrl="/" />
+          <button className="nav-profile" onClick={() => navigate("/profile")}>
+            Profile
+          </button>
+        </div>
+      </>
     );
   }
 
@@ -66,7 +72,11 @@ const Navigation = () => {
         </div>
       </nav>
 
-      {showAuthModal && (
+      {showPostModal && (
+        <PostCreateModal onClose={() => setShowPostModal(false)} />
+      )}
+
+      {showAuthModal && !isAuthenticated && (
         <div
           className="nav-auth-overlay"
           onClick={() => setShowAuthModal(false)}
