@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserButton, SignIn } from "@clerk/clerk-react";
 import { useAuthContext } from "../../context/AuthContext";
@@ -8,9 +8,8 @@ import "./Navigation.css";
 const Navigation = () => {
   const navigate = useNavigate();
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showDebug, setShowDebug] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
-  const { isAuthenticated, isLoading, authLogs, logout } = useAuthContext();
+  const { isAuthenticated, isLoading } = useAuthContext();
 
   const ADMIN_URL =
     (import.meta.env.VITE_API_URL || "https://slopit-api.fly.dev") + "/admin/";
@@ -116,32 +115,7 @@ const Navigation = () => {
         </div>
       )}
 
-      <div
-        className="auth-debug-toggle"
-        onClick={() => setShowDebug((v) => !v)}
-      >
-        🔍 auth
-      </div>
-      {showDebug && (
-        <div className="auth-debug-panel">
-          <div className="auth-debug-state">
-            <strong>isLoading:</strong> {String(isLoading)} &nbsp;
-            <strong>isAuthenticated:</strong> {String(isAuthenticated)} &nbsp;
-          </div>
-          <div className="auth-debug-logs">
-            {(authLogs ?? []).length === 0 && (
-              <div className="auth-debug-entry">No logs yet.</div>
-            )}
-            {(authLogs ?? []).map((log, i) => (
-              <div key={i} className="auth-debug-entry">
-                <span className="auth-debug-time">{log.t}</span>{" "}
-                <span>{log.msg}</span>
-                {log.data && <pre className="auth-debug-data">{log.data}</pre>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+
     </>
   );
 };
