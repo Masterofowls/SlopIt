@@ -30,6 +30,9 @@ const Navigation = () => {
           >
             Login
           </button>
+          <button className="nav-profile" onClick={() => navigate("/profile")}>
+            BRO CLICK ME BRO
+          </button>
         </>
       );
     }

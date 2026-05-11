@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
-import ProfilePage from "./pages/ProfilePage";
 import LandingPage from "./pages/LandingPage";
 import TestConsolePage from "./pages/TestConsolePage";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -9,7 +8,7 @@ import PostPage from "./pages/PostPage";
 import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import { useClerkInterceptor } from "./lib/api";
-import Profile from "./pages/Profile";
+import ProfilePage from "./pages/ProfilePage";
 
 function InnerApp() {
   useClerkInterceptor();
@@ -22,14 +21,14 @@ function InnerApp() {
         <Route
           path="/profile"
           element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
+            // <ProtectedRoute>
+            <ProfilePage />
+            // </ProtectedRoute> TODO
           }
         />
         <Route path="/tests" element={<TestConsolePage />} />
         <Route path="/post/:slug" element={<PostPage />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Routes>
       <DebugToolbar />
     </>
