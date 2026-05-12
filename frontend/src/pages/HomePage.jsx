@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { useAuthContext } from "../context/AuthContext";
 import { PostFeed } from "../components/posts/index.js";
@@ -23,6 +24,17 @@ const HomePage = () => {
   const [feedCursor, setFeedCursor] = useState(null);
   const [feedHasMore, setFeedHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const searchQuery = searchParams.get('q')?.trim() ?? '';
+  const [searchPosts, setSearchPosts] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState(null);
+  const [searchTotal, setSearchTotal] = useState(null);
+  const [searchNextUrl, setSearchNextUrl] = useState(null);
+  const [searchLoadingMore, setSearchLoadingMore] = useState(false);
+  const feedRef = useRef(null);
 
   const mergePosts = useCallback((a, b) => {
     const seen = new Set();
@@ -85,7 +97,7 @@ const HomePage = () => {
     [get, mergePosts],
   );
 
- 
+
   const loadMoreFeed = useCallback(async () => {
     if (loadingMore || !feedHasMore || feedCursor === null) return;
     setLoadingMore(true);
@@ -155,27 +167,103 @@ const HomePage = () => {
     });
   }, [loading, posts]);
 
+  const fetchSearch = useCallback(async (q, signal) => {
+    setSearchLoading(true);
+    setSearchError(null);
+    setSearchPosts([]);
+    setSearchNextUrl(null);
+    try {
+      const data = await get(`/posts/?search=${encodeURIComponent(q)}&limit=25`);
+      if (signal?.aborted) return;
+      setSearchPosts(data.results ?? []);
+      setSearchNextUrl(data.next ?? null);
+      setSearchTotal(data.count ?? 0);
+    } catch {
+      if (!signal?.aborted) setSearchError('Search failed. Please try again.');
+    } finally {
+      if (!signal?.aborted) setSearchLoading(false);
+    }
+  }, [get]);
+
+  const loadMoreSearch = useCallback(async () => {
+    if (searchLoadingMore || !searchNextUrl) return;
+    setSearchLoadingMore(true);
+    try {
+      const url = new URL(searchNextUrl);
+      const data = await get(url.pathname + url.search);
+      setSearchPosts((prev) => [...prev, ...(data.results ?? [])]);
+      setSearchNextUrl(data.next ?? null);
+    } catch {
+    } finally {
+      setSearchLoadingMore(false);
+    }
+  }, [searchLoadingMore, searchNextUrl, get]);
+
+  useEffect(() => {
+    if (!searchQuery) return;
+    const controller = new AbortController();
+    fetchSearch(searchQuery, controller.signal).then(() => {
+      requestAnimationFrame(() => {
+        feedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+    return () => controller.abort();
+  }, [searchQuery, fetchSearch]);
+
   return (
     <div className="page home-page">
       {isIdle && <MatrixRain />}
       <Navigation />
       <MatrixBackground />
       <div className="home-layout">
-        <div className="home-container">
-          <div className="home-toolbar">
-            <button className="new-post-btn" onClick={() => setShowModal(true)}>
-              + Post
-            </button>
-          </div>
-          {loading && <p className="feed-status">loading feed…</p>}
-          {feedError && <p className="feed-status feed-error">{feedError}</p>}
-          {!loading && (
-            <PostFeed
-              posts={posts}
-              onLoadMore={loadMoreFeed}
-              hasMore={feedHasMore}
-              loadingMore={loadingMore}
-            />
+        <div className="home-container" ref={feedRef}>
+          {searchQuery ? (
+            <>
+              <div className="search-results-header">
+                <span>search: <strong>{searchQuery}</strong></span>
+                {searchTotal !== null && !searchLoading && (
+                  <span className="search-results-count">
+                    {searchTotal === 0
+                      ? 'no results'
+                      : `${searchTotal} result${searchTotal === 1 ? '' : 's'}`}
+                  </span>
+                )}
+                <button
+                  className="search-clear-btn"
+                  onClick={() => navigate('/home')}
+                >
+                  ✕ clear
+                </button>
+              </div>
+              {searchLoading && <p className="feed-status">searching…</p>}
+              {searchError && <p className="feed-status feed-error">{searchError}</p>}
+              {!searchLoading && (
+                <PostFeed
+                  posts={searchPosts}
+                  onLoadMore={loadMoreSearch}
+                  hasMore={Boolean(searchNextUrl)}
+                  loadingMore={searchLoadingMore}
+                />
+              )}
+            </>
+          ) : (
+            <>
+              <div className="home-toolbar">
+                <button className="new-post-btn" onClick={() => setShowModal(true)}>
+                  + Post
+                </button>
+              </div>
+              {loading && <p className="feed-status">loading feed…</p>}
+              {feedError && <p className="feed-status feed-error">{feedError}</p>}
+              {!loading && (
+                <PostFeed
+                  posts={posts}
+                  onLoadMore={loadMoreFeed}
+                  hasMore={feedHasMore}
+                  loadingMore={loadingMore}
+                />
+              )}
+            </>
           )}
         </div>
       </div>

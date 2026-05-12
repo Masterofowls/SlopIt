@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { UserButton, SignIn } from "@clerk/clerk-react";
 import { useAuthContext } from "../../context/AuthContext";
@@ -10,6 +10,8 @@ const Navigation = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
   const { isAuthenticated, isLoading } = useAuthContext();
+
+  const searchRef = useRef(null);
 
   const ADMIN_URL =
     (import.meta.env.VITE_API_URL || "https://slopit-api.fly.dev") + "/admin/";
@@ -65,7 +67,26 @@ const Navigation = () => {
             <h1>slopit</h1>
           </div>
 
-          <div>placeholder for search tab</div>
+          <form
+            className="nav-search-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const q = searchRef.current?.value.trim();
+              if (q) {
+                navigate(`/home?q=${encodeURIComponent(q)}`);
+                searchRef.current.blur();
+              }
+            }}
+          >
+            <input
+              ref={searchRef}
+              className="nav-search-input"
+              type="search"
+              placeholder="search posts or authors…"
+              aria-label="Search posts"
+            />
+            <button className="nav-search-btn" type="submit">🔍</button>
+          </form>
 
           <div className="nav-user">{renderUserArea()}</div>
         </div>

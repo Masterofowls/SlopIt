@@ -8,6 +8,7 @@ import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import { useClerkInterceptor } from "./lib/api";
 import ProfilePage from "./pages/ProfilePage";
+import SearchPage from "./pages/SearchPage";
 
 function InnerApp() {
   useClerkInterceptor();
@@ -24,7 +25,7 @@ function InnerApp() {
           }
         />
         <Route path="/post/:slug" element={<PostPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/search" element={<SearchPage />} />
       </Routes>
       <DebugToolbar />
     </>

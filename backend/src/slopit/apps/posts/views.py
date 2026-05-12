@@ -32,7 +32,6 @@ from apps.posts.serializers import (
 )
 
 MAX_MEDIA_UPLOAD_BYTES = 500 * 1024 * 1024
-# Maximum dimension (width or height) for uploaded images in pixels.
 IMAGE_MAX_DIMENSION = 1280
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff"}
 
@@ -59,8 +58,6 @@ class MediaUploadView(APIView):
 
         suffix = Path(upload.name or "").suffix.lower()
 
-        # Resize images to a uniform maximum dimension so post cards display
-        # consistently. Non-image files (videos etc.) are stored as-is.
         if suffix in IMAGE_EXTENSIONS:
             try:
                 img = Image.open(upload)
@@ -72,7 +69,6 @@ class MediaUploadView(APIView):
                 suffix = ".jpg"
                 upload = ContentFile(buf.read(), name=f"image{suffix}")
             except Exception:
-                # Fall through and store the original file if Pillow fails.
                 upload.seek(0)
 
         filename = f"posts/media/uploads/{uuid4().hex}{suffix}"
@@ -205,7 +201,19 @@ class PostViewSet(ModelViewSet):
             .order_by("-published_at", "-created_at")
         )
 
-        return qs.filter(status=Post.Status.PUBLISHED)
+        qs = qs.filter(status=Post.Status.PUBLISHED)
+
+        search = self.request.query_params.get("search", "").strip()
+        if search:
+            qs = qs.filter(
+                Q(title__icontains=search)
+                | Q(author__username__icontains=search)
+                | Q(author__first_name__icontains=search)
+                | Q(author__last_name__icontains=search)
+                | Q(author__profile__display_name__icontains=search)
+            ).distinct()
+
+        return qs
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
