@@ -47,8 +47,10 @@ const Navigation = () => {
             target="_blank"
             rel="noopener noreferrer"
             className="manage-button"
+            aria-label="Manage"
           >
-            Manage
+            <span className="manage-icon" aria-hidden="true">⚙</span>
+            <span className="manage-label">Manage</span>
           </a>
           <UserButton afterSignOutUrl="/" />
           <button className="nav-profile" onClick={() => navigate("/profile")}>

@@ -15,6 +15,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
 
 .nav-profile {
@@ -39,6 +40,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  min-width: 0;
 }
 
 .user-info {
@@ -107,6 +109,18 @@
     color 0.2s ease;
   font-family: "Courier New", Courier, monospace;
   letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.manage-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+.manage-label {
+  line-height: 1;
 }
 
 .manage-button:hover {
@@ -116,11 +130,53 @@
 
 @media (max-width: 768px) {
   .nav-container {
-    padding: 12px 16px;
+    max-width: 100%;
+    padding: 10px 12px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "brand user"
+      "search search";
+    row-gap: 8px;
+    column-gap: 8px;
+  }
+
+  .nav-brand {
+    grid-area: brand;
+    min-width: 0;
   }
 
   .nav-brand h1 {
-    font-size: 20px;
+    font-size: 18px;
+    line-height: 1;
+  }
+
+  .nav-search-form {
+    grid-area: search;
+    width: 100%;
+  }
+
+  .nav-user {
+    grid-area: user;
+    justify-self: end;
+    justify-content: flex-end;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .nav-user-actions {
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .manage-button,
+  .login-button,
+  .nav-profile,
+  .navigation .new-post-btn {
+    font-size: 12px;
+    padding: 5px 9px;
+    line-height: 1.1;
   }
 
   .username {
@@ -311,11 +367,49 @@
 
 @media (max-width: 768px) {
   .nav-search-input {
-    width: 110px;
+    width: 100%;
+    min-width: 0;
     font-size: 12px;
+    padding: 7px 9px;
   }
 
   .nav-search-input:focus {
-    width: 150px;
+    width: 100%;
+  }
+
+  .nav-search-btn {
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 420px) {
+  .nav-brand h1 {
+    font-size: 16px;
+  }
+
+  .manage-button,
+  .login-button,
+  .nav-profile,
+  .navigation .new-post-btn {
+    padding: 4px 7px;
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 360px) {
+  .manage-button {
+    min-width: 30px;
+    justify-content: center;
+    padding: 5px 8px;
+  }
+
+  .manage-label {
+    display: none;
+  }
+
+  .manage-icon {
+    margin: 0;
+    font-size: 13px;
   }
 }
