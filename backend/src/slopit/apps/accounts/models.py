@@ -13,6 +13,7 @@ class AuthMethod(models.TextChoices):
 
     GOOGLE = "google", "Google"
     GITHUB = "github", "GitHub"
+    YANDEX = "yandex", "Yandex"
     TELEGRAM = "telegram", "Telegram"
 
 
@@ -41,7 +42,7 @@ class User(AbstractUser):
         default="",
         db_index=True,
         help_text=(
-            "OAuth provider used on most recent login: google, github, or telegram. "
+            "OAuth provider used on most recent login: google, github, yandex, or telegram. "
             "Blank means not yet determined."
         ),
     )

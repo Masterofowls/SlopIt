@@ -8,7 +8,7 @@ This module:
 2. Looks up the Django User by ``clerk_id`` (the JWT ``sub`` claim).
 3. Creates a new Django User if one doesn't exist yet, or links an existing
    allauth-created user by email so legacy accounts carry over seamlessly.
-4. Auto-detects and persists the OAuth provider (google / github / telegram)
+4. Auto-detects and persists the OAuth provider (google / github / yandex / telegram)
    as ``User.auth_method`` on every successful authentication.
 
 Required Fly secret::
@@ -49,6 +49,140 @@ _jwks_client: PyJWKClient | None = None
 # Image-URL patterns used to identify the OAuth provider from the Clerk JWT.
 _GOOGLE_PATTERN = re.compile(r"googleusercontent\.com", re.IGNORECASE)
 _GITHUB_PATTERN = re.compile(r"avatars\.githubusercontent\.com", re.IGNORECASE)
+_YANDEX_AVATAR_PATTERN = re.compile(
+    r"avatars\.yandex\.(?:net|ru)|yastatic\.net",
+    re.IGNORECASE,
+)
+
+
+def _claim_text(claims: dict[str, Any], *keys: str) -> str:
+    """Return first non-empty string value for any key from claims (deep scan)."""
+
+    wanted = {k.lower() for k in keys}
+
+    def clean(value: Any) -> str:
+        return value.strip() if isinstance(value, str) else ""
+
+    for key in keys:
+        direct = clean(claims.get(key))
+        if direct:
+            return direct
+
+    def walk(value: Any) -> str:
+        if isinstance(value, dict):
+            for raw_key, raw_val in value.items():
+                key_lower = str(raw_key).lower()
+                if key_lower in wanted:
+                    hit = clean(raw_val)
+                    if hit:
+                        return hit
+                nested = walk(raw_val)
+                if nested:
+                    return nested
+            return ""
+
+        if isinstance(value, list):
+            for item in value:
+                nested = walk(item)
+                if nested:
+                    return nested
+            return ""
+
+        return ""
+
+    return walk(claims)
+
+
+def _extract_name_parts(claims: dict[str, Any]) -> tuple[str, str]:
+    """Extract first/last name from common OIDC claim variants."""
+
+    first_name = _claim_text(claims, "first_name", "given_name", "firstName")
+    last_name = _claim_text(claims, "last_name", "family_name", "lastName")
+
+    if not first_name and not last_name:
+        full_name = _claim_text(claims, "name", "real_name", "full_name", "display_name")
+        if full_name:
+            parts = full_name.split()
+            first_name = parts[0]
+            last_name = " ".join(parts[1:]) if len(parts) > 1 else ""
+
+    return first_name, last_name
+
+
+def _extract_image_url(claims: dict[str, Any]) -> str:
+    """Extract avatar URL from common OIDC claim variants."""
+
+    return _claim_text(
+        claims,
+        "image_url",
+        "picture",
+        "avatar_url",
+        "profile_image_url",
+        "photo_url",
+        "avatar",
+    )
+
+
+def _claim_provider_hint(claims: dict[str, Any]) -> str:
+    """Extract a likely OAuth provider hint from Clerk token claims.
+
+    Clerk's token shape can vary across social connections and custom providers,
+    so we only inspect provider-like fields instead of scanning every value.
+    """
+
+    provider_keys = {
+        "provider",
+        "providers",
+        "strategy",
+        "strategies",
+        "oauth_provider",
+        "oauth_providers",
+        "social_provider",
+        "social_providers",
+        "identity_provider",
+        "identity_providers",
+        "external_provider",
+        "external_providers",
+        "connection",
+        "connections",
+        "external_accounts",
+        "federation",
+    }
+
+    def walk(value: Any, key: str | None = None) -> str:
+        if isinstance(value, dict):
+            for child_key, child_value in value.items():
+                child_key_str = str(child_key).lower()
+                result = walk(
+                    child_value,
+                    child_key_str if child_key_str in provider_keys else key,
+                )
+                if result:
+                    return result
+            return ""
+
+        if isinstance(value, list):
+            for item in value:
+                result = walk(item, key)
+                if result:
+                    return result
+            return ""
+
+        if not isinstance(value, str) or key is None:
+            return ""
+
+        lowered = value.lower()
+        if "yandex" in lowered:
+            return "yandex"
+        if "github" in lowered:
+            return "github"
+        if "google" in lowered:
+            return "google"
+        if "telegram" in lowered:
+            return "telegram"
+        return ""
+
+    return walk(claims)
 
 
 def _get_jwks_client() -> PyJWKClient:
@@ -104,15 +238,22 @@ def _detect_auth_method(
 
     Detection order (most-specific first):
     1. Telegram — user has a ``telegram_id`` in the database.
-    2. GitHub   — ``image_url`` is an avatars.githubusercontent.com URL.
-    3. Google   — ``image_url`` is a lh3.googleusercontent.com URL.
-    4. Unknown  — return empty string (displayed as blank in admin).
+    2. Provider hints embedded in Clerk claims (recommended for custom OIDC).
+    3. Yandex   — ``image_url`` matches Yandex avatar hosts.
+    4. GitHub   — ``image_url`` is an avatars.githubusercontent.com URL.
+    5. Google   — ``image_url`` is a lh3.googleusercontent.com URL.
+    6. Unknown  — return empty string (displayed as blank in admin).
     """
     if has_telegram_id:
         detected = "telegram"
     else:
-        image_url: str = claims.get("image_url") or ""
-        if _GITHUB_PATTERN.search(image_url):
+        provider_hint = _claim_provider_hint(claims)
+        image_url = _extract_image_url(claims)
+        if provider_hint:
+            detected = provider_hint
+        elif _YANDEX_AVATAR_PATTERN.search(image_url):
+            detected = "yandex"
+        elif _GITHUB_PATTERN.search(image_url):
             detected = "github"
         elif _GOOGLE_PATTERN.search(image_url):
             detected = "google"
@@ -150,8 +291,7 @@ def _sync_clerk_profile(user: Any, claims: dict[str, Any]) -> None:
 
     user_fields: list[str] = []
 
-    first_name: str = claims.get("first_name") or ""
-    last_name: str = claims.get("last_name") or ""
+    first_name, last_name = _extract_name_parts(claims)
     if first_name and user.first_name != first_name:
         user.first_name = first_name
         user_fields.append("first_name")
@@ -194,7 +334,7 @@ def _sync_clerk_profile(user: Any, claims: dict[str, Any]) -> None:
         )
 
     # Avatar URL — update Profile row only when the value changes.
-    image_url: str = claims.get("image_url") or ""
+    image_url = _extract_image_url(claims)
     if image_url:
         Profile.objects.filter(user=user).exclude(social_avatar_url=image_url).update(
             social_avatar_url=image_url
@@ -286,6 +426,7 @@ def get_or_create_from_clerk(claims: dict[str, Any]) -> Any:
 
     # Detect auth method before creating the user.
     detected_method = _detect_auth_method(claims, has_telegram_id=False)
+    created_first_name, created_last_name = _extract_name_parts(claims)
 
     try:
         user, created = User.objects.get_or_create(
@@ -295,8 +436,8 @@ def get_or_create_from_clerk(claims: dict[str, Any]) -> Any:
                 email=email_to_store,
                 auth_method=detected_method,
                 is_active=True,
-                first_name=claims.get("first_name") or "",
-                last_name=claims.get("last_name") or "",
+                first_name=created_first_name,
+                last_name=created_last_name,
             ),
         )
     except Exception as exc:

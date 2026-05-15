@@ -83,6 +83,27 @@ def test_clerk_authentication_persists_user_on_authenticated_request() -> None:
     assert User.objects.filter(clerk_id="user_clerk_request", email="request@example.com").exists()
 
 
+@pytest.mark.django_db
+def test_get_or_create_from_clerk_supports_name_and_avatar_fallback_claims() -> None:
+    from apps.accounts.clerk_auth import get_or_create_from_clerk
+
+    claims = {
+        "sub": "user_clerk_yandex_like",
+        "email": "yandex-like@example.com",
+        "name": "Ivan Petrov",
+        "picture": "https://avatars.yandex.net/get-yapic/12345/islands-200",
+    }
+
+    user = get_or_create_from_clerk(claims)
+    user.refresh_from_db()
+
+    assert user.first_name == "Ivan"
+    assert user.last_name == "Petrov"
+    assert user.profile.social_avatar_url == (
+        "https://avatars.yandex.net/get-yapic/12345/islands-200"
+    )
+
+
 def _bearer_headers() -> dict[str, str]:
     return {"HTTP_AUTHORIZATION": "Bearer test-token"}
 
