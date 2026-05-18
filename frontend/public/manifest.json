@@ -1,0 +1,19 @@
+{
+  "name": "SlopIt",
+  "short_name": "SlopIt",
+  "description": "SlopIt is a chaotic social feed where users post, react, and browse trending slop.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#06130c",
+  "theme_color": "#06130c",
+  "lang": "en",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
