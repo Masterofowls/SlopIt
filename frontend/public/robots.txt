@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://peaceful-flower-536.fly.dev/sitemap.xml
