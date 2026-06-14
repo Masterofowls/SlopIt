@@ -1,15 +1,3 @@
-"""Level 1: System feed pool — build and maintain the PostFeedMeta index.
-
-Provides helpers for creating/refreshing PostFeedMeta records from published
-posts.  This is the source of truth for which posts are eligible to appear in
-any user's feed.
-
-Public API:
-    upsert_post_feed_meta(post) -> PostFeedMeta
-    initialize_system_feed()    -> int
-    mark_ineligible(post_ids)   -> int
-    mark_author_posts_ineligible(author_id) -> int
-"""
 
 from __future__ import annotations
 
@@ -33,7 +21,6 @@ logger = logging.getLogger(__name__)
 
 
 def _stable_hash(value: int) -> int:
-    """Deterministic 64-bit hash of an integer (immune to PYTHONHASHSEED)."""
     digest = hashlib.md5(struct.pack(">q", value), usedforsecurity=False).digest()
     return struct.unpack(">Q", digest[:8])[0]
 
@@ -43,7 +30,6 @@ def _content_hash(post: Post) -> str:
 
 
 def _keyword_vector(title: str, body: str) -> SearchVector:
-    """Weighted tsvector expression for a post's title + body."""
     return SearchVector(Value(title), weight="A", config="english") + SearchVector(
         Value(body), weight="B", config="english"
     )
@@ -51,11 +37,6 @@ def _keyword_vector(title: str, body: str) -> SearchVector:
 
 @transaction.atomic
 def upsert_post_feed_meta(post: Post) -> PostFeedMeta:
-    """Create or refresh the PostFeedMeta record for *post*.
-
-    On *create*: assign anti-clustering bucket via L2.
-    On *update*: refresh hash, tags, eligibility; preserve existing bucket/offset.
-    """
     from apps.feed.services.level2_intake import assign_bucket
 
     content_hash = _content_hash(post)
@@ -100,11 +81,6 @@ def upsert_post_feed_meta(post: Post) -> PostFeedMeta:
 
 
 def initialize_system_feed() -> int:
-    """Bootstrap PostFeedMeta for every published post (one-shot).
-
-    Returns the number of posts successfully processed.
-    Typically run once on initial deployment or after a hard reset.
-    """
     from apps.posts.models import Post
 
     count = 0
@@ -121,14 +97,12 @@ def initialize_system_feed() -> int:
 
 
 def mark_ineligible(post_ids: list[int]) -> int:
-    """Bulk-mark post IDs as ineligible (removed / moderated)."""
     updated = PostFeedMeta.objects.filter(post_id__in=post_ids).update(is_eligible=False)
     logger.info("mark_ineligible: marked %d PFM records", updated)
     return updated
 
 
 def mark_author_posts_ineligible(author_id: int) -> int:
-    """Mark all PFM records for a banned author as ineligible."""
     updated = PostFeedMeta.objects.filter(post__author_id=author_id).update(is_eligible=False)
     logger.info("mark_author_posts_ineligible: author=%d, records=%d", author_id, updated)
     return updated

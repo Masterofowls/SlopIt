@@ -9,8 +9,7 @@ from django.db import models
 
 
 class AuthMethod(models.TextChoices):
-    """OAuth / external provider that was used to authenticate this user."""
-
+    
     GOOGLE = "google", "Google"
     GITHUB = "github", "GitHub"
     TELEGRAM = "telegram", "Telegram"

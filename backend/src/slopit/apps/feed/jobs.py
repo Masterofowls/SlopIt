@@ -1,15 +1,3 @@
-"""RQ background jobs for the feed algorithm.
-
-Enqueuers (call from Django application code):
-    enqueue_post_published(post_id)             → queue=default
-    enqueue_mark_ineligible(post_ids)            → queue=low
-    enqueue_mark_author_ineligible(author_id)    → queue=low
-    enqueue_invalidate_user_snapshots(user_id)   → queue=default
-
-Periodic jobs (schedule via django-rq-scheduler or external cron):
-    hourly_pool_rebuild_job()   → queue=low, every 60 min
-    expire_snapshots_job()      → queue=low, every 6 h
-"""
 
 from __future__ import annotations
 
@@ -97,12 +85,6 @@ def _run_invalidate_user_snapshots(user_id: int) -> None:
 
 @django_rq.job(_LOW_QUEUE)
 def hourly_pool_rebuild_job() -> None:
-    """Refresh PostFeedMeta for posts published in the last 25 hours.
-
-    Schedule: every 60 minutes.
-    The 25-hour window covers fresh posts plus a 1-hour buffer for the
-    previous run, ensuring no published post is ever skipped.
-    """
     from datetime import timedelta
 
     from django.utils import timezone

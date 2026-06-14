@@ -1,21 +1,3 @@
-"""Level 2: New-content intake pipeline.
-
-Called when a post is published for the first time. Responsibilities:
-
-1. Compute SimHash (content_hash) from title + body.
-2. Detect near-duplicates (Hamming distance < 4) and log a warning.
-3. Pick an anti-clustering bucket that avoids placing the post next to:
-   - Posts from the same author.
-   - Posts with similar content (near-dup by SimHash).
-   - Posts published within ±5 minutes (anti-burst).
-4. Compute rotation_offset = stable_hash(post.id) % 1024.
-5. Upsert PostFeedMeta via L1.
-
-Public API:
-    on_post_published(post) -> PostFeedMeta
-    assign_bucket(post, content_hash) -> int   (also called by L1 bootstrap)
-    find_near_duplicates(content_hash) -> list[int]
-"""
 
 from __future__ import annotations
 
@@ -51,7 +33,7 @@ def _stable_hash(value: int) -> int:
 
 def _candidate_order(post_id: int) -> list[int]:
     """Return buckets 0..B-1 in a deterministic post-specific order."""
-    rng = random.Random(_stable_hash(post_id))  # noqa: S311
+    rng = random.Random(_stable_hash(post_id))
     candidates = list(range(_BUCKET_COUNT))
     rng.shuffle(candidates)
     return candidates
@@ -85,11 +67,6 @@ def _violates_constraints(
 
 
 def assign_bucket(post: Post, content_hash: str) -> int:
-    """Pick the best anti-clustering bucket for *post*.
-
-    Iterates a deterministic candidate order; returns the first bucket that
-    satisfies all constraints, or the first candidate as a fallback.
-    """
     published_at = post.published_at or timezone.now()
     candidates = _candidate_order(post.pk)
 
@@ -105,12 +82,6 @@ def assign_bucket(post: Post, content_hash: str) -> int:
 
 
 def find_near_duplicates(content_hash: str) -> list[int]:
-    """Return post IDs of PFM records that are near-duplicates of *content_hash*.
-
-    Fetches all (post_id, content_hash) pairs and compares in Python.
-    At 100k posts this is < 50 ms (spec §7); at larger scale, use a PG
-    extension or LSH index.
-    """
     results = []
     for post_id, existing_hash in PostFeedMeta.objects.values_list("post_id", "content_hash"):
         if hamming_distance(content_hash, existing_hash) < _NEAR_DUPLICATE_THRESHOLD:
@@ -119,14 +90,6 @@ def find_near_duplicates(content_hash: str) -> list[int]:
 
 
 def on_post_published(post: Post) -> PostFeedMeta:
-    """Main L2 entry point: intake a newly published post into the system feed.
-
-    Steps:
-    1. Compute content_hash.
-    2. Log a warning for near-duplicates (moderation is handled separately).
-    3. Assign anti-clustering bucket.
-    4. Upsert PostFeedMeta via L1.
-    """
     from apps.feed.services.level1_pool import upsert_post_feed_meta
 
     content_hash = simhash_compute(f"{post.title} {post.body_markdown}")

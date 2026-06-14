@@ -1,11 +1,4 @@
-"""Management command: upsert PostFeedMeta for every published post.
 
-Run on every deploy via release_command so that posts created before the
-signal-based intake was working are included in the feed pool.
-
-Usage:
-    python manage.py rebuild_feed_pool
-"""
 
 from __future__ import annotations
 

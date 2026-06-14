@@ -1,14 +1,4 @@
-"""64-bit SimHash for near-duplicate post detection.
 
-Two fingerprints with Hamming distance < NEAR_DUPLICATE_THRESHOLD bits
-are considered near-duplicates and flagged by the L2 intake service.
-
-Algorithm (Charikar 2002):
-1. Tokenise text into unigrams + bigram shingles.
-2. For each token, compute a 64-bit hash.
-3. Accumulate: v[i] += 1 if bit i is set, else v[i] -= 1.
-4. Fingerprint: bit i = 1 if v[i] > 0, else 0.
-"""
 
 from __future__ import annotations
 

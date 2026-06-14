@@ -1,17 +1,3 @@
-"""Level 3: Per-user feed snapshot generation.
-
-Algorithm:
-1. Apply the user's FeedPreferences to filter the eligible PostFeedMeta pool.
-2. Generate a fresh cryptographic seed via secrets.randbelow.
-3. Shuffle all eligible posts randomly (no ranking by likes/time/type).
-4. Reorder to prevent two consecutive posts from the same author.
-5. Persist in a new FeedSnapshot; deactivate any prior active snapshot.
-
-Public API:
-    get_or_create_snapshot(user) -> FeedSnapshot
-    force_new_snapshot(user)     -> FeedSnapshot
-    invalidate_user_snapshots(user_id) -> int
-"""
 
 from __future__ import annotations
 
@@ -36,13 +22,11 @@ logger = logging.getLogger(__name__)
 
 
 def _current_pool_version() -> int:
-    """Return the maximum PostFeedMeta version (tracks pool freshness)."""
     result = PostFeedMeta.objects.aggregate(v=Max("version"))["v"]
     return result or 1
 
 
 def _get_prefs(user: AbstractBaseUser) -> FeedPreferences:
-    """Return the user's FeedPreferences, creating defaults if missing."""
     prefs, _ = FeedPreferences.objects.get_or_create(user=user)
     return prefs
 
@@ -51,16 +35,6 @@ def _shuffle_no_consecutive_authors(
     rows: list[tuple[int, int]],
     rng: random.Random,
 ) -> list[int]:
-    """Randomly shuffle (post_id, author_id) pairs then reorder so no two
-    consecutive posts share the same author.
-
-    Uses a greedy forward-scan: when a violation is detected at position i,
-    finds the next post j > i with a different author and swaps them.
-    Falls back gracefully when all remaining posts share the same author
-    (impossible to avoid consecutive — just appends them in order).
-
-    Time: O(n²) worst-case, O(n) typical. Fine for feed sizes up to ~10k.
-    """
     if not rows:
         return []
 
@@ -87,13 +61,6 @@ def _shuffle_no_consecutive_authors(
 
 
 def get_or_create_snapshot(user: AbstractBaseUser) -> FeedSnapshot:
-    """Return the current active snapshot, or generate a new one.
-
-    A new snapshot is generated when:
-    - No active snapshot exists for the user.
-    - The active snapshot is expired (now > expires_at).
-    - The snapshot's version is behind the current pool version.
-    """
     now = timezone.now()
     snapshot = (
         FeedSnapshot.objects.filter(user=user, is_active=True, expires_at__gt=now)
@@ -173,13 +140,6 @@ def force_new_snapshot(user: AbstractBaseUser) -> FeedSnapshot:
 
 
 def invalidate_user_snapshots(user_id: int) -> int:
-    """Deactivate all active snapshots for *user_id*.
-
-    Called when:
-    - User updates their FeedPreferences.
-    - User is banned or unbanned.
-    The next request to get_or_create_snapshot will trigger a fresh generation.
-    """
     updated = FeedSnapshot.objects.filter(user_id=user_id, is_active=True).update(is_active=False)
     logger.info("invalidate_user_snapshots: user=%d, deactivated=%d", user_id, updated)
     return updated
