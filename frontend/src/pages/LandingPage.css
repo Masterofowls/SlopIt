@@ -168,10 +168,19 @@ body {
 }
 
 .landing-button {
-  min-width: 180px;
-  padding: 16px 32px;
-  font-size: 18px;
+  color: #031101;
+  cursor: pointer;
+  background: #00ff15;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
   font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.landing-button:hover {
+  background: #1c0;
 }
 
 .loading {
