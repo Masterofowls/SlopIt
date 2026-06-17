@@ -5,3 +5,7 @@
 !.env.example
 /TODO
 /presentation
+presentation
+/.venv
+/.github
+/skills.config.json
