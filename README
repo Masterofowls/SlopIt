@@ -1,6 +1,6 @@
 # SLOPIT
 
-![Alt text for the image](backend\media\image.png)
+![Alt text for the image](backend/media/image.png)
 
 SLOPIT — социальная сеть с рандомной лентой постов и авторизацией через Google, GitHub и Telegram.
 Проект выполнен в стиле slop-дизайна.
