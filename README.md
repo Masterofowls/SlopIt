@@ -1,6 +1,7 @@
 <div align="center">
 
 # SLOPIT
+[![Maintainability](https://qlty.sh/gh/Masterofowls/projects/SlopIt/maintainability.svg)](https://qlty.sh/gh/Masterofowls/projects/SlopIt)
 
 ![Логотип SLOPIT](backend/media/image.png?v=2)
 
