@@ -13,3 +13,8 @@
 /.github
 /skills.config.json
 /presentation
+/backend/src/slopit/apps/feed/__pycache__
+/backend/src/slopit/apps/feed/services/__pycache__
+/backend/src/slopit/apps/feed/management/__pycache__
+/backend/src/slopit/apps/feed/migrations/__pycache__
+/docs
