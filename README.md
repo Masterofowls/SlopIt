@@ -8,8 +8,7 @@
 
 [![Демо](https://img.shields.io/badge/Демо-Перейти_на_сайт-0A0A0A?style=for-the-badge&logo=vercel&logoColor=white)](https://peaceful-flower-536.fly.dev)
 [![API](https://img.shields.io/badge/API-Бэкенд-0A0A0A?style=for-the-badge&logo=fastapi&logoColor=white)](https://slopit-api.fly.dev)
-[![Звёзды](https://img.shields.io/github/stars/your-username/your-repo?style=for-the-badge&logo=github&color=yellow)](https://github.com/your-username/your-repo)
-[![Ветки](https://img.shields.io/github/forks/your-username/your-repo?style=for-the-badge&logo=github&color=blue)](https://github.com/your-username/your-repo)
+
 
 ---
 
@@ -89,7 +88,7 @@ SLOPIT — это социальная сеть с рандомной ленто
         <img src="https://avatars.githubusercontent.com/Mikozzun" width="100px;" alt="Михаил Костюков"/><br />
         <sub><b>Михаил Костюков</b></sub>
       </a><br />
-      <sub>DevOps и фронтенд</sub>
+      <sub>DevOps</sub>
     </td>
   </tr>
 </table>
@@ -107,6 +106,6 @@ SLOPIT — это социальная сеть с рандомной ленто
 ### Разработано командой SLOPIT
 
 [![Участники](https://img.shields.io/github/contributors/your-username/your-repo?style=flat-square)](https://github.com/your-username/your-repo/graphs/contributors)
-[![Последний коммит](https://img.shields.io/github/last-commit/your-username/your-repo?style=flat-square)](https://github.com/your-username/your-repo/commits)
+
 
 </div>
