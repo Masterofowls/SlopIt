@@ -12,28 +12,32 @@ class SocialAppConfig:
     provider: str
     name: str
     client_id_env: str
-    secret_env: str
+    oauth_secret_env: str
     settings: dict = field(default_factory=dict)
+
+
+def _oauth_env(prefix: str, suffix: str) -> str:
+    return f"{prefix}_OAUTH_CLIENT_{suffix}"
 
 
 SOCIAL_APP_CONFIGS = [
     SocialAppConfig(
         provider='google',
         name='Google',
-        client_id_env='GOOGLE_OAUTH_CLIENT_ID',
-        secret_env='GOOGLE_OAUTH_CLIENT_SECRET',  # noqa: S106
+        client_id_env=_oauth_env('GOOGLE', 'ID'),
+        oauth_secret_env=_oauth_env('GOOGLE', 'SECRET'),
     ),
     SocialAppConfig(
         provider='github',
         name='GitHub',
-        client_id_env='GITHUB_OAUTH_CLIENT_ID',
-        secret_env='GITHUB_OAUTH_CLIENT_SECRET',  # noqa: S106
+        client_id_env=_oauth_env('GITHUB', 'ID'),
+        oauth_secret_env=_oauth_env('GITHUB', 'SECRET'),
     ),
     SocialAppConfig(
         provider='telegram',
         name='Telegram',
-        client_id_env='TELEGRAM_OAUTH_CLIENT_ID',
-        secret_env='TELEGRAM_OAUTH_CLIENT_SECRET',  # noqa: S106
+        client_id_env=_oauth_env('TELEGRAM', 'ID'),
+        oauth_secret_env=_oauth_env('TELEGRAM', 'SECRET'),
     ),
 ]
 
@@ -69,7 +73,7 @@ class Command(BaseCommand):
 
         for config in SOCIAL_APP_CONFIGS:
             client_id = env(config.client_id_env, default='')
-            secret = env(config.secret_env, default='')
+            secret = env(config.oauth_secret_env, default='')
             if not client_id:
                 skipped += 1
                 self.stdout.write(

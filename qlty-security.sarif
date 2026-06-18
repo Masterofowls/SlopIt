@@ -1,0 +1,5 @@
+error: the argument '--filter <FILTER>' cannot be used multiple times
+
+Usage: qlty.exe check [OPTIONS] [PATHS]...
+
+For more information, try '--help'.

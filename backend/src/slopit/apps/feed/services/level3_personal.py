@@ -129,7 +129,7 @@ def force_new_snapshot(user: AbstractBaseUser) -> FeedSnapshot:
 
     prefs = _user_prefs(user)
     seed = secrets.randbelow(2**63)
-    rng = random.Random(seed)  # noqa: S311
+    rng = random.Random(seed)  # nosec B311 — reproducible shuffle from cryptographic seed
 
     rows = list(_eligible_posts(prefs).values_list("post_id", "post__author_id"))
     post_ids = _shuffle_no_consecutive_authors(rows, rng)

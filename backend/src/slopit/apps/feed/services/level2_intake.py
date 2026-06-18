@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def _bucket_candidates(post_id: int) -> list[int]:
-    rng = random.Random(stable_hash(post_id))  # noqa: S311
+    rng = random.Random(stable_hash(post_id))  # nosec B311 — deterministic feed shuffle, not crypto
     candidates = []
     for bucket in range(BUCKET_COUNT):
         candidates.append(bucket)
