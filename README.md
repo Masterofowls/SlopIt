@@ -2,122 +2,122 @@
 
 # SLOPIT
 
-![SlopIt Logo](backend/media/image.png?v=2)
+![Логотип SLOPIT](backend/media/image.png?v=2)
 
-### A social network with a random feed and social authentication
+### Социальная сеть со случайной лентой постов и социальной авторизацией
 
-[![Live Demo](https://img.shields.io/badge/Live_Demo-View_Website-0A0A0A?style=for-the-badge&logo=vercel&logoColor=white)](https://peaceful-flower-536.fly.dev)
-[![Backend API](https://img.shields.io/badge/API-Backend_Endpoint-0A0A0A?style=for-the-badge&logo=fastapi&logoColor=white)](https://slopit-api.fly.dev)
-[![GitHub stars](https://img.shields.io/github/stars/your-username/your-repo?style=for-the-badge&logo=github&color=yellow)](https://github.com/your-username/your-repo)
-[![GitHub forks](https://img.shields.io/github/forks/your-username/your-repo?style=for-the-badge&logo=github&color=blue)](https://github.com/your-username/your-repo)
+[![Демо](https://img.shields.io/badge/Демо-Перейти_на_сайт-0A0A0A?style=for-the-badge&logo=vercel&logoColor=white)](https://peaceful-flower-536.fly.dev)
+[![API](https://img.shields.io/badge/API-Бэкенд-0A0A0A?style=for-the-badge&logo=fastapi&logoColor=white)](https://slopit-api.fly.dev)
+[![Звёзды](https://img.shields.io/github/stars/your-username/your-repo?style=for-the-badge&logo=github&color=yellow)](https://github.com/your-username/your-repo)
+[![Ветки](https://img.shields.io/github/forks/your-username/your-repo?style=for-the-badge&logo=github&color=blue)](https://github.com/your-username/your-repo)
 
 ---
 
 </div>
 
-## Live Preview
+## Превью
 
 <p align="center">
   <a href="https://peaceful-flower-536.fly.dev" target="_blank">
-    <img src="https://cdn.peekalink.io/l/u43huwbfqh3z432gjy28geot/2016800/screenshot_large.jpeg" alt="SLOPIT Website Preview" width="90%" style="border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); border: 1px solid #30363d;">
+    <img src="https://cdn.peekalink.io/l/u43huwbfqh3z432gjy28geot/2016800/screenshot_large.jpeg" alt="Превью сайта SLOPIT" width="90%" style="border-radius: 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); border: 1px solid #30363d;">
   </a>
 </p>
 
 <p align="center">
-  <em>Click the screenshot to visit the live demo</em>
+  <em>Нажмите на скриншот, чтобы перейти на сайт</em>
 </p>
 
 ---
 
-## About the Project
+## О проекте
 
-SLOPIT is a social network with a randomized content feed and authentication through popular platforms. The project features a unique design aesthetic that stands out from traditional social networks.
+SLOPIT — это социальная сеть с рандомной лентой постов и авторизацией через популярные платформы. Проект выполнен в уникальном стиле, отличающемся от традиционных социальных сетей.
 
-### Key Features
+### Основные возможности
 
-- Random Feed - Each refresh delivers a completely new set of posts
-- Social Login - Sign in with Google, GitHub, or Telegram
-- Unique Design - A distinctive visual style that differentiates from conventional social media
-- Real-time Updates - Posts appear instantly as users share them
+- Случайная лента — каждое обновление страницы показывает новый набор постов
+- Социальная авторизация — вход через Google, GitHub или Telegram
+- Уникальный дизайн — отличительный визуальный стиль
+- Обновления в реальном времени — посты появляются мгновенно
 
 ---
 
-## Technology Stack
+## Технологический стек
 
 <div align="center">
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | React |
-| Backend | Django |
+| Компонент | Технология |
+|-----------|------------|
+| Фронтенд | React |
+| Бэкенд | Django |
 | DevOps | Fly.io |
-| Database | PostgreSQL |
+| База данных | PostgreSQL |
 
 </div>
 
 ---
 
-## Project Philosophy
+## Идея проекта
 
-The core idea behind SLOPIT is to deliver a non-standard content experience:
+Основная идея SLOPIT — предложить пользователю нестандартный опыт взаимодействия с контентом:
 
-- True randomness ensures every visit is unique
-- Community-driven content from real users
-- Built with performance and simplicity in mind
-
----
-
-## Quick Links
-
-| Link | Description |
-|------|-------------|
-| Frontend | [https://peaceful-flower-536.fly.dev](https://peaceful-flower-536.fly.dev) |
-| Backend API | [https://slopit-api.fly.dev](https://slopit-api.fly.dev) |
-| Repository | [GitHub](https://github.com/your-username/your-repo) |
+- Полная случайность обеспечивает уникальность каждого визита
+- Контент создаётся реальными пользователями
+- Высокая производительность и простота использования
 
 ---
 
-## Contributors
+## Ссылки
+
+| Ссылка | Описание |
+|--------|----------|
+| Фронтенд | [https://peaceful-flower-536.fly.dev](https://peaceful-flower-536.fly.dev) |
+| Бэкенд API | [https://slopit-api.fly.dev](https://slopit-api.fly.dev) |
+| Репозиторий | [GitHub](https://github.com/your-username/your-repo) |
+
+---
+
+## Участники проекта
 
 <table align="center">
   <tr>
     <td align="center">
       <a href="https://github.com/Mikhail-Makharia-1105o">
-        <img src="https://avatars.githubusercontent.com/Mikhail-Makharia-1105o" width="100px;" alt="Mikhail Makharia"/><br />
-        <sub><b>Mikhail Makharia</b></sub>
+        <img src="https://avatars.githubusercontent.com/Mikhail-Makharia-1105o" width="100px;" alt="Михаил Махария"/><br />
+        <sub><b>Михаил Махария</b></sub>
       </a><br />
-      <sub>Frontend & Design</sub>
+      <sub>Фронтенд и дизайн</sub>
     </td>
     <td align="center">
       <a href="https://github.com/Masterofowls">
-        <img src="https://avatars.githubusercontent.com/Masterofowls" width="100px;" alt="Daniil Shtarkman"/><br />
-        <sub><b>Daniil Shtarkman</b></sub>
+        <img src="https://avatars.githubusercontent.com/Masterofowls" width="100px;" alt="Даниил Штаркман"/><br />
+        <sub><b>Даниил Штаркман</b></sub>
       </a><br />
-      <sub>Backend</sub>
+      <sub>Бэкенд</sub>
     </td>
     <td align="center">
       <a href="https://github.com/Mikozzun">
-        <img src="https://avatars.githubusercontent.com/Mikozzun" width="100px;" alt="Mikhail Kostyukov"/><br />
-        <sub><b>Mikhail Kostyukov</b></sub>
+        <img src="https://avatars.githubusercontent.com/Mikozzun" width="100px;" alt="Михаил Костюков"/><br />
+        <sub><b>Михаил Костюков</b></sub>
       </a><br />
-      <sub>DevOps & Frontend</sub>
+      <sub>DevOps и фронтенд</sub>
     </td>
   </tr>
 </table>
 
 ---
 
-## License
+## Лицензия
 
-This project is open-source and available under the [MIT License](LICENSE).
+Проект распространяется с открытым исходным кодом под лицензией [MIT](LICENSE).
 
 ---
 
 <div align="center">
 
-### Built by the SLOPIT Team
+### Разработано командой SLOPIT
 
-[![GitHub contributors](https://img.shields.io/github/contributors/your-username/your-repo?style=flat-square)](https://github.com/your-username/your-repo/graphs/contributors)
-[![Last commit](https://img.shields.io/github/last-commit/your-username/your-repo?style=flat-square)](https://github.com/your-username/your-repo/commits)
+[![Участники](https://img.shields.io/github/contributors/your-username/your-repo?style=flat-square)](https://github.com/your-username/your-repo/graphs/contributors)
+[![Последний коммит](https://img.shields.io/github/last-commit/your-username/your-repo?style=flat-square)](https://github.com/your-username/your-repo/commits)
 
 </div>
