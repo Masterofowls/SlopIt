@@ -4,7 +4,7 @@
 
 ![Логотип SLOPIT](backend/media/image.png?v=2)
 
-### Социальная сеть со случайной лентой постов и социальной авторизацией
+### Социальная сеть со случайной лентой постов 
 
 [![Демо](https://img.shields.io/badge/Демо-Перейти_на_сайт-0A0A0A?style=for-the-badge&logo=vercel&logoColor=white)](https://peaceful-flower-536.fly.dev)
 [![API](https://img.shields.io/badge/API-Бэкенд-0A0A0A?style=for-the-badge&logo=fastapi&logoColor=white)](https://slopit-api.fly.dev)
