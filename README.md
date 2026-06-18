@@ -2,6 +2,8 @@
 
 ![Alt text for the image](backend/media/image.png?v=1)
 
+[![SlopIt Website Preview](https://cdn.peekalink.io/l/u43huwbfqh3z432gjy28geot/2016800/screenshot_large.jpeg)](https://peaceful-flower-536.fly.dev)
+
 SLOPIT — социальная сеть с рандомной лентой постов и авторизацией через Google, GitHub и Telegram.
 Проект выполнен в стиле slop-дизайна.
 
