@@ -1,4 +1,3 @@
-"""RFC 7807 Problem JSON exception handler for Django REST Framework."""
 
 from __future__ import annotations
 
@@ -14,22 +13,6 @@ def problem_json_exception_handler(
     exc: Exception,
     context: dict[str, Any],
 ) -> JsonResponse | None:
-    """Return RFC 7807 ``application/problem+json`` responses for all DRF errors.
-
-    Falls through to DRF's default handler first, then reshapes the response
-    into the Problem Details format::
-
-        {
-            "type":   "about:blank",
-            "title":  "Bad Request",
-            "status": 400,
-            "detail": "...",
-            "errors": {...}
-        }
-
-    Frontend should inspect ``Content-Type: application/problem+json`` to
-    distinguish problem responses from normal API payloads.
-    """
     response = exception_handler(exc, context)
 
     if response is None:
@@ -61,7 +44,6 @@ def problem_json_exception_handler(
 
 
 def _extract_detail(exc: Exception, response: Any) -> str:
-    """Extract a human-readable detail string from the response data."""
     data = response.data
     if isinstance(data, dict) and "detail" in data:
         return str(data["detail"])
@@ -73,7 +55,6 @@ def _extract_detail(exc: Exception, response: Any) -> str:
 
 
 def _status_title(http_status: int) -> str:
-    """Map an HTTP status code to its standard reason phrase."""
     titles = {
         status.HTTP_400_BAD_REQUEST: "Bad Request",
         status.HTTP_401_UNAUTHORIZED: "Unauthorized",

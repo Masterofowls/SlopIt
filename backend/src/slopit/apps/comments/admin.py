@@ -1,4 +1,3 @@
-"""Admin registrations for the comments app."""
 
 from __future__ import annotations
 
@@ -19,5 +18,5 @@ class CommentAdmin(ModelAdmin):
 
     @admin.action(description="Soft-delete selected comments")
     def soft_delete_selected(self, request: object, queryset: object) -> None:
-        for comment in queryset:  # type: ignore[attr-defined]
+        for comment in queryset:  
             comment.soft_delete()

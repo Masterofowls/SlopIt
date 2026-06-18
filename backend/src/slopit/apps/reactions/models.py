@@ -1,4 +1,3 @@
-"""Domain model for generic like/dislike reactions on posts and comments."""
 
 from __future__ import annotations
 
@@ -9,11 +8,6 @@ from django.db import models
 
 
 class Reaction(models.Model):
-    """A like or dislike on any content object (Post or Comment).
-
-    Reactions do NOT influence feed ordering — the feed algorithm is
-    intentionally random and popularity-agnostic (see docs/ALGORITHM.md).
-    """
 
     class Kind(models.TextChoices):
         LIKE = "like", "Like"

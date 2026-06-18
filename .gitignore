@@ -9,6 +9,9 @@
 /backend/.pytest_cache
 /frontend/node_modules
 .vscode
+/backend/.ruff_cache
+/backend/.mypy_cache
+/backend/.pytest_cache
 /backend/.coverage
 /.github
 /skills.config.json
@@ -18,3 +21,13 @@
 /backend/src/slopit/apps/feed/management/__pycache__
 /backend/src/slopit/apps/feed/migrations/__pycache__
 /docs
+/idea
+/memory-bank
+/PLAN.md
+/mcp_debug.log
+/.coverage
+/.pytest_cache
+/.ruff_cache
+/.venv
+/.playwright/
+/node_modules

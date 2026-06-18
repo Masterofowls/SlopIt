@@ -1,4 +1,3 @@
-"""Management command entrypoint for the SlopIt Telegram bot server."""
 
 from __future__ import annotations
 

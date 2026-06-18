@@ -1,4 +1,3 @@
-"""Post-save signals for accounts: auto-create Profile and FeedPreferences."""
 
 from __future__ import annotations
 
@@ -13,7 +12,6 @@ def create_user_profile_and_preferences(
     created: bool,
     **kwargs: object,
 ) -> None:
-    """Ensure every new User gets a Profile and FeedPreferences row."""
     if not created:
         return
 

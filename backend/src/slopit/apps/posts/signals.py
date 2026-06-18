@@ -7,26 +7,24 @@ from django.dispatch import receiver
 
 @receiver(pre_save, sender="posts.Post")
 def _cache_original_status(sender: type, instance: object, **kwargs: object) -> None:
-    """Cache the pre-save status so post_save can detect transitions."""
-    if instance.pk:  # type: ignore[union-attr]
+    if instance.pk:  
         try:
-            instance._original_status = sender.objects.values_list(  # type: ignore[union-attr]
+            instance._original_status = sender.objects.values_list(  
                 "status", flat=True
-            ).get(pk=instance.pk)  # type: ignore[union-attr]
+            ).get(pk=instance.pk)  
         except sender.DoesNotExist:
-            instance._original_status = None  # type: ignore[union-attr]
+            instance._original_status = None  
     else:
-        instance._original_status = None  # type: ignore[union-attr]
+        instance._original_status = None  
 
 
 @receiver(post_save, sender="posts.Post")
 def _on_post_saved(sender: type, instance: object, created: bool, **kwargs: object) -> None:
-    """Enqueue feed updates when a post's publication status changes."""
-    current = instance.status  # type: ignore[union-attr]
+    current = instance.status  
     original = getattr(instance, "_original_status", None)
 
     if current == "published" and original != "published":
-        # Assign a random toxicity score and ensure published_at is set.
+        
         import random
 
         from django.utils import timezone
@@ -34,28 +32,28 @@ def _on_post_saved(sender: type, instance: object, created: bool, **kwargs: obje
         update_fields: dict[str, object] = {
             "toxicity_score": round(random.uniform(0.0, 1.0), 4),
         }
-        if not instance.published_at:  # type: ignore[union-attr]
+        if not instance.published_at:  
             update_fields["published_at"] = timezone.now()
 
-        sender.objects.filter(pk=instance.pk).update(**update_fields)  # type: ignore[union-attr]
+        sender.objects.filter(pk=instance.pk).update(**update_fields)  
 
-        # Run feed intake synchronously (no Redis/RQ available).
+        
         try:
             from apps.feed.services.level2_intake import on_post_published
 
             post = (
                 sender.objects.select_related("author").prefetch_related("tags").get(pk=instance.pk)
-            )  # type: ignore[union-attr]
+            )  
             on_post_published(post)
         except Exception:
             import logging
 
             logging.getLogger(__name__).exception(
                 "on_post_published failed for post %s",
-                instance.pk,  # type: ignore[union-attr]
+                instance.pk,  
             )
 
     elif current == "removed" and original == "published":
         from apps.feed.models import PostFeedMeta
 
-        PostFeedMeta.objects.filter(post_id=instance.pk).update(is_eligible=False)  # type: ignore[union-attr]
+        PostFeedMeta.objects.filter(post_id=instance.pk).update(is_eligible=False)

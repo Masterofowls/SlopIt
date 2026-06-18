@@ -1,4 +1,3 @@
-"""Serializers for comments."""
 
 from __future__ import annotations
 
@@ -9,10 +8,6 @@ from apps.comments.models import Comment
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    """Read serializer: renders a comment with author info.
-
-    Soft-deleted comments show empty body fields to preserve thread structure.
-    """
 
     author = UserBriefSerializer(read_only=True)
     reply_count = serializers.IntegerField(read_only=True, default=0)
@@ -58,7 +53,6 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class CommentWriteSerializer(serializers.ModelSerializer):
-    """Write serializer for creating and editing comments."""
 
     class Meta:
         model = Comment

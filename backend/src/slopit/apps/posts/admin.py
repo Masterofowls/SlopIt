@@ -1,4 +1,3 @@
-"""Admin registrations for the posts app."""
 
 from __future__ import annotations
 
@@ -12,14 +11,13 @@ from .models import Media, Post, Tag
 
 
 @admin.action(description="Publish selected posts")
-def publish_posts(modeladmin: object, request: object, queryset: object) -> None:  # noqa: ARG001
-    """Set status=published and published_at=now for every selected draft post."""
+def publish_posts(modeladmin: object, request: object, queryset: object) -> None:  
     now = timezone.now()
     for post in queryset.filter(status__in=[Post.Status.DRAFT, Post.Status.REMOVED]):
         post.status = Post.Status.PUBLISHED
         if not post.published_at:
             post.published_at = now
-        post.save()  # triggers the post_save signal → on_post_published
+        post.save()  
 
 
 @admin.register(Tag)
@@ -30,11 +28,10 @@ class TagAdmin(ModelAdmin):
 
 
 class MediaInline(TabularInline):
-    """Media attachments shown inline on the Post change page."""
 
     model = Media
     extra = 1
-    # mime_type / file_size / kind are auto-detected in Media.save()
+    
     fields = ["inline_preview", "file", "thumbnail", "kind"]
     readonly_fields = ["inline_preview"]
     show_change_link = True
@@ -72,17 +69,16 @@ class PostAdmin(ModelAdmin):
 
 
 def _human_size(n: int) -> str:
-    """Return a human-readable file size string."""
     for unit in ("B", "KB", "MB", "GB"):
         if n < 1024:
             return f"{n:.0f} {unit}"
-        n /= 1024  # type: ignore[assignment]
+        n /= 1024  
     return f"{n:.1f} TB"
 
 
 @admin.register(Media)
 class MediaAdmin(ModelAdmin):
-    # ── List view ─────────────────────────────────────────────────────────────
+    
     list_display = [
         "thumbnail_preview",
         "post_link",
@@ -106,7 +102,7 @@ class MediaAdmin(ModelAdmin):
     date_hierarchy = "created_at"
     autocomplete_fields = ["post"]
 
-    # ── Detail view ───────────────────────────────────────────────────────────
+    
     readonly_fields = [
         "media_preview",
         "file_link",
@@ -145,25 +141,25 @@ class MediaAdmin(ModelAdmin):
         ),
     ]
 
-    # ── Custom actions ────────────────────────────────────────────────────────
+    
     actions = ["mark_done", "mark_failed", "mark_pending"]
 
     @admin.action(description="✅ Отметить как «Done»")
-    def mark_done(self, request, queryset):  # type: ignore[override]
+    def mark_done(self, request, queryset):  
         updated = queryset.update(processing_status=Media.ProcessingStatus.DONE)
         self.message_user(request, f"{updated} файл(ов) → done.")
 
     @admin.action(description="❌ Отметить как «Failed»")
-    def mark_failed(self, request, queryset):  # type: ignore[override]
+    def mark_failed(self, request, queryset):  
         updated = queryset.update(processing_status=Media.ProcessingStatus.FAILED)
         self.message_user(request, f"{updated} файл(ов) → failed.")
 
     @admin.action(description="⏳ Отметить как «Pending»")
-    def mark_pending(self, request, queryset):  # type: ignore[override]
+    def mark_pending(self, request, queryset):  
         updated = queryset.update(processing_status=Media.ProcessingStatus.PENDING)
         self.message_user(request, f"{updated} файл(ов) → pending.")
 
-    # ── Computed columns ──────────────────────────────────────────────────────
+    
     @admin.display(description="Превью", ordering="thumbnail")
     def thumbnail_preview(self, obj: Media) -> str:
         src = None

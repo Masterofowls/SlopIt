@@ -1,4 +1,3 @@
-"""Serializers for feed preferences and snapshot page responses."""
 
 from __future__ import annotations
 
@@ -8,7 +7,6 @@ from apps.feed.models import FeedPreferences
 
 
 class FeedPreferencesSerializer(serializers.ModelSerializer):
-    """Read/write serializer for a user's feed filter preferences."""
 
     class Meta:
         model = FeedPreferences

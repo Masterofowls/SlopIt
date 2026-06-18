@@ -1,5 +1,3 @@
-"""64-bit SimHash for near-duplicate post detection."""
-
 from __future__ import annotations
 
 import hashlib
@@ -14,35 +12,27 @@ def _feature_hash(feature: str) -> int:
 
 
 def compute(text: str) -> str:
-    if text is None:
-        return "0" * 16
-
-    if text.strip() == "":
+    if text is None or text.strip() == "":
         return "0" * 16
 
     tokens = text.lower().split()
-    features = []
-
-    for token in tokens:
-        features.append(token)
-
+    features = list(tokens)
     for i in range(len(tokens) - 1):
-        bigram = tokens[i] + " " + tokens[i + 1]
-        features.append(bigram)
+        features.append(tokens[i] + " " + tokens[i + 1])
 
     v = [0] * 64
     for feat in features:
         h = _feature_hash(feat)
         for i in range(64):
             if (h >> i) & 1:
-                v[i] = v[i] + 1
+                v[i] += 1
             else:
-                v[i] = v[i] - 1
+                v[i] -= 1
 
     fingerprint = 0
     for i in range(64):
         if v[i] > 0:
-            fingerprint = fingerprint | (1 << i)
+            fingerprint |= 1 << i
 
     return format(fingerprint, "016x")
 
@@ -52,12 +42,9 @@ def hamming_distance(hash_a: str, hash_b: str) -> int:
     count = 0
     for i in range(64):
         if (xor >> i) & 1:
-            count = count + 1
+            count += 1
     return count
 
 
 def is_near_duplicate(hash_a: str, hash_b: str) -> bool:
-    distance = hamming_distance(hash_a, hash_b)
-    if distance < NEAR_DUPLICATE_THRESHOLD:
-        return True
-    return False
+    return hamming_distance(hash_a, hash_b) < NEAR_DUPLICATE_THRESHOLD

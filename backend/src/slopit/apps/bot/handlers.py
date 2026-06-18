@@ -82,7 +82,7 @@ class SlopItBotHandlers:
                 msg = f"API is online (v{data.get('version', '?')})"
             else:
                 msg = "API is in maintenance mode."
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:  
             logger.exception("/status check failed: %s", exc)
             msg = f"API unreachable: {exc}"
         await update.message.reply_text(msg)

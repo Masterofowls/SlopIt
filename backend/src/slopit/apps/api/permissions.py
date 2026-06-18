@@ -1,4 +1,3 @@
-"""Custom DRF permissions for SlopIt."""
 
 from __future__ import annotations
 
@@ -12,10 +11,6 @@ if TYPE_CHECKING:
 
 
 class IsAuthorOrReadOnly(BasePermission):
-    """Allow writes only to the object's `author` field owner.
-
-    Any authenticated or anonymous user may perform safe (read-only) requests.
-    """
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         return bool(
@@ -29,10 +24,6 @@ class IsAuthorOrReadOnly(BasePermission):
 
 
 class IsOwnerOrReadOnly(BasePermission):
-    """Allow writes only to the object's `user` field owner (profiles, prefs).
-
-    Any authenticated or anonymous user may perform safe (read-only) requests.
-    """
 
     def has_permission(self, request: Request, view: APIView) -> bool:
         return bool(

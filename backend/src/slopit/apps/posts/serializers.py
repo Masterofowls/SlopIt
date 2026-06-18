@@ -1,4 +1,3 @@
-"""Serializers for posts and tags."""
 
 from __future__ import annotations
 
@@ -9,11 +8,10 @@ from apps.posts.models import Media, Post, Tag
 
 
 def _build_reaction_counts(obj) -> dict:
-    """Return like/dislike counts from queryset annotations or a fallback query."""
     like = getattr(obj, "like_count", None)
     dislike = getattr(obj, "dislike_count", None)
     if like is None or dislike is None:
-        # Fallback for views that bypass the annotated queryset
+        
         from django.contrib.contenttypes.models import ContentType
 
         from apps.reactions.models import Reaction
@@ -26,12 +24,11 @@ def _build_reaction_counts(obj) -> dict:
 
 
 def _get_user_reaction(obj, context) -> str | None:
-    """Return the current user's reaction kind ('like'/'dislike') or None."""
-    # Fast path: user_reactions dict injected by PostViewSet.get_serializer_context
+    
     user_reactions = context.get("user_reactions")
     if user_reactions is not None:
         return user_reactions.get(obj.pk)
-    # Fallback: per-object query (used by views that don't inject user_reactions)
+    
     request = context.get("request")
     if not request or not request.user.is_authenticated:
         return None
@@ -59,7 +56,6 @@ class MediaSerializer(serializers.ModelSerializer):
 
 
 class PostListSerializer(serializers.ModelSerializer):
-    """Compact post representation for feed and list endpoints."""
 
     author = UserBriefSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
@@ -113,7 +109,6 @@ class PostListSerializer(serializers.ModelSerializer):
 
 
 class PostDetailSerializer(serializers.ModelSerializer):
-    """Full post representation including rendered HTML body."""
 
     author = UserBriefSerializer(read_only=True)
     tags = TagSerializer(many=True, read_only=True)
@@ -166,7 +161,6 @@ class PostDetailSerializer(serializers.ModelSerializer):
 
 
 class PostWriteSerializer(serializers.ModelSerializer):
-    """Serializer for creating and updating posts."""
 
     tag_ids = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
@@ -203,7 +197,7 @@ class PostWriteSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     {"template_data": "Poll posts require at least 2 options."}
                 )
-            # Normalise: ensure each option has text + votes counter
+            
             attrs["template_data"] = {
                 **td,
                 "options": [{"text": str(o.get("text", "") or ""), "votes": 0} for o in options],
@@ -227,13 +221,11 @@ class PostWriteSerializer(serializers.ModelSerializer):
 
 
 class PollVoteSerializer(serializers.Serializer):
-    """Accepts a poll option index from the voter."""
 
     option_index = serializers.IntegerField(min_value=0)
 
 
 class BookmarkSerializer(serializers.ModelSerializer):
-    """Serialiser for the Bookmark model — used in list + create responses."""
 
     post = PostListSerializer(read_only=True)
 

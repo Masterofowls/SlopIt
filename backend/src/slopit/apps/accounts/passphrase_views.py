@@ -1,12 +1,3 @@
-"""Passphrase second-factor API views.
-
-The passphrase is a BIP39-like mnemonic (≥4 words) that can be optionally
-added as a second factor on top of an OAuth session.  It is NOT used for
-primary authentication — it is an extra prompt the frontend can show for
-sensitive actions (e.g., changing email, deleting account).
-
-Storage: only a bcrypt hash is persisted; the raw phrase is never stored.
-"""
 
 from __future__ import annotations
 
@@ -26,13 +17,6 @@ _MIN_WORDS = 4
 
 
 class PassphraseView(APIView):
-    """GET/POST /api/v1/auth/passphrase/ — manage the user's BIP39-like passphrase.
-
-    GET  → ``{"has_passphrase": bool}``
-    POST → set (or replace) the passphrase.
-           Body: ``{"phrase": "<word1> <word2> ... <wordN>"}``
-           Success: 201 Created + ``{"ok": true}``
-    """
 
     permission_classes = [IsAuthenticated]
 
@@ -60,15 +44,6 @@ class PassphraseView(APIView):
 
 
 class PassphraseVerifyView(APIView):
-    """POST /api/v1/auth/passphrase/verify/ — check a passphrase against the stored hash.
-
-    Body: ``{"phrase": "<words>"}``
-    Returns: ``{"valid": true}`` or ``{"valid": false}``
-
-    Returns 404 if the user has no passphrase set yet.
-    This endpoint deliberately always returns 200/404 (not 401) so the
-    frontend can distinguish "wrong passphrase" from "no passphrase set".
-    """
 
     permission_classes = [IsAuthenticated]
 
@@ -85,11 +60,6 @@ class PassphraseVerifyView(APIView):
 
 
 class PassphraseDeleteView(APIView):
-    """DELETE /api/v1/auth/passphrase/ — remove the stored passphrase.
-
-    Returns 204 No Content.  If no passphrase is set, also returns 204
-    (idempotent).
-    """
 
     permission_classes = [IsAuthenticated]
 

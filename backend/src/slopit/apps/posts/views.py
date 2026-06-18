@@ -1,4 +1,3 @@
-"""API views for posts and tags."""
 
 from __future__ import annotations
 
@@ -37,7 +36,6 @@ IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".tiff"}
 
 
 class MediaUploadView(APIView):
-    """Upload media file and return a public URL for EditorJS image blocks."""
 
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
@@ -111,12 +109,6 @@ class MediaUploadView(APIView):
 
 
 class TagViewSet(ReadOnlyModelViewSet):
-    """List and retrieve taxonomy tags.
-
-    Routes:
-        GET /api/v1/tags/         → list all tags
-        GET /api/v1/tags/{id}/    → tag detail
-    """
 
     queryset = Tag.objects.order_by("name")
     serializer_class = TagSerializer
@@ -124,8 +116,7 @@ class TagViewSet(ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-def _record_view(request: "Request", post: "Post") -> None:  # noqa: F821
-    """Increment view_count once per authenticated user, always for anonymous."""
+def _record_view(request: "Request", post: "Post") -> None:  
     from django.db.models import F
 
     from apps.posts.models import PostView
@@ -139,18 +130,6 @@ def _record_view(request: "Request", post: "Post") -> None:  # noqa: F821
 
 
 class PostViewSet(ModelViewSet):
-    """CRUD for posts with publish action and nested comments/reactions.
-
-    Routes:
-        GET    /api/v1/posts/               → list published posts
-        POST   /api/v1/posts/               → create post (auth required)
-        GET    /api/v1/posts/{id}/          → retrieve post detail
-        PATCH  /api/v1/posts/{id}/          → update post (author only)
-        DELETE /api/v1/posts/{id}/          → remove post (author or admin)
-        POST   /api/v1/posts/{id}/publish/  → publish draft (author only)
-        GET    /api/v1/posts/{id}/comments/ → list comments for post
-        POST   /api/v1/posts/{id}/react/    → toggle reaction (auth required)
-    """
 
     pagination_class = StandardResultsPagination
     permission_classes = [IsAuthorOrReadOnly]
@@ -243,7 +222,6 @@ class PostViewSet(ModelViewSet):
         return PostListSerializer
 
     def retrieve(self, request: Request, *args: object, **kwargs: object) -> Response:
-        """GET /api/v1/posts/{pk}/ → post detail with real view tracking."""
         instance = self.get_object()
         _record_view(request, instance)
         serializer = self.get_serializer(instance)
@@ -256,7 +234,6 @@ class PostViewSet(ModelViewSet):
         permission_classes=[IsAuthenticatedOrReadOnly],
     )
     def by_slug(self, request: Request, slug: str | None = None) -> Response:
-        """GET /api/v1/posts/by-slug/{slug}/ → retrieve a single post by slug."""
         from django.db.models import F
         from django.shortcuts import get_object_or_404
 
@@ -267,7 +244,7 @@ class PostViewSet(ModelViewSet):
         serializer = self.get_serializer(post)
         return Response(serializer.data)
 
-    def perform_create(self, serializer) -> None:  # type: ignore[override]
+    def perform_create(self, serializer) -> None:  
         serializer.save(
             author=self.request.user,
             status=Post.Status.PUBLISHED,
@@ -281,7 +258,6 @@ class PostViewSet(ModelViewSet):
         permission_classes=[IsAuthenticated, IsAuthorOrReadOnly],
     )
     def publish(self, request: Request, pk: str | None = None) -> Response:
-        """Transition a draft post to published status."""
         post: Post = self.get_object()
 
         if post.status == Post.Status.PUBLISHED:
@@ -306,7 +282,6 @@ class PostViewSet(ModelViewSet):
         permission_classes=[IsAuthenticatedOrReadOnly],
     )
     def comments(self, request: Request, pk: str | None = None) -> Response:
-        """List top-level comments for a post (paginated)."""
         from django.contrib.contenttypes.models import ContentType
         from django.db.models import Count, IntegerField, OuterRef, Subquery
         from django.db.models.functions import Coalesce
@@ -345,7 +320,7 @@ class PostViewSet(ModelViewSet):
         page = self.paginate_queryset(qs)
         items = page if page is not None else qs
 
-        # Build user reaction context for comments
+        
         ctx = {"request": request}
         if request.user.is_authenticated:
             comment_ids = [c.pk for c in items]
@@ -368,12 +343,6 @@ class PostViewSet(ModelViewSet):
         permission_classes=[IsAuthenticated],
     )
     def react(self, request: Request, pk: str | None = None) -> Response:
-        """Toggle a like/dislike reaction on a post.
-
-        If the user already has the same reaction, it is removed (toggle off).
-        If the user has a different reaction, it is changed.
-        Returns updated reaction_counts and user_reaction.
-        """
         from django.contrib.contenttypes.models import ContentType
         from django.db.models import Count
 
@@ -407,7 +376,7 @@ class PostViewSet(ModelViewSet):
             )
             user_reaction = kind
 
-        # Return fresh counts so the frontend doesn't need a re-fetch
+        
         qs = Reaction.objects.filter(content_type=ct, object_id=post.pk)
         counts_rows = qs.values("kind").annotate(n=Count("id"))
         reaction_counts = {"like": 0, "dislike": 0}
@@ -429,9 +398,6 @@ class PostViewSet(ModelViewSet):
         permission_classes=[IsAuthenticated],
     )
     def bookmark(self, request: Request, pk: str | None = None) -> Response:
-        """POST   → save post to bookmarks.
-        DELETE → remove bookmark.
-        """
         from apps.posts.models import Bookmark
 
         post = self.get_object()
@@ -445,7 +411,7 @@ class PostViewSet(ModelViewSet):
                 )
             return Response({"is_bookmarked": False}, status=status.HTTP_200_OK)
 
-        # POST — create (ignore if already exists)
+        
         _, created = Bookmark.objects.get_or_create(user=request.user, post=post)
         return Response(
             {"is_bookmarked": True},
@@ -459,16 +425,11 @@ class PostViewSet(ModelViewSet):
         permission_classes=[IsAuthenticated],
     )
     def report(self, request: Request, pk: str | None = None) -> Response:
-        """POST → submit a moderation report for a post.
-
-        Body (optional): ``{"reason": "spam"}``
-        Idempotent — a second report from the same user returns 200 instead of 201.
-        """
         from apps.posts.models import PostReport
 
         post = self.get_object()
 
-        # Validate reason if provided
+        
         reason = request.data.get("reason", PostReport.Reason.OTHER)
         valid_reasons = {r.value for r in PostReport.Reason}
         if reason not in valid_reasons:
@@ -491,12 +452,6 @@ class PostViewSet(ModelViewSet):
         permission_classes=[IsAuthenticated],
     )
     def vote(self, request: Request, pk: str | None = None) -> Response:
-        """Submit or change a vote on a poll post.
-
-        Body: ``{"option_index": 0}``
-        Sending the same index again removes the vote (toggle).
-        Returns updated ``template_data`` with fresh vote counts.
-        """
         from django.db import transaction
 
         from apps.posts.models import PollVote
@@ -526,14 +481,14 @@ class PostViewSet(ModelViewSet):
 
             if existing_vote:
                 if existing_vote.option_index == option_index:
-                    # Toggle off — remove vote
+                    
                     options[existing_vote.option_index]["votes"] = max(
                         0, options[existing_vote.option_index]["votes"] - 1
                     )
                     existing_vote.delete()
                     user_vote = None
                 else:
-                    # Change vote
+                    
                     options[existing_vote.option_index]["votes"] = max(
                         0, options[existing_vote.option_index]["votes"] - 1
                     )
@@ -542,7 +497,7 @@ class PostViewSet(ModelViewSet):
                     existing_vote.save(update_fields=["option_index", "updated_at"])
                     user_vote = option_index
             else:
-                # New vote
+                
                 options[option_index]["votes"] = options[option_index].get("votes", 0) + 1
                 PollVote.objects.create(
                     post=post,
@@ -562,11 +517,6 @@ class PostViewSet(ModelViewSet):
 
 
 class TrendingTagsView(APIView):
-    """Return the top hashtags parsed from post bodies in the last 24 hours.
-
-    GET /api/v1/trending-tags/
-    → [{"tag": "chaos", "count": 47}, ...]
-    """
 
     permission_classes = [IsAuthenticatedOrReadOnly]
 

@@ -1,4 +1,3 @@
-"""Domain model for threaded comments on posts."""
 
 from __future__ import annotations
 
@@ -25,9 +24,8 @@ class CommentQuerySet(models.QuerySet):
 
 
 class Comment(models.Model):
-    """A user comment on a post, supporting one level of threading."""
 
-    objects: CommentQuerySet = CommentQuerySet.as_manager()  # type: ignore[assignment]
+    objects: CommentQuerySet = CommentQuerySet.as_manager()  
 
     post = models.ForeignKey(
         "posts.Post",
@@ -65,13 +63,12 @@ class Comment(models.Model):
     def __str__(self) -> str:
         return f"Comment#{self.pk} by {self.author_id} on Post#{self.post_id}"
 
-    def save(self, *args, **kwargs) -> None:  # type: ignore[override]
+    def save(self, *args, **kwargs) -> None:  
         if self.body_markdown:
             self.body_html = _render_markdown(self.body_markdown)
         super().save(*args, **kwargs)
 
     def soft_delete(self) -> None:
-        """Erase content without removing the node from the thread tree."""
         self.body_markdown = ""
         self.body_html = ""
         self.is_deleted = True

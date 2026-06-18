@@ -1,4 +1,3 @@
-"""Custom pagination classes for SlopIt API."""
 
 from __future__ import annotations
 
@@ -8,7 +7,6 @@ from rest_framework.response import Response
 
 
 class StandardResultsPagination(PageNumberPagination):
-    """Standard cursor-free pagination for lists (posts, comments, tags)."""
 
     page_size = 25
     page_size_query_param = "limit"
@@ -16,24 +14,6 @@ class StandardResultsPagination(PageNumberPagination):
 
 
 class SnapshotIndexPagination:
-    """Index-based pagination for the feed snapshot.
-
-    The feed snapshot stores an ordered list of post IDs (``post_ids``).
-    Pagination works by slicing this list:
-        ``snapshot.post_ids[cursor : cursor + page_size]``
-
-    Query params:
-        cursor (int, default 0): start index in the snapshot array.
-        limit  (int, default FEED_PAGE_SIZE): number of posts per page.
-
-    Response shape:
-        {
-            "count":       <total posts in snapshot>,
-            "next_cursor": <int | null>,
-            "has_more":    <bool>,
-            "results":     [...]
-        }
-    """
 
     def __init__(self) -> None:
         self.page_size: int = getattr(settings, "FEED_PAGE_SIZE", 25)

@@ -13,16 +13,12 @@ _SOCIAL_AVATAR_FALLBACK_MAX_LEN = 200
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):
-    """Custom allauth social adapter for SlopIt.
-
-    - Redirects to FRONTEND_URL after every OAuth login (not backend root).
-    - Syncs provider avatar URL into Profile.social_avatar_url on every login.
-    """
 
     _AVATAR_KEYS: dict[str, str] = {
         "google": "picture",
         "github": "avatar_url",
         "telegram": "photo_url",
+        "yandex" : "photo_url"
     }
 
     def get_login_redirect_url(self, request: object) -> str:

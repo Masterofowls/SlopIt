@@ -1,4 +1,3 @@
-"""Management command: seed the database with test users, tags, and posts."""
 
 from __future__ import annotations
 

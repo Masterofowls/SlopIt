@@ -1,10 +1,3 @@
-"""Domain models for the 3-level random feed algorithm.
-
-See docs/ALGORITHM.md for the full specification.
-L1: PostFeedMeta  — system-wide eligibility index.
-L2: handled in services (anti-spam, anti-duplicate, bucket assignment).
-L3: FeedSnapshot  — per-user shuffled list of post IDs.
-"""
 
 from __future__ import annotations
 
@@ -18,7 +11,6 @@ from django.db import models
 
 
 class FeedPreferences(models.Model):
-    """Per-user content filters applied during L3 snapshot generation."""
 
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
@@ -50,11 +42,6 @@ class FeedPreferences(models.Model):
 
 
 class PostFeedMeta(models.Model):
-    """L1 eligibility record for a published post.
-
-    Created when a post is published; updated by L2 intake jobs.
-    GIN indexes accelerate per-user preference filtering in L3.
-    """
 
     post = models.OneToOneField(
         "posts.Post",
@@ -91,13 +78,6 @@ class PostFeedMeta(models.Model):
 
 
 class FeedSnapshot(models.Model):
-    """L3 per-user shuffled list of post IDs, valid for `expires_at`.
-
-    The snapshot is reproducible from (user, seed) via the L3 shuffle
-    algorithm.  `post_ids` stores ordered IDs; the API serves pages
-    by slicing this array.  Only the most recent is_active=True record
-    is served; old ones are cleaned up by a background RQ job.
-    """
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(

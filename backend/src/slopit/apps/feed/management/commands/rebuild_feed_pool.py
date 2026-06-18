@@ -1,11 +1,3 @@
-"""Management command: upsert PostFeedMeta for every published post.
-
-Run on every deploy via release_command so that posts created before the
-signal-based intake was working are included in the feed pool.
-
-Usage:
-    python manage.py rebuild_feed_pool
-"""
 
 from __future__ import annotations
 
@@ -39,7 +31,7 @@ class Command(BaseCommand):
             try:
                 on_post_published(post)
                 ok += 1
-            except Exception as exc:  # noqa: BLE001
+            except Exception as exc:  
                 self.stderr.write(f"  SKIP post {post.pk}: {exc}")
 
         self.stdout.write(self.style.SUCCESS(f"Done — {ok}/{total} posts indexed."))

@@ -1,14 +1,3 @@
-"""Auth-state API views for React SPA integration.
-
-These views complement AllAuth's own OAuth flow.  The OAuth dance itself
-(Google / GitHub / Telegram) runs through AllAuth's HTML views at
-/accounts/<provider>/login/.  After the callback, AllAuth sets an HttpOnly
-session cookie and redirects to LOGIN_REDIRECT_URL ("/").  The frontend
-then calls /api/v1/auth/session/ to hydrate its auth state.
-
-Passkey (WebAuthn) registration and authentication use AllAuth's headless
-API at /api/v1/_allauth/browser/v1/... — see FRONTEND_GUIDE.md.
-"""
 
 from __future__ import annotations
 
@@ -30,12 +19,6 @@ from apps.accounts.serializers import ProfileSerializer, UserBriefSerializer
 
 
 class AuthSessionView(APIView):
-    """GET /api/v1/auth/session/ — current session state.
-
-    Returns full user + profile info when authenticated, otherwise a
-    lightweight anonymous marker.  Frontend calls this on startup to
-    hydrate auth state before rendering.
-    """
 
     permission_classes = [AllowAny]
 
@@ -58,13 +41,6 @@ class AuthSessionView(APIView):
 
 
 class AuthCsrfView(APIView):
-    """GET /api/v1/auth/csrf/ — bootstrap CSRF cookie + return token value.
-
-    React apps must call this once on load before making any POST / PATCH /
-    DELETE requests.  The endpoint sets the ``csrftoken`` cookie and returns
-    the token in the response body so the app can store it in Axios defaults
-    (``axios.defaults.headers.common['X-CSRFToken'] = data.csrfToken``).
-    """
 
     permission_classes = [AllowAny]
 
@@ -74,11 +50,6 @@ class AuthCsrfView(APIView):
 
 
 class AuthLogoutView(APIView):
-    """POST /api/v1/auth/logout/ — terminate the current session.
-
-    Requires a valid CSRF token.  Returns 204 No Content on success.
-    Frontend should clear any locally-cached user state after this call.
-    """
 
     permission_classes = [IsAuthenticated]
 
@@ -88,16 +59,6 @@ class AuthLogoutView(APIView):
 
 
 class AuthProvidersView(APIView):
-    """GET /api/v1/auth/providers/ — indicates that Clerk handles OAuth.
-
-    OAuth (Google, GitHub) is now managed entirely by Clerk on the frontend.
-    This endpoint signals to the SPA that it should use the Clerk SDK for
-    sign-in rather than navigating to backend OAuth redirect URLs.
-
-    Example response::
-
-        {"auth_mode": "clerk", "providers": []}
-    """
 
     permission_classes = [AllowAny]
 

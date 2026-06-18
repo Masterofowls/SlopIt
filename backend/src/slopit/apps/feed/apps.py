@@ -2,7 +2,6 @@ from django.apps import AppConfig
 
 
 class FeedConfig(AppConfig):
-    """Three-level random feed algorithm — see docs/ALGORITHM.md."""
 
     name = "apps.feed"
     label = "feed"

@@ -1,4 +1,3 @@
-"""DRF router — all API v1 viewsets + auth endpoints."""
 
 from __future__ import annotations
 

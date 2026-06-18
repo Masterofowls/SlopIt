@@ -1,4 +1,3 @@
-"""API views for comments."""
 
 from __future__ import annotations
 
@@ -26,7 +25,6 @@ from apps.reactions.serializers import ReactionToggleSerializer
 
 
 def _annotate_comment_reactions(qs):
-    """Add like_count and dislike_count annotations to a Comment queryset."""
     ct = ContentType.objects.get_for_model(Comment)
     like_sq = (
         Reaction.objects.filter(content_type=ct, object_id=OuterRef("pk"), kind="like")
@@ -47,7 +45,6 @@ def _annotate_comment_reactions(qs):
 
 
 def _build_comment_context(request, comment_ids: list[int]) -> dict:
-    """Build serializer context with user's reactions for the given comment ids."""
     ctx = {"request": request}
     if request and request.user.is_authenticated:
         ct = ContentType.objects.get_for_model(Comment)
@@ -61,18 +58,6 @@ def _build_comment_context(request, comment_ids: list[int]) -> dict:
 
 
 class CommentViewSet(RetrieveModelMixin, GenericViewSet):
-    """Retrieve, create, update, and soft-delete comments.
-
-    Comment listing is handled by PostViewSet.comments (nested under posts).
-
-    Routes:
-        GET    /api/v1/comments/{id}/         → retrieve comment
-        POST   /api/v1/comments/              → create comment (auth required)
-        PATCH  /api/v1/comments/{id}/         → update own comment
-        DELETE /api/v1/comments/{id}/         → soft-delete own comment
-        GET    /api/v1/comments/{id}/replies/ → list replies
-        POST   /api/v1/comments/{id}/react/   → toggle reaction (auth required)
-    """
 
     pagination_class = StandardResultsPagination
     permission_classes = [IsAuthorOrReadOnly]
@@ -92,7 +77,7 @@ class CommentViewSet(RetrieveModelMixin, GenericViewSet):
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
-        # For single-object retrieve: build user reaction context for just this comment
+        
         if self.kwargs.get("pk"):
             try:
                 pk = int(self.kwargs["pk"])
@@ -102,11 +87,10 @@ class CommentViewSet(RetrieveModelMixin, GenericViewSet):
         return ctx
 
     def create(self, request: Request) -> Response:
-        """POST /api/v1/comments/"""
         serializer = CommentWriteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         comment = serializer.save(author=request.user)
-        # Re-fetch with annotations
+        
         comment = self.get_queryset().get(pk=comment.pk)
         ctx = _build_comment_context(request, [comment.pk])
         return Response(
@@ -115,7 +99,6 @@ class CommentViewSet(RetrieveModelMixin, GenericViewSet):
         )
 
     def partial_update(self, request: Request, pk: str | None = None) -> Response:
-        """PATCH /api/v1/comments/{id}/"""
         comment: Comment = self.get_object()
         serializer = CommentWriteSerializer(comment, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
@@ -125,7 +108,6 @@ class CommentViewSet(RetrieveModelMixin, GenericViewSet):
         return Response(CommentSerializer(comment, context=ctx).data)
 
     def destroy(self, request: Request, pk: str | None = None) -> Response:
-        """DELETE /api/v1/comments/{id}/ — soft delete (preserves thread structure)."""
         comment: Comment = self.get_object()
         comment.soft_delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -137,7 +119,6 @@ class CommentViewSet(RetrieveModelMixin, GenericViewSet):
         permission_classes=[IsAuthenticatedOrReadOnly],
     )
     def replies(self, request: Request, pk: str | None = None) -> Response:
-        """GET /api/v1/comments/{id}/replies/ — list all replies to this comment."""
         parent: Comment = self.get_object()
         qs = _annotate_comment_reactions(
             Comment.objects.filter(parent=parent)
@@ -159,7 +140,6 @@ class CommentViewSet(RetrieveModelMixin, GenericViewSet):
         permission_classes=[IsAuthenticated],
     )
     def react(self, request: Request, pk: str | None = None) -> Response:
-        """POST /api/v1/comments/{id}/react/ — toggle like/dislike on a comment."""
         comment: Comment = self.get_object()
         serializer = ReactionToggleSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -189,7 +169,7 @@ class CommentViewSet(RetrieveModelMixin, GenericViewSet):
             existing.save(update_fields=["kind"])
             user_reaction = kind
 
-        # Return fresh counts
+        
         ct_id = ct.pk
         like_count = Reaction.objects.filter(
             content_type_id=ct_id, object_id=comment.pk, kind="like"

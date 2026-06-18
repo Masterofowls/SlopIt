@@ -1,4 +1,3 @@
-"""API views for user accounts — the 'me' resource."""
 
 from __future__ import annotations
 
@@ -18,14 +17,6 @@ from apps.accounts.serializers import ProfileSerializer, PublicProfileSerializer
 
 
 class MeViewSet(GenericViewSet):
-    """Single-resource viewset for the authenticated user's own profile.
-
-    Routes (mounted at /api/v1/me/):
-        GET  /api/v1/me/            → retrieve profile
-        PATCH /api/v1/me/           → partial update profile
-        GET  /api/v1/me/preferences/ → get feed preferences
-        PATCH /api/v1/me/preferences/→ update feed preferences
-    """
 
     serializer_class = ProfileSerializer
     permission_classes = [IsAuthenticated]
@@ -35,12 +26,10 @@ class MeViewSet(GenericViewSet):
         return profile
 
     def list(self, request: Request) -> Response:
-        """GET /api/v1/me/ — retrieve own profile."""
         serializer = self.get_serializer(self.get_object(), context={"request": request})
         return Response(serializer.data)
 
     def partial_update(self, request: Request, pk: str | None = None) -> Response:
-        """PATCH /api/v1/me/ — update own profile fields."""
         serializer = self.get_serializer(
             self.get_object(),
             data=request.data,
@@ -53,7 +42,6 @@ class MeViewSet(GenericViewSet):
 
     @action(detail=False, methods=["get"], url_path="bookmarks")
     def bookmarks(self, request: Request) -> Response:
-        """GET /api/v1/me/bookmarks/ — list saved posts (paginated)."""
         from apps.api.pagination import StandardResultsPagination
         from apps.posts.models import Bookmark
         from apps.posts.serializers import PostListSerializer
@@ -82,7 +70,6 @@ class MeViewSet(GenericViewSet):
 
     @action(detail=False, methods=["get", "patch"], url_path="preferences")
     def preferences(self, request: Request) -> Response:
-        """GET/PATCH /api/v1/me/preferences/ — feed filter preferences."""
         from apps.feed.jobs import enqueue_invalidate_user_snapshots
         from apps.feed.models import FeedPreferences
         from apps.feed.serializers import FeedPreferencesSerializer
@@ -102,12 +89,6 @@ class MeViewSet(GenericViewSet):
 
 
 class UserProfileViewSet(GenericViewSet):
-    """Public read-only profile for any user.
-
-    Routes:
-        GET /api/v1/users/{username}/        → public profile + stats
-        GET /api/v1/users/{username}/posts/  → user's published posts (paginated)
-    """
 
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = PublicProfileSerializer
@@ -132,7 +113,6 @@ class UserProfileViewSet(GenericViewSet):
         )
 
     def retrieve(self, request: Request, username: str | None = None) -> Response:
-        """GET /api/v1/users/{username}/"""
         profile = self.get_queryset().filter(user__username=username).first()
         if profile is None:
             return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
@@ -145,7 +125,6 @@ class UserProfileViewSet(GenericViewSet):
         permission_classes=[IsAuthenticatedOrReadOnly],
     )
     def posts(self, request: Request, username: str | None = None) -> Response:
-        """GET /api/v1/users/{username}/posts/ — published posts by this user."""
         from apps.api.pagination import StandardResultsPagination
         from apps.posts.models import Post
         from apps.posts.serializers import PostListSerializer

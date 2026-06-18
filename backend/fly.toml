@@ -1,6 +1,6 @@
 
 app = "slopit-api"
-primary_region = "fra"   # Frankfurt — change to nearest
+primary_region = "fra"  
 
 kill_signal = "SIGINT"
 kill_timeout = "30s"
@@ -13,7 +13,7 @@ kill_timeout = "30s"
   bot = "sh -c 'cd src/slopit && exec python manage.py runbot'"
 
 [deploy]
-  # Run DB migrations on every release (Clerk replaces allauth OAuth — no sync_social_apps needed).
+
   release_command = "sh -c 'cd src/slopit && python manage.py migrate --noinput && python manage.py rebuild_feed_pool'"
   strategy = "rolling"
 
@@ -22,11 +22,11 @@ kill_timeout = "30s"
   DJANGO_SETTINGS_MODULE = "config.settings.prod"
   PYTHONUNBUFFERED = "1"
   FRONTEND_URL = "https://peaceful-flower-536.fly.dev"
-  # Clerk — public values (safe to commit)
+
   CLERK_JWKS_URL         = "https://quick-bulldog-91.clerk.accounts.dev/.well-known/jwks.json"
   CLERK_PUBLISHABLE_KEY  = "pk_test_cXVpY2stYnVsbGRvZy05MS5jbGVyay5hY2NvdW50cy5kZXYk"
   CLERK_FRONTEND_API_URL = "https://quick-bulldog-91.clerk.accounts.dev"
-  # Telegram — public values (safe to commit)
+
   TELEGRAM_CLIENT_ID    = "8728778322"
   TELEGRAM_BOT_NAME     = "slopitbot"
   TELEGRAM_REDIRECT_URI = "https://slopit-api.fly.dev/accounts/telegram/login/callback/"
@@ -63,4 +63,3 @@ kill_timeout = "30s"
   cpu_kind = "shared"
   cpus = 1
   memory = "256mb"
-

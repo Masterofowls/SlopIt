@@ -1,4 +1,3 @@
-"""Admin registrations for the reactions app."""
 
 from __future__ import annotations
 

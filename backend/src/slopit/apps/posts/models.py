@@ -1,4 +1,3 @@
-"""Domain models for posts, tags, and media attachments."""
 
 from __future__ import annotations
 
@@ -13,13 +12,11 @@ from django.utils.text import slugify
 
 
 def _media_upload_to(instance: object, filename: str) -> str:
-    """Store media files as UUID hex names, preserving the original extension."""
     ext = os.path.splitext(filename)[1].lower()
     return f"posts/media/uploads/{uuid.uuid4().hex}{ext}"
 
 
 def _thumb_upload_to(instance: object, filename: str) -> str:
-    """Store thumbnails as UUID hex names, preserving the original extension."""
     ext = os.path.splitext(filename)[1].lower()
     return f"posts/thumbs/uploads/{uuid.uuid4().hex}{ext}"
 
@@ -59,7 +56,6 @@ _MARKDOWN_ALLOWED_ATTRS = {
 
 
 def _render_markdown(source: str) -> str:
-    """Render Markdown to sanitised HTML.  Requires `markdown` + `bleach`."""
     import bleach
     import markdown as md
 
@@ -76,7 +72,6 @@ def _render_markdown(source: str) -> str:
 
 
 class Tag(models.Model):
-    """Taxonomy tag that can be applied to posts."""
 
     name = models.CharField(max_length=50, unique=True)
     slug = models.SlugField(max_length=60, unique=True, db_index=True)
@@ -91,14 +86,13 @@ class Tag(models.Model):
     def __str__(self) -> str:
         return self.name
 
-    def save(self, *args, **kwargs) -> None:  # type: ignore[override]
+    def save(self, *args, **kwargs) -> None:  
         if not self.slug:
             self.slug = slugify(self.name)[:60]
         super().save(*args, **kwargs)
 
 
 class Post(models.Model):
-    """A user-submitted piece of content."""
 
     class Kind(models.TextChoices):
         TEXT = "text", "Text"
@@ -158,7 +152,7 @@ class Post(models.Model):
     def __str__(self) -> str:
         return textwrap.shorten(self.title, width=60)
 
-    def save(self, *args, **kwargs) -> None:  # type: ignore[override]
+    def save(self, *args, **kwargs) -> None:  
         if self.body_markdown:
             self.body_html = _render_markdown(self.body_markdown)
         if not self.slug:
@@ -168,7 +162,6 @@ class Post(models.Model):
 
 
 class Media(models.Model):
-    """File attachment linked to a post (image, video, gif)."""
 
     class Kind(models.TextChoices):
         IMAGE = "image", "Image"
@@ -212,13 +205,13 @@ class Media(models.Model):
         verbose_name = "media"
         verbose_name_plural = "media"
 
-    def save(self, *args, **kwargs) -> None:  # type: ignore[override]
+    def save(self, *args, **kwargs) -> None:  
         if self.file:
-            # Auto-detect mime type from filename
+            
             if not self.mime_type:
                 guessed, _ = mimetypes.guess_type(self.file.name)
                 self.mime_type = guessed or "application/octet-stream"
-            # Auto-detect kind from mime type
+            
             if not self.kind:
                 mt = self.mime_type
                 if mt.startswith("image/gif"):
@@ -229,7 +222,7 @@ class Media(models.Model):
                     self.kind = self.Kind.VIDEO
                 else:
                     self.kind = self.Kind.IMAGE
-            # Auto-detect file size
+            
             if not self.file_size:
                 try:
                     self.file_size = self.file.size
@@ -242,11 +235,6 @@ class Media(models.Model):
 
 
 class PollVote(models.Model):
-    """Records a single user's vote on a poll post.
-
-    ``option_index`` is a zero-based index into ``Post.template_data["options"]``.
-    One row per user per poll.  To change a vote, update the existing row.
-    """
 
     post = models.ForeignKey(
         Post,
@@ -274,7 +262,6 @@ class PollVote(models.Model):
 
 
 class Bookmark(models.Model):
-    """Records a user saving a post for later reading."""
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -300,7 +287,6 @@ class Bookmark(models.Model):
 
 
 class PostReport(models.Model):
-    """Records a user reporting a post for moderation."""
 
     class Reason(models.TextChoices):
         SPAM = "spam", "Spam"
@@ -338,10 +324,6 @@ class PostReport(models.Model):
 
 
 class PostView(models.Model):
-    """Tracks unique post views per authenticated user for real view counting.
-
-    Anonymous views are counted without a row in this table.
-    """
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

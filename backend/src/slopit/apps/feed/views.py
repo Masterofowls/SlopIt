@@ -1,4 +1,3 @@
-"""API views for the 3-level feed algorithm."""
 
 from __future__ import annotations
 
@@ -22,12 +21,6 @@ from apps.posts.serializers import PostListSerializer
 
 
 class FeedViewSet(GenericViewSet):
-    """Per-user randomised feed backed by FeedSnapshot.
-
-    Routes:
-        GET  /api/v1/feed/          → paginated feed for the current user
-        POST /api/v1/feed/refresh/  → force a fresh snapshot (new seed)
-    """
 
     permission_classes = [IsAuthenticated]
     serializer_class = PostListSerializer
@@ -50,7 +43,6 @@ class FeedViewSet(GenericViewSet):
         ],
     )
     def list(self, request: Request) -> Response:
-        """GET /api/v1/feed/ — return the user's current feed page."""
         snapshot = get_or_create_snapshot(request.user)
 
         try:
@@ -82,7 +74,7 @@ class FeedViewSet(GenericViewSet):
 
         serializer = PostListSerializer(ordered_posts, many=True, context={"request": request})
 
-        # Record views for all posts on this page (deduped per user).
+        
         if ordered_posts:
             if request.user.is_authenticated:
                 already_seen = set(
@@ -112,7 +104,6 @@ class FeedViewSet(GenericViewSet):
         permission_classes=[IsAuthenticated],
     )
     def refresh(self, request: Request) -> Response:
-        """POST /api/v1/feed/refresh/ — generate a new snapshot with a new seed."""
         snapshot = force_new_snapshot(request.user)
         return Response(
             {
