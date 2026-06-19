@@ -19,7 +19,14 @@ class UserBriefSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = [
-            "id", "username", "display_name", "first_name", "last_name", "email", "avatar_url",
+            "id",
+            "username",
+            "display_name",
+            "first_name",
+            "last_name",
+            "email",
+            "auth_method",
+            "avatar_url",
         ]
         read_only_fields = fields
 

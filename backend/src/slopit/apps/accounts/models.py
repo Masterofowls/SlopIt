@@ -9,8 +9,9 @@ from django.db import models
 
 
 class AuthMethod(models.TextChoices):
-    """OAuth / external provider that was used to authenticate this user."""
+    """How this user most recently authenticated."""
 
+    PASSWORD = "password", "Password"
     GOOGLE = "google", "Google"
     GITHUB = "github", "GitHub"
     YANDEX = "yandex", "Yandex"
@@ -42,7 +43,7 @@ class User(AbstractUser):
         default="",
         db_index=True,
         help_text=(
-            "OAuth provider used on most recent login: google, github, yandex, or telegram. "
+            "Auth method used on most recent login: password, google, github, yandex, or telegram. "
             "Blank means not yet determined."
         ),
     )

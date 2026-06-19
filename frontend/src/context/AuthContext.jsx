@@ -1,5 +1,6 @@
 import React, {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -8,13 +9,36 @@ import React, {
 import { useUser, useClerk, useAuth } from "@clerk/clerk-react";
 import { api } from "../lib/api";
 
+function mapSessionUser(user) {
+  return {
+    id: user.id,
+    username: user.username,
+    email: user.email ?? "",
+    firstName: user.first_name ?? "",
+    lastName: user.last_name ?? "",
+    displayName:
+      user.display_name ?? user.profile?.display_name ?? user.first_name ?? "",
+    avatarUrl: user.avatar_url ?? null,
+    authMethod: user.auth_method ?? "",
+  };
+}
+
+function providerFromSessionUser(sessionUser) {
+  if (!sessionUser) return null;
+  if (sessionUser.authMethod === "password") return "password";
+  if (sessionUser.authMethod === "telegram") return "telegram";
+  return "session";
+}
+
 const AuthContext = createContext({
   provider: null,
   isAuthenticated: false,
   isLoading: true,
+  sessionUser: null,
   telegramUser: null,
   clerkProfile: null,
   authLogs: [],
+  refreshSession: async () => {},
   logout: async () => {},
 });
 
@@ -27,10 +51,11 @@ export function AuthProvider({ children }) {
   const { signOut: clerkSignOut } = useClerk();
   const { getToken } = useAuth();
 
-  const [telegramUser, setTelegramUser] = useState(null);
-  const [telegramLoading, setTelegramLoading] = useState(true);
+  const [sessionUser, setSessionUser] = useState(null);
+  const [sessionLoading, setSessionLoading] = useState(true);
   const [clerkProfile, setClerkProfile] = useState(null);
   const [authLogs, setAuthLogs] = useState([]);
+  const sessionProbeRef = useRef(0);
 
   function addLog(msg, data) {
     const entry = {
@@ -50,7 +75,7 @@ export function AuthProvider({ children }) {
     if (!clerkLoaded || !clerkSignedIn) return;
     let cancelled = false;
     addLog("Clerk signed in — fetching backend profile from /me/");
-    setTelegramLoading(false);
+    setSessionLoading(false);
 
     getToken()
       .then((token) => {
@@ -95,39 +120,46 @@ export function AuthProvider({ children }) {
     };
   }, [clerkLoaded, clerkSignedIn, clerkUser, getToken]);
 
+  const refreshSession = useCallback(async () => {
+    const probeId = ++sessionProbeRef.current;
+    addLog("Probing /auth/session/");
+    try {
+      const { data, status } = await api.get("/auth/session/");
+      if (probeId !== sessionProbeRef.current) return data;
+      addLog("GET /auth/session/ " + status, data);
+      if (data.authenticated && data.user) {
+        const mapped = mapSessionUser(data.user);
+        addLog("Session user found", mapped);
+        setSessionUser(mapped);
+      } else {
+        setSessionUser(null);
+      }
+      return data;
+    } catch (err) {
+      if (probeId !== sessionProbeRef.current) return null;
+      addLog("GET /auth/session/ ERROR", {
+        message: err.message,
+        status: err.response?.status,
+        data: err.response?.data,
+      });
+      setSessionUser(null);
+      return null;
+    } finally {
+      if (probeId === sessionProbeRef.current) {
+        setSessionLoading(false);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     if (!clerkLoaded) return;
-    if (clerkSignedIn) return;
-
-    addLog("Clerk not signed in — probing /auth/session/");
-    api
-      .get("/auth/session/")
-      .then(({ data, status }) => {
-        addLog("GET /auth/session/ " + status, data);
-        if (data.authenticated && data.user) {
-          addLog("Telegram session found", data.user);
-          setTelegramUser({
-            id: data.user.id,
-            username: data.user.username,
-            email: data.user.email ?? "",
-            firstName: data.user.first_name ?? "",
-            lastName: data.user.last_name ?? "",
-            avatarUrl: data.user.avatar_url ?? null,
-          });
-        } else {
-          addLog("No active session in response", data);
-        }
-      })
-      .catch((err) => {
-        const detail = {
-          message: err.message,
-          status: err.response?.status,
-          data: err.response?.data,
-        };
-        addLog("GET /auth/session/ ERROR", detail);
-      })
-      .finally(() => setTelegramLoading(false));
-  }, [clerkLoaded, clerkSignedIn]);
+    if (clerkSignedIn) {
+      setSessionUser(null);
+      return;
+    }
+    setSessionLoading(true);
+    refreshSession();
+  }, [clerkLoaded, clerkSignedIn, refreshSession]);
 
   const logout = async () => {
     if (clerkSignedIn) {
@@ -135,16 +167,18 @@ export function AuthProvider({ children }) {
       setClerkProfile(null);
       await clerkSignOut();
     } else {
-      addLog("Logging out Telegram user");
+      addLog("Logging out session user");
       await api
         .post("/auth/logout/")
         .catch((err) => addLog("POST /auth/logout/ ERROR", err.message));
-      setTelegramUser(null);
+      setSessionUser(null);
     }
   };
 
-  const isLoading = !clerkLoaded || telegramLoading;
-  const provider = clerkSignedIn ? "clerk" : telegramUser ? "telegram" : null;
+  const isLoading = !clerkLoaded || sessionLoading;
+  const provider = clerkSignedIn
+    ? "clerk"
+    : providerFromSessionUser(sessionUser);
 
   return (
     <AuthContext.Provider
@@ -152,9 +186,11 @@ export function AuthProvider({ children }) {
         provider,
         isAuthenticated: !!provider,
         isLoading,
-        telegramUser,
+        sessionUser,
+        telegramUser: sessionUser,
         clerkProfile,
         authLogs,
+        refreshSession,
         logout,
       }}
     >
@@ -162,6 +198,5 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
-
 
 export const useAuthContext = () => useContext(AuthContext);

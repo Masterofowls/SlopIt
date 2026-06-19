@@ -141,3 +141,96 @@
   height: 20px;
   flex-shrink: 0;
 }
+
+/* ── Email + password form ───────────────────────────────────────────────── */
+
+.auth-password-panel {
+  padding: 16px 16px 8px;
+}
+
+.auth-password-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.auth-password-tab {
+  flex: 1;
+  padding: 8px 12px;
+  background: transparent;
+  border: 1px solid rgba(0, 255, 0, 0.35);
+  border-radius: 4px;
+  color: #00aa00;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.auth-password-tab.active {
+  background: rgba(0, 255, 0, 0.12);
+  border-color: #00ff00;
+  color: #00ff00;
+}
+
+.auth-password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-password-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #00cc00;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+}
+
+.auth-password-field input {
+  padding: 10px 12px;
+  background: #002200;
+  border: 1px solid rgba(0, 255, 0, 0.35);
+  border-radius: 4px;
+  color: #00ff00;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+}
+
+.auth-password-field input:focus {
+  outline: none;
+  border-color: #00ff00;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.2);
+}
+
+.auth-password-error {
+  margin: 0;
+  color: #ff6666;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.auth-password-submit {
+  margin-top: 4px;
+  padding: 10px 16px;
+  background: rgba(0, 255, 0, 0.15);
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  color: #00ff00;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.auth-password-submit:hover:not(:disabled) {
+  background: rgba(0, 255, 0, 0.25);
+}
+
+.auth-password-submit:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

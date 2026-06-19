@@ -6,8 +6,10 @@ from rest_framework.routers import DefaultRouter
 
 from apps.accounts.auth_views import (
     AuthCsrfView,
+    AuthLoginView,
     AuthLogoutView,
     AuthProvidersView,
+    AuthRegisterView,
     AuthSessionView,
 )
 from apps.accounts.passphrase_views import (
@@ -31,6 +33,8 @@ router.register("users", UserProfileViewSet, basename="user-profile")
 auth_urlpatterns = [
     path("session/", AuthSessionView.as_view(), name="auth-session"),
     path("csrf/", AuthCsrfView.as_view(), name="auth-csrf"),
+    path("register/", AuthRegisterView.as_view(), name="auth-register"),
+    path("login/", AuthLoginView.as_view(), name="auth-login"),
     path("logout/", AuthLogoutView.as_view(), name="auth-logout"),
     path("providers/", AuthProvidersView.as_view(), name="auth-providers"),
     path("passphrase/", PassphraseView.as_view(), name="auth-passphrase"),
