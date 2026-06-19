@@ -9,6 +9,7 @@ import { ToastProvider } from "./context/ToastContext";
 import { useClerkInterceptor } from "./lib/api";
 import ProfilePage from "./pages/ProfilePage";
 import SearchPage from "./pages/SearchPage";
+import AuthPage from "./pages/AuthPage";
 
 function InnerApp() {
   useClerkInterceptor();
@@ -17,6 +18,7 @@ function InnerApp() {
     <>
       <Routes>
         <Route path="/" element={<LandingPage />} />
+        <Route path="/auth" element={<AuthPage />} />
         <Route path="/home" element={<HomePage />} />
         <Route
           path="/profile"

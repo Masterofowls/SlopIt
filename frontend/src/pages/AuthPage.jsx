@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { SignIn } from "@clerk/clerk-react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { SignIn, SignUp } from "@clerk/clerk-react";
 import ToxicBackground from "../components/ToxicBackground.jsx";
 import { navigateToUrl } from "../lib/navigate";
 import { api } from "../lib/api";
@@ -22,10 +22,38 @@ function formatApiError(err) {
   return parts.join(" ") || "Something went wrong.";
 }
 
+const clerkAppearance = {
+  variables: {
+    colorPrimary: "#00ff00",
+    colorBackground: "#001400",
+    colorText: "#00ff00",
+    colorTextSecondary: "#00cc00",
+    colorInputBackground: "#002200",
+    colorInputText: "#00ff00",
+    colorNeutral: "#00aa00",
+    borderRadius: "4px",
+    fontFamily: '"Courier New", Courier, monospace',
+    fontSize: "14px",
+  },
+  elements: {
+    card: "slop-clerk-card",
+    headerTitle: "slop-clerk-title",
+    headerSubtitle: "slop-clerk-subtitle",
+    socialButtonsBlockButton: "slop-clerk-social-btn",
+    formButtonPrimary: "slop-clerk-submit-btn",
+    footerActionLink: "slop-clerk-footer-link",
+    formFieldInput: "slop-clerk-input",
+    dividerLine: "slop-clerk-divider",
+    dividerText: "slop-clerk-divider-text",
+  },
+};
+
 const AuthPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { refreshSession } = useAuthContext();
-  const [mode, setMode] = useState("login");
+  const initialMode = searchParams.get("mode") === "register" ? "register" : "login";
+  const [mode, setMode] = useState(initialMode);
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
@@ -33,6 +61,12 @@ const AuthPage = () => {
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (searchParams.get("mode") === "register") {
+      setMode("register");
+    }
+  }, [searchParams]);
 
   function handleTelegramLogin() {
     navigateToUrl(`${API_URL}/accounts/telegram/login/`);
@@ -203,33 +237,21 @@ const AuthPage = () => {
 
           <SignIn
             routing="hash"
+            path="/auth"
+            signInUrl="/auth#/sign-in"
+            signUpUrl="/auth#/sign-up"
             afterSignInUrl="/home"
             afterSignUpUrl="/home"
-            appearance={{
-              variables: {
-                colorPrimary: "#00ff00",
-                colorBackground: "#001400",
-                colorText: "#00ff00",
-                colorTextSecondary: "#00cc00",
-                colorInputBackground: "#002200",
-                colorInputText: "#00ff00",
-                colorNeutral: "#00aa00",
-                borderRadius: "4px",
-                fontFamily: '"Courier New", Courier, monospace',
-                fontSize: "14px",
-              },
-              elements: {
-                card: "slop-clerk-card",
-                headerTitle: "slop-clerk-title",
-                headerSubtitle: "slop-clerk-subtitle",
-                socialButtonsBlockButton: "slop-clerk-social-btn",
-                formButtonPrimary: "slop-clerk-submit-btn",
-                footerActionLink: "slop-clerk-footer-link",
-                formFieldInput: "slop-clerk-input",
-                dividerLine: "slop-clerk-divider",
-                dividerText: "slop-clerk-divider-text",
-              },
-            }}
+            appearance={clerkAppearance}
+          />
+          <SignUp
+            routing="hash"
+            path="/auth"
+            signInUrl="/auth#/sign-in"
+            signUpUrl="/auth#/sign-up"
+            afterSignInUrl="/home"
+            afterSignUpUrl="/home"
+            appearance={clerkAppearance}
           />
 
           <div className="auth-divider">

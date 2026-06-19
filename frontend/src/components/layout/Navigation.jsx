@@ -1,13 +1,12 @@
 import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { UserButton, SignIn } from "@clerk/clerk-react";
+import { UserButton } from "@clerk/clerk-react";
 import { useAuthContext } from "../../context/AuthContext";
 import PostCreateModal from "../posts/PostCreateModal";
 import "./Navigation.css";
 
 const Navigation = () => {
   const navigate = useNavigate();
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [showPostModal, setShowPostModal] = useState(false);
   const { isAuthenticated, isLoading } = useAuthContext();
 
@@ -21,11 +20,14 @@ const Navigation = () => {
     if (!isAuthenticated) {
       return (
         <>
+          <button className="login-button" onClick={() => navigate("/auth")}>
+            Log in
+          </button>
           <button
-            className="login-button"
-            onClick={() => setShowAuthModal(true)}
+            className="signup-button"
+            onClick={() => navigate("/auth?mode=register")}
           >
-            Login
+            Sign up
           </button>
 
           <button className="nav-profile" onClick={() => navigate("/profile")}>
@@ -107,45 +109,6 @@ const Navigation = () => {
         <PostCreateModal onClose={() => setShowPostModal(false)} />
       )}
 
-      {showAuthModal && !isAuthenticated && (
-        <div
-          className="nav-auth-overlay"
-          onClick={() => setShowAuthModal(false)}
-        >
-          <div className="nav-auth-modal" onClick={(e) => e.stopPropagation()}>
-            <SignIn
-              routing="virtual"
-              fallbackRedirectUrl="/home"
-              appearance={{
-                variables: {
-                  colorPrimary: "#00ff00",
-                  colorBackground: "#001400",
-                  colorText: "#00ff00",
-                  colorTextSecondary: "#00cc00",
-                  colorInputBackground: "#002200",
-                  colorInputText: "#00ff00",
-                  colorNeutral: "#00aa00",
-                  borderRadius: "4px",
-                  fontFamily: '"Courier New", Courier, monospace',
-                  fontSize: "14px",
-                },
-                elements: {
-                  card: "slop-clerk-card",
-                  rootBox: "nav-clerk-root",
-                },
-              }}
-            />
-
-            <button
-              className="nav-auth-close"
-              onClick={() => setShowAuthModal(false)}
-              aria-label="Close"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
     </>
   );
 };
