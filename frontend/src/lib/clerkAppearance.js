@@ -1,0 +1,25 @@
+export const clerkAppearance = {
+  variables: {
+    colorPrimary: "#00ff00",
+    colorBackground: "#001400",
+    colorText: "#00ff00",
+    colorTextSecondary: "#00cc00",
+    colorInputBackground: "#002200",
+    colorInputText: "#00ff00",
+    colorNeutral: "#00aa00",
+    borderRadius: "4px",
+    fontFamily: '"Courier New", Courier, monospace',
+    fontSize: "14px",
+  },
+  elements: {
+    card: "slop-clerk-card",
+    headerTitle: "slop-clerk-title",
+    headerSubtitle: "slop-clerk-subtitle",
+    socialButtonsBlockButton: "slop-clerk-social-btn",
+    formButtonPrimary: "slop-clerk-submit-btn",
+    footerActionLink: "slop-clerk-footer-link",
+    formFieldInput: "slop-clerk-input",
+    dividerLine: "slop-clerk-divider",
+    dividerText: "slop-clerk-divider-text",
+  },
+};

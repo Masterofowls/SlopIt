@@ -1,4 +1,4 @@
-const CACHE_NAME = 'slopit-cache-v1';
+const CACHE_NAME = 'slopit-cache-v2';
 const APP_SHELL = ['/', '/home', '/manifest.json', '/favicon.svg'];
 
 self.addEventListener('install', (event) => {

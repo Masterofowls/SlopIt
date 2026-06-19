@@ -1,0 +1,7 @@
+{
+  "paths": {
+    "sign_in": "/home",
+    "sign_up": "/home",
+    "home": "/home"
+  }
+}

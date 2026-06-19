@@ -1,3 +1,24 @@
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.nav-user > .cl-rootBox,
+.nav-user > div {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.nav-user .cl-signed-in,
+.nav-user .cl-signed-out {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .navigation {
   position: fixed;
   width: 100%;
@@ -32,13 +53,6 @@
   color: #09ff00;
 }
 
-.nav-user {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-width: 0;
-}
-
 .user-info {
   display: flex;
   align-items: center;
@@ -68,6 +82,7 @@
 
 .logout-button,
 .login-button,
+.signup-button,
 .nav-profile {
   padding: 8px 16px;
   background: #00ff15;
@@ -82,14 +97,37 @@
 
 .logout-button:hover,
 .login-button:hover,
+.signup-button:hover,
 .nav-profile:hover {
   background: #11cc00;
+}
+
+.signup-button {
+  background: transparent;
+  color: #00ff15;
+  border: 1px solid #00ff15;
+}
+
+.signup-button:hover {
+  background: rgba(0, 255, 21, 0.12);
 }
 
 .nav-user-actions {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.nav-user .cl-userButtonBox,
+.nav-user .cl-userButtonTrigger,
+.nav-user .cl-userButtonPopoverCard {
+  z-index: 1100;
+}
+
+.nav-user .cl-userButtonTrigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .manage-button {
