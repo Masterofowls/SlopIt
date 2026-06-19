@@ -25,12 +25,12 @@ def _on_post_saved(sender: type, instance: object, created: bool, **kwargs: obje
 
     if current == "published" and original != "published":
         
-        import random
+        import secrets
 
         from django.utils import timezone
 
         update_fields: dict[str, object] = {
-            "toxicity_score": round(random.uniform(0.0, 1.0), 4),
+            "toxicity_score": round(secrets.randbelow(10001) / 10000.0, 4),
         }
         if not instance.published_at:  
             update_fields["published_at"] = timezone.now()

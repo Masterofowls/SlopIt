@@ -226,8 +226,8 @@ class Media(models.Model):
             if not self.file_size:
                 try:
                     self.file_size = self.file.size
-                except Exception:
-                    pass
+                except OSError:
+                    self.file_size = 0
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:

@@ -1,12 +1,22 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { SignIn } from "@clerk/clerk-react";
+import { SignIn, SignUp } from "@clerk/clerk-react";
 import ToxicBackground from "../components/ToxicBackground.jsx";
 import { navigateToUrl } from "../lib/navigate";
 import { clerkAppearance } from "../lib/clerkAppearance.js";
 import "./AuthPage.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "https://slopit-api.fly.dev";
+
+const clerkAuthProps = {
+  routing: "hash",
+  path: "/auth",
+  signInUrl: "/auth#/sign-in",
+  signUpUrl: "/auth#/sign-up",
+  afterSignInUrl: "/home",
+  afterSignUpUrl: "/home",
+  appearance: clerkAppearance,
+};
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -32,12 +42,8 @@ const AuthPage = () => {
         </div>
 
         <div className="auth-page-card">
-          <SignIn
-            routing="hash"
-            afterSignInUrl="/home"
-            afterSignUpUrl="/home"
-            appearance={clerkAppearance}
-          />
+          <SignIn {...clerkAuthProps} />
+          <SignUp {...clerkAuthProps} />
 
           <div className="auth-divider">
             <span>or</span>

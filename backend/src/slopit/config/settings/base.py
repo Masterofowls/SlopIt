@@ -42,7 +42,6 @@ INSTALLED_APPS: list[str] = [
     "allauth.socialaccount.providers.telegram",
     "allauth.mfa",
     "allauth.headless",
-    "django_rq",
     "django_extensions",
     "apps.accounts",
     "apps.posts",
@@ -263,19 +262,6 @@ FEED_MIN_LIFETIME_HOURS = env.int("FEED_MIN_LIFETIME_HOURS", default=10)
 FEED_MAX_LIFETIME_HOURS = env.int("FEED_MAX_LIFETIME_HOURS", default=48)
 FEED_PAGE_SIZE = env.int("FEED_PAGE_SIZE", default=25)
 FEED_BUCKET_COUNT = 256
-
-_REDIS_URL = env("REDIS_URL", default="")
-_queue_defaults: dict = {"HOST": "localhost", "PORT": 6379, "DB": 0}
-if _REDIS_URL:
-    _queue_defaults = {"URL": _REDIS_URL}
-else:
-    _queue_defaults = {"HOST": "localhost", "PORT": 6379, "DB": 0, "IS_ASYNC": False}
-
-RQ_QUEUES = {
-    "default": _queue_defaults,
-    "high": _queue_defaults,
-    "low": _queue_defaults,
-}
 
 MAINTENANCE_MODE = env.bool("MAINTENANCE_MODE", default=False)
 

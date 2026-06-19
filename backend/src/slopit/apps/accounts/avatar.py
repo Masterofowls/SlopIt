@@ -8,7 +8,7 @@ def generate_avatar_data_url(seed: str) -> str:
     letter = clean[0].upper() if clean else "?"
 
     
-    h = int(hashlib.md5(clean.encode("utf-8")).hexdigest(), 16)
+    h = int(hashlib.md5(clean.encode("utf-8"), usedforsecurity=False).hexdigest(), 16)
     hue = h % 360
     bg = f"hsl({hue},55%,42%)"
 

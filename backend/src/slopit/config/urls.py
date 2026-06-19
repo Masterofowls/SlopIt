@@ -35,10 +35,3 @@ urlpatterns = [
     path("api/v1/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/v1/", include("apps.api.urls")),
 ]
-
-from django.conf import settings as _settings  # noqa: E402
-
-if getattr(_settings, "RQ_QUEUES", {}) and any(
-    "URL" in q or not q.get("IS_ASYNC", True) for q in _settings.RQ_QUEUES.values() if "URL" in q
-):
-    urlpatterns += [path("django-rq/", include("django_rq.urls"))]

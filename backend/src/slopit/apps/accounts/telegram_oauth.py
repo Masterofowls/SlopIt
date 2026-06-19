@@ -141,12 +141,16 @@ def _user_from_token_data(data: dict[str, Any]) -> dict[str, Any] | None:
 
 
 def _post_token(url: str, attempt: dict[str, Any]) -> tuple[str | None, str, int | None]:
+    parsed = urllib.parse.urlparse(url)
+    if parsed.scheme != "https" or not parsed.netloc:
+        return None, f"blocked non-https url: {url}", None
+
     payload = urllib.parse.urlencode(attempt["form"]).encode()
     headers = {"Content-Type": "application/x-www-form-urlencoded", **attempt["headers"]}
     req = urllib.request.Request(url, data=payload, method="POST", headers=headers)
 
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        with urllib.request.urlopen(req, timeout=10) as resp:  # nosec B310 — TOKEN_URLS are https-only
             return resp.read().decode(errors="replace"), "", None
     except urllib.error.HTTPError as exc:
         try:

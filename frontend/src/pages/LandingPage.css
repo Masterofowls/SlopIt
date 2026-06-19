@@ -183,6 +183,16 @@ body {
   background: #1c0;
 }
 
+.landing-button-secondary {
+  background: transparent;
+  color: #00ff15;
+  border: 1px solid #00ff15;
+}
+
+.landing-button-secondary:hover {
+  background: rgba(0, 255, 21, 0.12);
+}
+
 .loading {
   display: flex;
   align-items: center;

@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import io
-import urllib.request
-from pathlib import Path
+from apps.accounts.safe_http import fetch_bytes
 from uuid import uuid4
 
 from django.contrib.auth import get_user_model
@@ -44,12 +42,11 @@ class Command(BaseCommand):
         # 2. Download the image from the public frontend URL
         self.stdout.write(f"Downloading image from {IMAGE_URL} …")
         try:
-            req = urllib.request.Request(
+            image_bytes = fetch_bytes(
                 IMAGE_URL,
+                timeout=30,
                 headers={"User-Agent": "slopit-seed/1.0"},
             )
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                image_bytes = resp.read()
         except Exception as exc:
             self.stderr.write(self.style.ERROR(f"Download failed: {exc}"))
             return

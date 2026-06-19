@@ -4,7 +4,6 @@ from __future__ import annotations
 from django.contrib import admin
 from django.utils import timezone
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
 from unfold.admin import ModelAdmin, TabularInline
 
 from .models import Media, Post, Tag
@@ -51,7 +50,7 @@ class MediaInline(TabularInline):
             )
         if obj.pk:
             icon = {"video": "🎬", "gif": "🎞️"}.get(obj.kind, "📄")
-            return mark_safe(f'<span style="font-size:1.8rem">{icon}</span>')
+            return format_html('<span style="font-size:1.8rem">{}</span>', icon)
         return "—"
 
 
@@ -174,7 +173,7 @@ class MediaAdmin(ModelAdmin):
                 src,
             )
         icon = {"video": "🎬", "gif": "🎞️"}.get(obj.kind, "📄")
-        return mark_safe(f'<span style="font-size:2rem">{icon}</span>')
+        return format_html('<span style="font-size:2rem">{}</span>', icon)
 
     @admin.display(description="Пост", ordering="post__title")
     def post_link(self, obj: Media) -> str:

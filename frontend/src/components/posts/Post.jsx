@@ -44,7 +44,8 @@ const Post = ({ post, children }) => {
   const navigate = useNavigate();
   const { post: apiPost } = useProtectedApi();
   const { user: clerkUser } = useUser();
-  const { telegramUser } = useAuthContext();
+  const { sessionUser, telegramUser } = useAuthContext();
+  const activeSessionUser = sessionUser || telegramUser;
   const { addToast } = useToast();
   const [isAnimating, setIsAnimating] = useState(false);
   const [reportState, setReportState] = useState("idle");
@@ -71,8 +72,9 @@ const Post = ({ post, children }) => {
     (clerkUser &&
       (post.author?.clerk_id === clerkUser.id ||
         post.author?.username === clerkUser.username)) ||
-    (telegramUser && String(post.author?.id) === String(telegramUser.id));
-  const authAvatar = clerkUser?.imageUrl || telegramUser?.avatarUrl || null;
+    (activeSessionUser &&
+      String(post.author?.id) === String(activeSessionUser.id));
+  const authAvatar = clerkUser?.imageUrl || activeSessionUser?.avatarUrl || null;
   const authorAvatar =
     post.author?.avatar_url ||
     post.author?.avatar ||

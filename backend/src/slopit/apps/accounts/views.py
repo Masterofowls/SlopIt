@@ -70,7 +70,7 @@ class MeViewSet(GenericViewSet):
 
     @action(detail=False, methods=["get", "patch"], url_path="preferences")
     def preferences(self, request: Request) -> Response:
-        from apps.feed.jobs import enqueue_invalidate_user_snapshots
+        from apps.feed.services.level3_personal import invalidate_user_snapshots
         from apps.feed.models import FeedPreferences
         from apps.feed.serializers import FeedPreferencesSerializer
 
@@ -83,7 +83,7 @@ class MeViewSet(GenericViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        enqueue_invalidate_user_snapshots(request.user.pk)
+        invalidate_user_snapshots(request.user.pk)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 

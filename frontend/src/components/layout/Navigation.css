@@ -208,6 +208,7 @@
 
   .manage-button,
   .login-button,
+  .signup-button,
   .navigation .new-post-btn {
     font-size: 12px;
     padding: 5px 9px;
@@ -427,6 +428,7 @@
 
   .manage-button,
   .login-button,
+  .signup-button,
   .nav-profile,
   .navigation .new-post-btn {
     padding: 4px 7px;
