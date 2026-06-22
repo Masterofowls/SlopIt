@@ -162,7 +162,7 @@ const LandingPage = () => {
             <Button
               variant="primary"
               size="large"
-              className="landing-button"
+              className={`landing-button ${!hasConsented ? "inactive" : ""}`}
               onClick={() => navigate("/home")}
               disabled={!hasConsented}
             >
