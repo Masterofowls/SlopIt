@@ -139,7 +139,41 @@ body {
 .home-toolbar {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 14px;
+}
+
+.feed-shuffle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  background: transparent;
+  border: 2px solid #005500;
+  border-radius: 6px;
+  color: #00aa00;
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  transition:
+    background 0.15s,
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.feed-shuffle-btn:hover:not(:disabled) {
+  background: rgba(0, 255, 0, 0.08);
+  border-color: #00ff00;
+  color: #00ff00;
+}
+
+.feed-shuffle-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .new-post-btn {
