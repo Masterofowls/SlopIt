@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   useAuth,
   SignInButton,
@@ -7,17 +7,36 @@ import {
   UserButton,
 } from "@clerk/clerk-react";
 import { clerkAppearance } from "../../lib/clerkAppearance.js";
+import {
+  PENDING_FEED_REFRESH_KEY,
+  useFeedRefresh,
+} from "../../context/FeedRefreshContext.jsx";
 import PostCreateModal from "../posts/PostCreateModal";
 import "./Navigation.css";
 
 const Navigation = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isSignedIn, isLoaded } = useAuth();
+  const { refreshFeed, isRefreshing } = useFeedRefresh();
   const [showPostModal, setShowPostModal] = useState(false);
   const searchRef = useRef(null);
 
   const ADMIN_URL =
     (import.meta.env.VITE_API_URL || "https://slopit-api.fly.dev") + "/admin/";
+
+  async function handleFeedRefresh() {
+    const onHomeFeed =
+      location.pathname === "/home" && !location.search.includes("q=");
+
+    if (!onHomeFeed) {
+      sessionStorage.setItem(PENDING_FEED_REFRESH_KEY, "1");
+      navigate("/home");
+      return;
+    }
+
+    await refreshFeed();
+  }
 
   function renderAuthArea() {
     if (!isLoaded) {
@@ -31,6 +50,22 @@ const Navigation = () => {
             + Post
           </button>
           <div className="nav-user-actions">
+            <button
+              type="button"
+              className="nav-refresh-button"
+              onClick={handleFeedRefresh}
+              disabled={isRefreshing}
+              aria-busy={isRefreshing}
+              aria-label="Refresh feed"
+              title="Shuffle random feed"
+            >
+              <span className="nav-refresh-icon" aria-hidden="true">
+                ↻
+              </span>
+              <span className="nav-refresh-label">
+                {isRefreshing ? "…" : "Refresh"}
+              </span>
+            </button>
             <a
               href={ADMIN_URL}
               target="_blank"

@@ -116,6 +116,44 @@
   gap: 6px;
 }
 
+.nav-refresh-button {
+  padding: 6px 14px;
+  background: transparent;
+  color: #00ff15;
+  border: 1px solid #00ff15;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    opacity 0.2s ease;
+  font-family: "Courier New", Courier, monospace;
+  letter-spacing: 0.03em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nav-refresh-button:hover:not(:disabled) {
+  background-color: rgba(0, 255, 21, 0.12);
+}
+
+.nav-refresh-button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.nav-refresh-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.nav-refresh-label {
+  font-size: 13px;
+}
+
 .manage-icon {
   font-size: 12px;
   line-height: 1;
