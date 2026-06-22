@@ -70,10 +70,7 @@
   font-size: 14px;
 }
 
-.logout-button,
-.login-button,
-.signup-button,
-.nav-profile {
+.nav-buttons {
   padding: 8px 16px;
   background: #00ff15;
   color: rgb(3, 17, 1);
@@ -85,10 +82,7 @@
   transition: background-color 0.2s ease;
 }
 
-.logout-button:hover,
-.login-button:hover,
-.signup-button:hover,
-.nav-profile:hover {
+.nav-buttons:hover {
   background: #11cc00;
 }
 
