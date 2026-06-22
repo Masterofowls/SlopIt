@@ -152,17 +152,9 @@ const LandingPage = () => {
               variant="primary"
               size="large"
               className="landing-button"
-              onClick={() => navigate("/auth?mode=register")}
+              onClick={() => navigate("/home")}
             >
-              Sign up
-            </Button>
-            <Button
-              variant="secondary"
-              size="large"
-              className="landing-button landing-button-secondary"
-              onClick={() => navigate("/auth")}
-            >
-              Log in
+              Start
             </Button>
           </div>
         </div>

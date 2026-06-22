@@ -31,3 +31,5 @@
 /.venv
 /.playwright/
 /node_modules
+/.cursor
+/scripts
