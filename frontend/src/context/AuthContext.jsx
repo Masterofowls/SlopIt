@@ -40,6 +40,8 @@ const AuthContext = createContext({
   authLogs: [],
   refreshSession: async () => {},
   logout: async () => {},
+  hasConsented: false,
+  grantConsent: async () => {},
 });
 
 export function AuthProvider({ children }) {
@@ -56,6 +58,14 @@ export function AuthProvider({ children }) {
   const [clerkProfile, setClerkProfile] = useState(null);
   const [authLogs, setAuthLogs] = useState([]);
   const sessionProbeRef = useRef(0);
+  const [hasConsented, setHasConsented] = useState(() => {
+    return localStorage.getItem("slopit_data_consent") === "true";
+  });
+
+  const grantConsent = useCallback((isGranted) => {
+    setHasConsented(isGranted);
+    localStorage.setItem("slopit_data_consent", isGranted);
+  }, []);
 
   function addLog(msg, data) {
     const entry = {
@@ -97,7 +107,9 @@ export function AuthProvider({ children }) {
           (!isClerkId(clerkUser?.username) ? clerkUser?.username : null) ||
           (clerkEmail ? clerkEmail.split("@")[0] : null);
         const backendName =
-          d.display_name || d.username || (d.email ? d.email.split("@")[0] : null);
+          d.display_name ||
+          d.username ||
+          (d.email ? d.email.split("@")[0] : null);
         setClerkProfile({
           username: d.username ?? null,
           email: clerkEmail ?? d.email ?? null,
@@ -192,6 +204,8 @@ export function AuthProvider({ children }) {
         authLogs,
         refreshSession,
         logout,
+        hasConsented,
+        grantConsent,
       }}
     >
       {children}
