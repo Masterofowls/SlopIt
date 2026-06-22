@@ -5,6 +5,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import DebugToolbar from "./components/debug/DebugToolbar";
 import PostPage from "./pages/PostPage";
 import { AuthProvider } from "./context/AuthContext";
+import { FeedRefreshProvider } from "./context/FeedRefreshContext";
 import { ToastProvider } from "./context/ToastContext";
 import { useClerkInterceptor } from "./lib/api";
 import ProfilePage from "./pages/ProfilePage";
@@ -38,9 +39,11 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <ToastProvider>
-          <InnerApp />
-        </ToastProvider>
+        <FeedRefreshProvider>
+          <ToastProvider>
+            <InnerApp />
+          </ToastProvider>
+        </FeedRefreshProvider>
       </AuthProvider>
     </BrowserRouter>
   );

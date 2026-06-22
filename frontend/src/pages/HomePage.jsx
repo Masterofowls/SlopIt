@@ -2,6 +2,10 @@ import React, { useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { useAuthContext } from "../context/AuthContext";
+import {
+  PENDING_FEED_REFRESH_KEY,
+  useFeedRefresh,
+} from "../context/FeedRefreshContext.jsx";
 import { PostFeed } from "../components/posts/index.js";
 import PostCreateModal from "../components/posts/PostCreateModal";
 import { useProtectedApi } from "../hooks/useProtectedApi";
@@ -15,11 +19,11 @@ import { MAX_FILE_BYTES } from "../lib/uploadMedia.js";
 
 const HomePage = () => {
   const { user: clerkUser } = useUser();
-  const { telegramUser, provider, isLoading: authLoading, isAuthenticated } = useAuthContext();
+  const { isLoading: authLoading, isAuthenticated } = useAuthContext();
+  const { registerRefreshHandler } = useFeedRefresh();
   const { get, post } = useProtectedApi();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [shufflingFeed, setShufflingFeed] = useState(false);
   const [feedError, setFeedError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [feedCursor, setFeedCursor] = useState(null);
@@ -101,9 +105,8 @@ const HomePage = () => {
   );
 
   const handleForceRefreshFeed = useCallback(async () => {
-    if (shufflingFeed || loading || !isAuthenticated) return;
+    if (loading || !isAuthenticated || searchQuery) return;
 
-    setShufflingFeed(true);
     setFeedError(null);
     scrollRestoredRef.current = true;
 
@@ -119,8 +122,6 @@ const HomePage = () => {
       setFeedError(
         err?.response?.data?.detail || "Failed to shuffle feed.",
       );
-    } finally {
-      setShufflingFeed(false);
     }
   }, [
     applyFeedResponse,
@@ -128,8 +129,19 @@ const HomePage = () => {
     isAuthenticated,
     loading,
     post,
-    shufflingFeed,
+    searchQuery,
   ]);
+
+  useEffect(() => {
+    return registerRefreshHandler(handleForceRefreshFeed);
+  }, [registerRefreshHandler, handleForceRefreshFeed]);
+
+  useEffect(() => {
+    if (loading || authLoading || searchQuery) return;
+    if (sessionStorage.getItem(PENDING_FEED_REFRESH_KEY) !== "1") return;
+    sessionStorage.removeItem(PENDING_FEED_REFRESH_KEY);
+    void handleForceRefreshFeed();
+  }, [authLoading, handleForceRefreshFeed, loading, searchQuery]);
 
 
   const loadMoreFeed = useCallback(async () => {
@@ -283,18 +295,6 @@ const HomePage = () => {
           ) : (
             <>
               <div className="home-toolbar">
-                {isAuthenticated && (
-                  <button
-                    type="button"
-                    className="feed-shuffle-btn"
-                    onClick={handleForceRefreshFeed}
-                    disabled={shufflingFeed || loading}
-                    aria-busy={shufflingFeed}
-                    title="Generate a new random feed order"
-                  >
-                    {shufflingFeed ? "shuffling…" : "↻ shuffle feed"}
-                  </button>
-                )}
                 <button className="new-post-btn" onClick={() => setShowModal(true)}>
                   + Post
                 </button>
