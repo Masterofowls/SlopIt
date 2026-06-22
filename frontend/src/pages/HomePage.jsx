@@ -15,10 +15,11 @@ import { MAX_FILE_BYTES } from "../lib/uploadMedia.js";
 
 const HomePage = () => {
   const { user: clerkUser } = useUser();
-  const { telegramUser, provider, isLoading: authLoading } = useAuthContext();
+  const { telegramUser, provider, isLoading: authLoading, isAuthenticated } = useAuthContext();
   const { get, post } = useProtectedApi();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [shufflingFeed, setShufflingFeed] = useState(false);
   const [feedError, setFeedError] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [feedCursor, setFeedCursor] = useState(null);
@@ -50,52 +51,85 @@ const HomePage = () => {
   }, []);
 
 
+  const applyFeedResponse = useCallback((feedData, ownData) => {
+    const feedPosts = Array.isArray(feedData)
+      ? feedData
+      : (feedData?.results ?? []);
+    const ownPosts = Array.isArray(ownData)
+      ? ownData
+      : (ownData?.results ?? []);
+
+    const merged = mergePosts(feedPosts, ownPosts);
+    setPosts(merged.length > 0 ? merged : dummyPosts);
+    setFeedCursor(feedData?.next_cursor ?? null);
+    setFeedHasMore(feedData?.has_more ?? false);
+  }, [mergePosts]);
+
   const fetchFeed = useCallback(
-    (signal) => {
+    async (signal, { forceRefresh = false } = {}) => {
       setLoading(true);
       setFeedError(null);
 
-      const alreadyShuffled = sessionStorage.getItem('feedShuffled') === '1';
-      const refreshStep = alreadyShuffled
-        ? Promise.resolve()
-        : post('/feed/refresh/')
-            .catch(() => null)
-            .then(() => sessionStorage.setItem('feedShuffled', '1'));
+      try {
+        if (forceRefresh) {
+          await post("/feed/refresh/");
+        } else {
+          const alreadyShuffled = sessionStorage.getItem("feedShuffled") === "1";
+          if (!alreadyShuffled) {
+            await post("/feed/refresh/").catch(() => null);
+            sessionStorage.setItem("feedShuffled", "1");
+          }
+        }
 
-      const feedReq = refreshStep.then(() =>
-        get('/feed/?cursor=0&limit=25').catch(() => []),
-      );
-      const ownReq = get("/posts/?ordering=-created_at&limit=25").catch(
-        () => [],
-      );
+        const [feedData, ownData] = await Promise.all([
+          get("/feed/?cursor=0&limit=25").catch(() => []),
+          get("/posts/?ordering=-created_at&limit=25").catch(() => []),
+        ]);
 
-      return Promise.all([feedReq, ownReq])
-        .then(([feedData, ownData]) => {
-          if (signal?.aborted) return;
-
-          const feedPosts = Array.isArray(feedData)
-            ? feedData
-            : (feedData?.results ?? []);
-          const ownPosts = Array.isArray(ownData)
-            ? ownData
-            : (ownData?.results ?? []);
-
-          const merged = mergePosts(feedPosts, ownPosts);
-          setPosts(merged.length > 0 ? merged : dummyPosts);
-
-          setFeedCursor(feedData?.next_cursor ?? null);
-          setFeedHasMore(feedData?.has_more ?? false);
-        })
-        .catch((err) => {
-          if (signal?.aborted) return;
-          setFeedError(err?.response?.data?.detail || "Failed to load feed.");
-        })
-        .finally(() => {
-          if (!signal?.aborted) setLoading(false);
-        });
+        if (signal?.aborted) return;
+        applyFeedResponse(feedData, ownData);
+      } catch (err) {
+        if (signal?.aborted) return;
+        setFeedError(
+          err?.response?.data?.detail || "Failed to load feed.",
+        );
+      } finally {
+        if (!signal?.aborted) setLoading(false);
+      }
     },
-    [get, mergePosts],
+    [applyFeedResponse, get, post],
   );
+
+  const handleForceRefreshFeed = useCallback(async () => {
+    if (shufflingFeed || loading || !isAuthenticated) return;
+
+    setShufflingFeed(true);
+    setFeedError(null);
+    scrollRestoredRef.current = true;
+
+    try {
+      await post("/feed/refresh/");
+      const [feedData, ownData] = await Promise.all([
+        get("/feed/?cursor=0&limit=25"),
+        get("/posts/?ordering=-created_at&limit=25").catch(() => []),
+      ]);
+      applyFeedResponse(feedData, ownData);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err) {
+      setFeedError(
+        err?.response?.data?.detail || "Failed to shuffle feed.",
+      );
+    } finally {
+      setShufflingFeed(false);
+    }
+  }, [
+    applyFeedResponse,
+    get,
+    isAuthenticated,
+    loading,
+    post,
+    shufflingFeed,
+  ]);
 
 
   const loadMoreFeed = useCallback(async () => {
@@ -249,6 +283,18 @@ const HomePage = () => {
           ) : (
             <>
               <div className="home-toolbar">
+                {isAuthenticated && (
+                  <button
+                    type="button"
+                    className="feed-shuffle-btn"
+                    onClick={handleForceRefreshFeed}
+                    disabled={shufflingFeed || loading}
+                    aria-busy={shufflingFeed}
+                    title="Generate a new random feed order"
+                  >
+                    {shufflingFeed ? "shuffling…" : "↻ shuffle feed"}
+                  </button>
+                )}
                 <button className="new-post-btn" onClick={() => setShowModal(true)}>
                   + Post
                 </button>
