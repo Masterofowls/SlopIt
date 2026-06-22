@@ -27,7 +27,10 @@ const Navigation = () => {
     if (isSignedIn) {
       return (
         <>
-          <button className="new-post-btn" onClick={() => setShowPostModal(true)}>
+          <button
+            className="new-post-btn"
+            onClick={() => setShowPostModal(true)}
+          >
             + Post
           </button>
           <div className="nav-user-actions">
@@ -48,7 +51,10 @@ const Navigation = () => {
               appearance={clerkAppearance}
               userProfileMode="modal"
             />
-            <button className="nav-profile" onClick={() => navigate("/profile")}>
+            <button
+              className="nav-profile"
+              onClick={() => navigate("/profile")}
+            >
               Profile
             </button>
           </div>
@@ -64,7 +70,7 @@ const Navigation = () => {
           fallbackRedirectUrl="/home"
           appearance={clerkAppearance}
         >
-          <button className="login-button" type="button">
+          <button className="login-button nav-buttons" type="button">
             Login
           </button>
         </SignInButton>
@@ -74,7 +80,7 @@ const Navigation = () => {
           fallbackRedirectUrl="/home"
           appearance={clerkAppearance}
         >
-          <button className="signup-button" type="button">
+          <button className="signup-button nav-buttons" type="button">
             Sign up
           </button>
         </SignUpButton>
