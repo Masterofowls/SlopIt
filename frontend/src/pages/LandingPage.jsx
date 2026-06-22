@@ -7,7 +7,8 @@ import "./LandingPage.css";
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading } = useAuthContext();
+  const { isAuthenticated, isLoading, hasConsented, grantConsent } =
+    useAuthContext();
   const randomSubtitles = [
     "you're a pleb",
     "slopit or dropit",
@@ -90,7 +91,6 @@ const LandingPage = () => {
             <h1 className="landing-title">welcome to slopit</h1>
             <p className="landing-subtitle">{randomSubtitle}</p>
           </div>
-
           <div className="landing-features">
             <div className="window-card">
               <div className="window-header">
@@ -148,11 +148,23 @@ const LandingPage = () => {
           </div>
 
           <div className="landing-actions">
+            <div className="landing-actions-consent">
+              <input
+                type="checkbox"
+                id="data-consent"
+                checked={hasConsented}
+                onChange={(e) => grantConsent(e.target.checked)}
+              />
+              <label htmlFor="data-consent">
+                I agree for my data to be used during the development phase.
+              </label>
+            </div>
             <Button
               variant="primary"
               size="large"
               className="landing-button"
               onClick={() => navigate("/home")}
+              disabled={!hasConsented}
             >
               Start
             </Button>

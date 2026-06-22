@@ -160,6 +160,7 @@ body {
 
 .landing-actions {
   display: flex;
+  flex-direction: column;
   gap: 20px;
   flex-wrap: wrap;
   justify-content: center;
@@ -177,6 +178,25 @@ body {
   font-size: 14px;
   font-weight: 600;
   transition: background-color 0.2s;
+  width: 20%;
+  margin: auto;
+}
+
+.landing-button.inactive {
+  background-color: #555;
+  color: #999;
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.landing-actions-consent {
+  display: flex;
+  flex-direction: row;
+}
+
+#data-consent {
+  margin-right: 12px;
 }
 
 .landing-button:hover {
@@ -338,7 +358,6 @@ body {
   background: rgba(0, 255, 0, 0.15);
 }
 
-/* Override Clerk card chrome inside our modal */
 .auth-modal .cl-card {
   background: transparent !important;
   box-shadow: none !important;
@@ -348,6 +367,84 @@ body {
 .auth-modal .cl-rootBox {
   width: 400px;
   max-width: calc(100vw - 48px);
+}
+
+.dev-banner {
+  background-color: #ffecb3;
+  color: #1a1a1a;
+  text-align: center;
+  padding: 10px;
+  font-size: 0.9rem;
+  z-index: 100;
+  border-bottom: 2px solid #ffc107;
+}
+
+.consent-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  color: #ccc;
+  justify-content: center;
+}
+
+.consent-box input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: #4caf50;
+}
+
+.consent-box label {
+  cursor: pointer;
+}
+
+.landing-footer {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 4rem;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+}
+
+.footer-link {
+  color: #4caf50;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+}
+
+.about-us-dropdown {
+  text-align: center;
+  cursor: pointer;
+}
+
+.about-us-dropdown summary {
+  font-weight: bold;
+  font-size: 1.1rem;
+  list-style: none;
+}
+
+.about-us-dropdown summary::before {
+  content: "▸ ";
+}
+
+.about-us-dropdown[open] summary::before {
+  content: "▾ ";
+}
+
+.about-us-dropdown p {
+  margin-top: 0.5rem;
+  max-width: 300px;
+  color: #aaa;
+  font-size: 0.9rem;
 }
 
 @keyframes fadeIn {
