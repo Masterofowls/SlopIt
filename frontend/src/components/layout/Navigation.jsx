@@ -28,7 +28,7 @@ const Navigation = () => {
       return (
         <>
           <button
-            className="new-post-btn"
+            className="new-post-btn nav-buttons"
             onClick={() => setShowPostModal(true)}
           >
             + Post
@@ -52,7 +52,7 @@ const Navigation = () => {
               userProfileMode="modal"
             />
             <button
-              className="nav-profile"
+              className="nav-profile nav-buttons"
               onClick={() => navigate("/profile")}
             >
               Profile
@@ -84,7 +84,10 @@ const Navigation = () => {
             Sign up
           </button>
         </SignUpButton>
-        <button className="nav-profile" onClick={() => navigate("/profile")}>
+        <button
+          className="nav-profile nav-buttons"
+          onClick={() => navigate("/profile")}
+        >
           Profile
         </button>
       </>
