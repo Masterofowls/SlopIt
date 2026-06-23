@@ -16,6 +16,8 @@ import { useIdle } from "../hooks/useIdle";
 import MatrixBackground from "../components/MatrixBackground.jsx";
 import "./HomePage.css";
 import { MAX_FILE_BYTES } from "../lib/uploadMedia.js";
+import PageMeta from "../components/seo/PageMeta.jsx";
+import { DEFAULT_DESCRIPTION, truncateDescription } from "../lib/seo.js";
 
 const HomePage = () => {
   const { user: clerkUser } = useUser();
@@ -256,8 +258,21 @@ const HomePage = () => {
     return () => controller.abort();
   }, [searchQuery, fetchSearch]);
 
+  const seoPath = searchQuery
+    ? `/home?q=${encodeURIComponent(searchQuery)}`
+    : "/home";
+  const seoTitle = searchQuery ? `Search: ${searchQuery}` : "Feed";
+  const seoDescription = searchQuery
+    ? truncateDescription(`Search results for "${searchQuery}" on SlopIt.`)
+    : DEFAULT_DESCRIPTION;
+
   return (
     <div className="page home-page">
+      <PageMeta
+        title={seoTitle}
+        description={seoDescription}
+        path={seoPath}
+      />
       {isIdle && <MatrixRain />}
       <Navigation />
       <MatrixBackground />

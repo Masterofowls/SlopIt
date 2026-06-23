@@ -4,6 +4,7 @@ import { SignIn, SignUp } from "@clerk/clerk-react";
 import ToxicBackground from "../components/ToxicBackground.jsx";
 import { navigateToUrl } from "../lib/navigate";
 import { clerkAppearance } from "../lib/clerkAppearance.js";
+import PageMeta from "../components/seo/PageMeta.jsx";
 import "./AuthPage.css";
 
 const API_URL = import.meta.env.VITE_API_URL || "https://slopit-api.fly.dev";
@@ -27,6 +28,11 @@ const AuthPage = () => {
 
   return (
     <div className="auth-page">
+      <PageMeta
+        title="Sign in"
+        description="Sign in or create a SlopIt account to post, react, and browse the feed."
+        path="/auth"
+      />
       <ToxicBackground />
 
       <div className="auth-page-container">

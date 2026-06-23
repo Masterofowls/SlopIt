@@ -3,6 +3,8 @@ import { useUser, UserButton } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { useProtectedApi } from "../hooks/useProtectedApi";
 import FrogBackground from "../components/ToxicBackground";
+import PageMeta from "../components/seo/PageMeta.jsx";
+import { truncateDescription } from "../lib/seo.js";
 import "./ProfilePage.css";
 
 const clean = (s) =>
@@ -97,8 +99,17 @@ const ProfilePage = () => {
       </div>
     );
 
+  const profileDescription = profile?.bio
+    ? truncateDescription(profile.bio)
+    : `${displayName}'s profile on SlopIt.`;
+
   return (
     <div className="pp-page">
+      <PageMeta
+        title={displayName}
+        description={profileDescription}
+        path="/profile"
+      />
       <FrogBackground />
       <button className="pp-back-btn" onClick={() => navigate(-1)}>
         ← Back

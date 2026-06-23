@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { api } from '../lib/api';
 import PostFeed from '../components/posts/PostFeed';
+import PageMeta from '../components/seo/PageMeta.jsx';
+import { truncateDescription } from '../lib/seo.js';
 import './SearchPage.css';
 
 const PAGE_SIZE = 25;
@@ -74,8 +76,15 @@ export default function SearchPage() {
     }
   }, [nextUrl, loadingMore, fetchPosts]);
 
+  const seoPath = query ? `/search?q=${encodeURIComponent(query)}` : '/search';
+  const seoTitle = query ? `Search: ${query}` : 'Search';
+  const seoDescription = query
+    ? truncateDescription(`Search results for "${query}" on SlopIt.`)
+    : 'Search posts, tags, and users on SlopIt.';
+
   return (
     <div className="search-page">
+      <PageMeta title={seoTitle} description={seoDescription} path={seoPath} />
       <div className="search-page-header">
         {query ? (
           <>

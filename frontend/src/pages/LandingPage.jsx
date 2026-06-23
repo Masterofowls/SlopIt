@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import Button from "../components/ui/Button";
 import ToxicBackground from "../components/ToxicBackground.jsx";
+import PageMeta from "../components/seo/PageMeta.jsx";
+import { DEFAULT_DESCRIPTION } from "../lib/seo.js";
 import "./LandingPage.css";
 
 const LandingPage = () => {
@@ -84,6 +86,11 @@ const LandingPage = () => {
 
   return (
     <div className="landing-page">
+      <PageMeta
+        title="SlopIt"
+        description={DEFAULT_DESCRIPTION}
+        path="/"
+      />
       <ToxicBackground />
       <div className="landing-container">
         <div className="landing-content">

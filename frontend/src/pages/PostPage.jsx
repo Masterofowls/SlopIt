@@ -3,7 +3,20 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useProtectedApi } from "../hooks/useProtectedApi";
 import Navigation from "../components/layout/Navigation";
 import PostFactory from "../components/posts/PostFactory";
+import PageMeta from "../components/seo/PageMeta.jsx";
+import {
+  DEFAULT_OG_IMAGE,
+  truncateDescription,
+  resolveMediaUrl,
+} from "../lib/seo.js";
 import "./PostPage.css";
+
+function postOgImage(post) {
+  const visual = post?.media?.find(
+    (item) => item.kind === "image" || item.kind === "gif",
+  );
+  return resolveMediaUrl(visual?.file) || DEFAULT_OG_IMAGE;
+}
 
 const PostPage = () => {
   const { slug } = useParams();
@@ -44,8 +57,21 @@ const PostPage = () => {
     };
   }, [slug]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const postTitle = post?.title || "Post";
+  const postDescription = post
+    ? truncateDescription(post.body_markdown || post.title)
+    : "Loading post on SlopIt.";
+  const postPath = slug ? `/post/${slug}` : "/post";
+
   return (
     <div className="post-page">
+      <PageMeta
+        title={postTitle}
+        description={postDescription}
+        path={postPath}
+        image={post ? postOgImage(post) : DEFAULT_OG_IMAGE}
+        type={post ? "article" : "website"}
+      />
       <Navigation />
       <div className="post-page__content">
         {loading && (
