@@ -29,9 +29,10 @@ const AuthPage = () => {
   return (
     <div className="auth-page">
       <PageMeta
-        title="Sign in"
-        description="Sign in or create a SlopIt account to post, react, and browse the feed."
+        title="Sign in to SlopIt"
+        description="Sign in or create a free SlopIt account to post memes, react to slop, and browse your personalized social feed."
         path="/auth"
+        robots="noindex, nofollow"
       />
       <ToxicBackground />
 

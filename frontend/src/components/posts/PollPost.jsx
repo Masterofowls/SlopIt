@@ -22,7 +22,7 @@ const PollPost = ({ post }) => {
 
   const handleVote = async (idx) => {
     if (loading) return;
-    if (!post.id || String(post.id).startsWith("dummy")) return;
+    if (!post.id) return;
 
     setLoading(true);
     try {

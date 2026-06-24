@@ -12,6 +12,10 @@ import { useAuthContext } from "../../context/AuthContext";
 import { useToast } from "../../context/ToastContext";
 import "./Post.css";
 
+function isVideoSrc(src) {
+  return /\.(mp4|webm|mov|m4v)(\?|$)/i.test(src ?? "");
+}
+
 function resolveAuthorName(author) {
   if (!author) return "anon";
   const isClerkId = (s) =>
@@ -113,7 +117,7 @@ const Post = ({ post, children }) => {
       }, 1000);
     }
 
-    if (post.id && !String(post.id).startsWith("dummy")) {
+    if (post.id) {
       try {
         const res = await apiPost(`/posts/${post.id}/react/`, { kind: "like" });
         if (res?.reaction_counts) {
@@ -214,6 +218,17 @@ const Post = ({ post, children }) => {
                 ),
                 img: ({ src, alt }) => {
                   if (!src) return null;
+                  if (isVideoSrc(src)) {
+                    return (
+                      <video
+                        src={src}
+                        controls
+                        playsInline
+                        className="post-md-video"
+                        preload="metadata"
+                      />
+                    );
+                  }
                   return (
                     <img
                       src={src}
@@ -229,7 +244,10 @@ const Post = ({ post, children }) => {
                 },
                 p: ({ children }) => {
                   const arr = React.Children.toArray(children);
-                  if (arr.length === 1 && arr[0]?.type === "img") {
+                  if (
+                    arr.length === 1 &&
+                    (arr[0]?.type === "img" || arr[0]?.type === "video")
+                  ) {
                     return <>{children}</>;
                   }
                   return <p>{children}</p>;

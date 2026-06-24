@@ -9,7 +9,6 @@ import {
 import { PostFeed } from "../components/posts/index.js";
 import PostCreateModal from "../components/posts/PostCreateModal";
 import { useProtectedApi } from "../hooks/useProtectedApi";
-import { dummyPosts } from "../config/dummyPosts";
 import Navigation from "../components/layout/Navigation";
 import MatrixRain from "../components/MatrixRain";
 import { useIdle } from "../hooks/useIdle";
@@ -17,7 +16,9 @@ import MatrixBackground from "../components/MatrixBackground.jsx";
 import "./HomePage.css";
 import { MAX_FILE_BYTES } from "../lib/uploadMedia.js";
 import PageMeta from "../components/seo/PageMeta.jsx";
-import { DEFAULT_DESCRIPTION, truncateDescription } from "../lib/seo.js";
+import {
+  truncateDescription,
+} from "../lib/seo.js";
 
 const HomePage = () => {
   const { user: clerkUser } = useUser();
@@ -66,7 +67,7 @@ const HomePage = () => {
       : (ownData?.results ?? []);
 
     const merged = mergePosts(feedPosts, ownPosts);
-    setPosts(merged.length > 0 ? merged : dummyPosts);
+    setPosts(merged);
     setFeedCursor(feedData?.next_cursor ?? null);
     setFeedHasMore(feedData?.has_more ?? false);
   }, [mergePosts]);
@@ -75,6 +76,14 @@ const HomePage = () => {
     async (signal, { forceRefresh = false } = {}) => {
       setLoading(true);
       setFeedError(null);
+      setPosts([]);
+
+      if (!isAuthenticated) {
+        setFeedCursor(null);
+        setFeedHasMore(false);
+        setLoading(false);
+        return;
+      }
 
       try {
         if (forceRefresh) {
@@ -96,6 +105,7 @@ const HomePage = () => {
         applyFeedResponse(feedData, ownData);
       } catch (err) {
         if (signal?.aborted) return;
+        setPosts([]);
         setFeedError(
           err?.response?.data?.detail || "Failed to load feed.",
         );
@@ -103,7 +113,7 @@ const HomePage = () => {
         if (!signal?.aborted) setLoading(false);
       }
     },
-    [applyFeedResponse, get, post],
+    [applyFeedResponse, get, isAuthenticated, post],
   );
 
   const handleForceRefreshFeed = useCallback(async () => {
@@ -166,7 +176,7 @@ const HomePage = () => {
     const controller = new AbortController();
     fetchFeed(controller.signal);
     return () => controller.abort();
-  }, [fetchFeed, authLoading]);
+  }, [fetchFeed, authLoading, isAuthenticated]);
 
   const handlePostCreated = useCallback(
     (newPost) => {
@@ -261,10 +271,14 @@ const HomePage = () => {
   const seoPath = searchQuery
     ? `/home?q=${encodeURIComponent(searchQuery)}`
     : "/home";
-  const seoTitle = searchQuery ? `Search: ${searchQuery}` : "Feed";
+  const seoTitle = searchQuery ? `Search: ${searchQuery}` : "Your SlopIt Feed";
   const seoDescription = searchQuery
-    ? truncateDescription(`Search results for "${searchQuery}" on SlopIt.`)
-    : DEFAULT_DESCRIPTION;
+    ? truncateDescription(
+        `Search SlopIt for memes, posts, and reactions matching "${searchQuery}".`,
+      )
+    : truncateDescription(
+        "Browse your personalized SlopIt social feed with memes, posts, reactions, polls, and trending community content.",
+      );
 
   return (
     <div className="page home-page">
@@ -316,7 +330,13 @@ const HomePage = () => {
               </div>
               {loading && <p className="feed-status">loading feed…</p>}
               {feedError && <p className="feed-status feed-error">{feedError}</p>}
-              {!loading && (
+              {!loading && !isAuthenticated && (
+                <p className="feed-status">sign in to see your feed.</p>
+              )}
+              {!loading && isAuthenticated && posts.length === 0 && !feedError && (
+                <p className="feed-status">no posts yet.</p>
+              )}
+              {!loading && isAuthenticated && (
                 <PostFeed
                   posts={posts}
                   onLoadMore={loadMoreFeed}

@@ -1,16 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthContext } from "../context/AuthContext";
 import Button from "../components/ui/Button";
 import ToxicBackground from "../components/ToxicBackground.jsx";
 import PageMeta from "../components/seo/PageMeta.jsx";
-import { DEFAULT_DESCRIPTION } from "../lib/seo.js";
+import { DEFAULT_DESCRIPTION, SITE_TITLE } from "../lib/seo.js";
 import "./LandingPage.css";
 
 const LandingPage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading, hasConsented, grantConsent } =
-    useAuthContext();
+  const { isLoading, hasConsented, grantConsent } = useAuthContext();
   const randomSubtitles = [
     "you're a pleb",
     "slopit or dropit",
@@ -74,12 +73,6 @@ const LandingPage = () => {
     return randomSubtitles[randomIndex];
   });
 
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      navigate("/home", { replace: true });
-    }
-  }, [isAuthenticated, isLoading, navigate]);
-
   if (isLoading) {
     return <div className="loading">Loading...</div>;
   }
@@ -87,7 +80,7 @@ const LandingPage = () => {
   return (
     <div className="landing-page">
       <PageMeta
-        title="SlopIt"
+        title={SITE_TITLE}
         description={DEFAULT_DESCRIPTION}
         path="/"
       />
@@ -96,8 +89,12 @@ const LandingPage = () => {
         <div className="landing-content">
           <div className="landing-header">
             <h1 className="landing-title">welcome to slopit</h1>
+            <h2 className="landing-tagline">
+              Social feed for memes, posts, and reactions
+            </h2>
             <p className="landing-subtitle">{randomSubtitle}</p>
           </div>
+          <h2 className="landing-features-heading">Explore the SlopIt feed</h2>
           <div className="landing-features">
             <div className="window-card">
               <div className="window-header">

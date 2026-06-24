@@ -59,6 +59,22 @@ body {
   letter-spacing: -1px;
 }
 
+.landing-tagline {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 16px 0;
+  color: #b8ffd0;
+  line-height: 1.4;
+}
+
+.landing-features-heading {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 24px 0;
+  color: #d7ffe3;
+  letter-spacing: 0.02em;
+}
+
 .landing-subtitle {
   font-size: 24px;
   margin: 0;

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useProtectedApi } from "../hooks/useProtectedApi";
 import Navigation from "../components/layout/Navigation";
@@ -8,6 +8,7 @@ import {
   DEFAULT_OG_IMAGE,
   truncateDescription,
   resolveMediaUrl,
+  buildArticleSchema,
 } from "../lib/seo.js";
 import "./PostPage.css";
 
@@ -62,6 +63,22 @@ const PostPage = () => {
     ? truncateDescription(post.body_markdown || post.title)
     : "Loading post on SlopIt.";
   const postPath = slug ? `/post/${slug}` : "/post";
+  const postSchema = useMemo(() => {
+    if (!post) return undefined;
+    const authorName =
+      post.author?.display_name ||
+      post.author?.username ||
+      post.author?.first_name ||
+      "SlopIt member";
+    return buildArticleSchema({
+      title: postTitle,
+      description: postDescription,
+      path: postPath,
+      image: postOgImage(post),
+      publishedAt: post.published_at,
+      authorName,
+    });
+  }, [post, postDescription, postPath, postTitle]);
 
   return (
     <div className="post-page">
@@ -71,6 +88,7 @@ const PostPage = () => {
         path={postPath}
         image={post ? postOgImage(post) : DEFAULT_OG_IMAGE}
         type={post ? "article" : "website"}
+        schema={postSchema}
       />
       <Navigation />
       <div className="post-page__content">

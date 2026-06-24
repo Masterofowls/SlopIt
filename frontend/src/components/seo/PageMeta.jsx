@@ -1,10 +1,15 @@
 import { useEffect } from "react";
 import {
   DEFAULT_SEO,
+  OG_IMAGE_HEIGHT,
+  OG_IMAGE_WIDTH,
   SITE_NAME,
   buildCanonicalUrl,
   buildPageTitle,
+  buildDefaultSchemaGraph,
 } from "../../lib/seo.js";
+
+const JSON_LD_ID = "slopit-json-ld";
 
 function upsertMeta(attr, key, content) {
   if (content == null || content === "") return;
@@ -28,31 +33,59 @@ function upsertLink(rel, href) {
   el.setAttribute("href", href);
 }
 
+function upsertJsonLd(schema) {
+  let el = document.getElementById(JSON_LD_ID);
+  if (!schema) {
+    el?.remove();
+    return;
+  }
+  if (!el) {
+    el = document.createElement("script");
+    el.id = JSON_LD_ID;
+    el.type = "application/ld+json";
+    document.head.appendChild(el);
+  }
+  el.textContent = JSON.stringify(schema);
+}
+
 function applyPageMeta({
   title,
   description,
   path,
   image,
   type,
+  robots,
+  keywords,
+  schema,
 }) {
   const pageTitle = buildPageTitle(title);
   const canonical = buildCanonicalUrl(path);
+  const ogImage = image || DEFAULT_SEO.image;
 
   document.title = pageTitle;
   upsertMeta("name", "description", description);
+  upsertMeta("name", "robots", robots);
+  upsertMeta("name", "keywords", keywords);
   upsertLink("canonical", canonical);
 
   upsertMeta("property", "og:title", pageTitle);
   upsertMeta("property", "og:description", description);
   upsertMeta("property", "og:url", canonical);
   upsertMeta("property", "og:type", type);
-  upsertMeta("property", "og:image", image);
+  upsertMeta("property", "og:image", ogImage);
+  upsertMeta("property", "og:image:alt", `${SITE_NAME} social preview`);
+  upsertMeta("property", "og:image:width", String(OG_IMAGE_WIDTH));
+  upsertMeta("property", "og:image:height", String(OG_IMAGE_HEIGHT));
   upsertMeta("property", "og:site_name", SITE_NAME);
+  upsertMeta("property", "og:locale", "en_US");
 
   upsertMeta("name", "twitter:card", "summary_large_image");
   upsertMeta("name", "twitter:title", pageTitle);
   upsertMeta("name", "twitter:description", description);
-  upsertMeta("name", "twitter:image", image);
+  upsertMeta("name", "twitter:image", ogImage);
+  upsertMeta("name", "twitter:image:alt", `${SITE_NAME} social preview`);
+
+  upsertJsonLd(schema ?? buildDefaultSchemaGraph());
 }
 
 export default function PageMeta({
@@ -61,14 +94,26 @@ export default function PageMeta({
   path = DEFAULT_SEO.path,
   image = DEFAULT_SEO.image,
   type = DEFAULT_SEO.type,
+  robots = DEFAULT_SEO.robots,
+  keywords = DEFAULT_SEO.keywords,
+  schema,
 }) {
   useEffect(() => {
-    applyPageMeta({ title, description, path, image, type });
+    applyPageMeta({
+      title,
+      description,
+      path,
+      image,
+      type,
+      robots,
+      keywords,
+      schema,
+    });
 
     return () => {
-      applyPageMeta(DEFAULT_SEO);
+      applyPageMeta({ ...DEFAULT_SEO, schema: buildDefaultSchemaGraph() });
     };
-  }, [title, description, path, image, type]);
+  }, [title, description, path, image, type, robots, keywords, schema]);
 
   return null;
 }

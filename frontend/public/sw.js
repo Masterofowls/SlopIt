@@ -1,4 +1,4 @@
-const CACHE_NAME = 'slopit-cache-v2';
+const CACHE_NAME = 'slopit-cache-v4';
 const APP_SHELL = ['/', '/home', '/manifest.json', '/favicon.svg'];
 
 self.addEventListener('install', (event) => {
@@ -31,7 +31,13 @@ self.addEventListener('fetch', (event) => {
 
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request).catch(() => caches.match('/home').then((page) => page || caches.match('/'))),
+      fetch(request).catch(() => {
+        const path = new URL(request.url).pathname;
+        if (path === '/' || path === '') {
+          return caches.match('/');
+        }
+        return caches.match(path).then((page) => page || caches.match('/'));
+      }),
     );
     return;
   }

@@ -77,10 +77,14 @@ export default function SearchPage() {
   }, [nextUrl, loadingMore, fetchPosts]);
 
   const seoPath = query ? `/search?q=${encodeURIComponent(query)}` : '/search';
-  const seoTitle = query ? `Search: ${query}` : 'Search';
+  const seoTitle = query ? `Search: ${query}` : 'Search Posts on SlopIt';
   const seoDescription = query
-    ? truncateDescription(`Search results for "${query}" on SlopIt.`)
-    : 'Search posts, tags, and users on SlopIt.';
+    ? truncateDescription(
+        `Find memes, posts, and reactions on SlopIt matching "${query}".`,
+      )
+    : truncateDescription(
+        'Search SlopIt for memes, posts, reactions, polls, and trending community content.',
+      );
 
   return (
     <div className="search-page">

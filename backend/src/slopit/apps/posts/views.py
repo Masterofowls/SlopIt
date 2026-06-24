@@ -251,6 +251,15 @@ class PostViewSet(ModelViewSet):
             published_at=timezone.now(),
         )
 
+    def create(self, request: Request, *args: object, **kwargs: object) -> Response:
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        post = serializer.instance
+        output = PostDetailSerializer(post, context=self.get_serializer_context())
+        headers = self.get_success_headers(output.data)
+        return Response(output.data, status=status.HTTP_201_CREATED, headers=headers)
+
     @action(
         detail=True,
         methods=["post"],

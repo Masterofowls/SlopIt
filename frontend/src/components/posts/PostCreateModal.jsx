@@ -14,6 +14,7 @@ import {
   validateMediaFile,
   MAX_FILE_MB,
 } from "../../lib/uploadMedia";
+import { formatApiError } from "../../lib/seo.js";
 import { useProtectedApi } from "../../hooks/useProtectedApi";
 import "./PostCreateModal.css";
 
@@ -302,17 +303,11 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
       }
 
       const created = await apiPost("/posts/", payload);
-      const published = await apiPost(`/posts/${created.id}/publish/`, {});
 
-      if (onPostCreated) onPostCreated(published);
+      if (onPostCreated) onPostCreated(created);
       onClose();
     } catch (err) {
-      const detail =
-        err?.response?.data?.detail ||
-        err?.response?.data?.title?.[0] ||
-        err?.response?.data?.body_markdown?.[0] ||
-        "Failed to create post. Please try again.";
-      setError(detail);
+      setError(formatApiError(err, "Failed to create post. Please try again."));
     } finally {
       setSubmitting(false);
     }
@@ -567,6 +562,6 @@ const PostCreateModal = ({ onClose, onPostCreated }) => {
       </div>
     </div>
   );
-};;
+};
 
 export default PostCreateModal;

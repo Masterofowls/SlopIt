@@ -106,9 +106,10 @@ const ProfilePage = () => {
   return (
     <div className="pp-page">
       <PageMeta
-        title={displayName}
+        title={`${displayName} on SlopIt`}
         description={profileDescription}
         path="/profile"
+        robots="noindex, nofollow"
       />
       <FrogBackground />
       <button className="pp-back-btn" onClick={() => navigate(-1)}>
