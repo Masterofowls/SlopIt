@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 
-const BASE_URL = window.location.origin;
+import { SITE_URL } from "../../lib/seo.js";
+
+const BASE_URL = SITE_URL;
 
 /**
  * ShareButton — uses Web Share API with clipboard fallback.
@@ -15,12 +17,18 @@ const ShareButton = ({ slug, title }) => {
   const shareText = title || 'Check this out on SlopIt';
 
   const handleShare = async () => {
+    const payload = {
+      title: shareText,
+      text: `${shareText} — SlopIt`,
+      url: shareUrl,
+    };
+
     if (navigator.share) {
       try {
-        await navigator.share({ title: shareText, url: shareUrl });
+        await navigator.share(payload);
         return;
       } catch (err) {
-        if (err.name === 'AbortError') return;
+        if (err.name === "AbortError") return;
       }
     }
 

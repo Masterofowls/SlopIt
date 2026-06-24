@@ -12,9 +12,10 @@ export const DEFAULT_DESCRIPTION =
 export const DEFAULT_KEYWORDS =
   "SlopIt, social feed, memes, posts, reactions, polls, community, trending content";
 
-export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.svg`;
+export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 export const OG_IMAGE_WIDTH = 1200;
 export const OG_IMAGE_HEIGHT = 630;
+export const OG_IMAGE_TYPE = "image/png";
 
 export const DEFAULT_ROBOTS = "index, follow, max-image-preview:large";
 
@@ -58,6 +59,26 @@ export function resolveMediaUrl(url) {
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
   const apiBase = import.meta.env.VITE_API_URL || "https://slopit-api.fly.dev";
   return url.startsWith("/") ? `${apiBase}${url}` : `${apiBase}/${url}`;
+}
+
+export function resolveOgImage(url) {
+  if (!url) return DEFAULT_OG_IMAGE;
+  const resolved = resolveMediaUrl(url);
+  if (!resolved) return DEFAULT_OG_IMAGE;
+  if (/\.(mp4|webm|mov|m4v|gif|svg)(\?|$)/i.test(resolved)) {
+    return DEFAULT_OG_IMAGE;
+  }
+  return resolved;
+}
+
+export function resolvePostOgImage(post) {
+  const visual = post?.media?.find(
+    (item) => item.kind === "image" || item.kind === "gif",
+  );
+  if (visual?.file) {
+    return resolveOgImage(visual.file);
+  }
+  return DEFAULT_OG_IMAGE;
 }
 
 export function buildWebsiteSchema() {

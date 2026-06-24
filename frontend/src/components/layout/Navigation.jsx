@@ -12,6 +12,7 @@ import {
   useFeedRefresh,
 } from "../../context/FeedRefreshContext.jsx";
 import PostCreateModal from "../posts/PostCreateModal";
+import { usePwaInstallDrawer } from "../pwa/PwaInstallProvider.jsx";
 import "./Navigation.css";
 
 const Navigation = () => {
@@ -19,6 +20,7 @@ const Navigation = () => {
   const location = useLocation();
   const { isSignedIn, isLoaded } = useAuth();
   const { refreshFeed, isRefreshing } = useFeedRefresh();
+  const { canInstall, openDrawer } = usePwaInstallDrawer();
   const [showPostModal, setShowPostModal] = useState(false);
   const searchRef = useRef(null);
 
@@ -167,7 +169,20 @@ const Navigation = () => {
             </button>
           </form>
 
-          <div className="nav-user">{renderAuthArea()}</div>
+          <div className="nav-user">
+            {canInstall && (
+              <button
+                type="button"
+                className="nav-install-button nav-buttons"
+                onClick={openDrawer}
+                aria-label="Install SlopIt app"
+                title="Install app"
+              >
+                Install
+              </button>
+            )}
+            {renderAuthArea()}
+          </div>
         </div>
       </nav>
 

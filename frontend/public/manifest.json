@@ -1,19 +1,50 @@
 {
-  "name": "SlopIt",
+  "name": "SlopIt — Social Feed",
   "short_name": "SlopIt",
-  "description": "SlopIt is a chaotic social feed where users post, react, and browse trending slop.",
+  "description": "SlopIt is a chaotic social feed for posting memes, reacting with likes, browsing trending slop, polls, and community content.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone"],
+  "orientation": "portrait-primary",
   "background_color": "#06130c",
   "theme_color": "#06130c",
   "lang": "en",
+  "categories": ["social", "entertainment"],
   "icons": [
     {
-      "src": "/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
       "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Feed",
+      "short_name": "Feed",
+      "description": "Open your SlopIt feed",
+      "url": "/home",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Search",
+      "short_name": "Search",
+      "description": "Search posts on SlopIt",
+      "url": "/search",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

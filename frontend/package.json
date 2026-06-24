@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/generate-sitemap.mjs && vite build",
+    "assets": "python scripts/generate-pwa-assets.py",
     "sitemap": "node scripts/generate-sitemap.mjs",
     "lint": "eslint .",
     "preview": "vite preview",

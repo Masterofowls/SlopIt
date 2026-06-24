@@ -7,17 +7,10 @@ import PageMeta from "../components/seo/PageMeta.jsx";
 import {
   DEFAULT_OG_IMAGE,
   truncateDescription,
-  resolveMediaUrl,
+  resolvePostOgImage,
   buildArticleSchema,
 } from "../lib/seo.js";
 import "./PostPage.css";
-
-function postOgImage(post) {
-  const visual = post?.media?.find(
-    (item) => item.kind === "image" || item.kind === "gif",
-  );
-  return resolveMediaUrl(visual?.file) || DEFAULT_OG_IMAGE;
-}
 
 const PostPage = () => {
   const { slug } = useParams();
@@ -74,7 +67,7 @@ const PostPage = () => {
       title: postTitle,
       description: postDescription,
       path: postPath,
-      image: postOgImage(post),
+      image: resolvePostOgImage(post),
       publishedAt: post.published_at,
       authorName,
     });
@@ -86,7 +79,7 @@ const PostPage = () => {
         title={postTitle}
         description={postDescription}
         path={postPath}
-        image={post ? postOgImage(post) : DEFAULT_OG_IMAGE}
+        image={post ? resolvePostOgImage(post) : DEFAULT_OG_IMAGE}
         type={post ? "article" : "website"}
         schema={postSchema}
       />

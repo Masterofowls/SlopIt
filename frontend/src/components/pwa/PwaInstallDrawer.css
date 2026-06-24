@@ -1,0 +1,122 @@
+.pwa-drawer {
+  position: fixed;
+  inset: 0;
+  z-index: 12000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.pwa-drawer__backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.55);
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.pwa-drawer__sheet {
+  position: relative;
+  width: min(100%, 480px);
+  margin: 0 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  padding: 12px 20px 20px;
+  border: 1px solid rgba(125, 255, 154, 0.35);
+  border-radius: 20px 20px 16px 16px;
+  background: linear-gradient(180deg, #0b2a18 0%, #06130c 100%);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+  pointer-events: auto;
+  animation: pwa-drawer-slide-up 0.28s ease-out;
+}
+
+@keyframes pwa-drawer-slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.pwa-drawer__handle {
+  width: 42px;
+  height: 4px;
+  margin: 0 auto 14px;
+  border-radius: 999px;
+  background: rgba(125, 255, 154, 0.45);
+}
+
+.pwa-drawer__icon-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.pwa-drawer__icon {
+  border-radius: 18px;
+  border: 1px solid rgba(125, 255, 154, 0.35);
+}
+
+.pwa-drawer__title {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+  color: #d7ffe3;
+}
+
+.pwa-drawer__body {
+  margin: 0 0 14px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #9fd9b0;
+}
+
+.pwa-drawer__steps {
+  margin: 0 0 16px;
+  padding-left: 1.2rem;
+  text-align: left;
+  color: #b8ffd0;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.pwa-drawer__steps strong {
+  color: #39ff14;
+}
+
+.pwa-drawer__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pwa-drawer__btn {
+  width: 100%;
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.pwa-drawer__btn--primary {
+  border: 1px solid #39ff14;
+  background: #39ff14;
+  color: #06130c;
+}
+
+.pwa-drawer__btn--primary:hover {
+  filter: brightness(1.05);
+}
+
+.pwa-drawer__btn--ghost {
+  border: 1px solid rgba(125, 255, 154, 0.25);
+  background: transparent;
+  color: #b8ffd0;
+}
+
+.pwa-drawer__btn--ghost:hover {
+  background: rgba(125, 255, 154, 0.08);
+}

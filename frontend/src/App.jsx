@@ -11,6 +11,7 @@ import { useClerkInterceptor } from "./lib/api";
 import ProfilePage from "./pages/ProfilePage";
 import SearchPage from "./pages/SearchPage";
 import AuthPage from "./pages/AuthPage";
+import { PwaInstallProvider } from "./components/pwa/PwaInstallProvider.jsx";
 
 function InnerApp() {
   useClerkInterceptor();
@@ -41,7 +42,9 @@ function App() {
       <AuthProvider>
         <FeedRefreshProvider>
           <ToastProvider>
-            <InnerApp />
+            <PwaInstallProvider>
+              <InnerApp />
+            </PwaInstallProvider>
           </ToastProvider>
         </FeedRefreshProvider>
       </AuthProvider>

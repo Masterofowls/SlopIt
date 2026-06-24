@@ -1,5 +1,13 @@
-const CACHE_NAME = 'slopit-cache-v4';
-const APP_SHELL = ['/', '/home', '/manifest.json', '/favicon.svg'];
+const CACHE_NAME = 'slopit-cache-v5';
+const APP_SHELL = [
+  '/',
+  '/home',
+  '/manifest.json',
+  '/og-image.png',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/apple-touch-icon.png',
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

@@ -112,6 +112,22 @@
   gap: 6px;
 }
 
+.nav-install-button {
+  padding: 6px 14px;
+  background: rgba(57, 255, 20, 0.12);
+  color: #39ff14;
+  border: 1px solid #39ff14;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: "Courier New", Courier, monospace;
+}
+
+.nav-install-button:hover {
+  background: rgba(57, 255, 20, 0.22);
+}
+
 .nav-refresh-button {
   padding: 6px 14px;
   background: transparent;

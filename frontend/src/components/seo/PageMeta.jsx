@@ -2,8 +2,10 @@ import { useEffect } from "react";
 import {
   DEFAULT_SEO,
   OG_IMAGE_HEIGHT,
+  OG_IMAGE_TYPE,
   OG_IMAGE_WIDTH,
   SITE_NAME,
+  SITE_URL,
   buildCanonicalUrl,
   buildPageTitle,
   buildDefaultSchemaGraph,
@@ -61,6 +63,11 @@ function applyPageMeta({
   const pageTitle = buildPageTitle(title);
   const canonical = buildCanonicalUrl(path);
   const ogImage = image || DEFAULT_SEO.image;
+  const ogImageType = /\.png(\?|$)/i.test(ogImage)
+    ? "image/png"
+    : /\.jpe?g(\?|$)/i.test(ogImage)
+      ? "image/jpeg"
+      : OG_IMAGE_TYPE;
 
   document.title = pageTitle;
   upsertMeta("name", "description", description);
@@ -73,6 +80,8 @@ function applyPageMeta({
   upsertMeta("property", "og:url", canonical);
   upsertMeta("property", "og:type", type);
   upsertMeta("property", "og:image", ogImage);
+  upsertMeta("property", "og:image:secure_url", ogImage);
+  upsertMeta("property", "og:image:type", ogImageType);
   upsertMeta("property", "og:image:alt", `${SITE_NAME} social preview`);
   upsertMeta("property", "og:image:width", String(OG_IMAGE_WIDTH));
   upsertMeta("property", "og:image:height", String(OG_IMAGE_HEIGHT));
@@ -80,10 +89,13 @@ function applyPageMeta({
   upsertMeta("property", "og:locale", "en_US");
 
   upsertMeta("name", "twitter:card", "summary_large_image");
+  upsertMeta("name", "twitter:site", "@slopit");
   upsertMeta("name", "twitter:title", pageTitle);
   upsertMeta("name", "twitter:description", description);
   upsertMeta("name", "twitter:image", ogImage);
   upsertMeta("name", "twitter:image:alt", `${SITE_NAME} social preview`);
+
+  upsertLink("apple-touch-icon", `${SITE_URL}/icons/apple-touch-icon.png`);
 
   upsertJsonLd(schema ?? buildDefaultSchemaGraph());
 }
